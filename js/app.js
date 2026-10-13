@@ -21,6 +21,43 @@
   }
   // 한글 줄바꿈(keep-all)에서 ")는", "~에게" 처럼 기호 뒤 조사가 다음 줄로 떨어지지 않게 붙여 줌 (U+2060 단어 결합자)
   const glue = (html) => html.replace(/([)\]~]|&quot;|&#39;)((?:<\/?b>)?)(?=[가-힣])/g, '$1\u2060$2');
+  // 영어 듣기 — 브라우저 음성 합성(Web Speech API). 지원 안 하는 브라우저에선 버튼을 숨김
+  const canSpeak = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+  const SPEAKER_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M15.5 9c1.2 1.6 1.2 4.4 0 6M18.3 6.6c2.6 3 2.6 7.8 0 10.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  // 듣기용 텍스트: **굵게** 표시와 한국어 괄호 설명 "(이미 약속됨)" 은 빼고 읽기
+  const speakable = (s) => String(s || '').replace(/\*\*/g, '').replace(/\([^)]*[가-힣][^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+  function speakBtn(text, label = '') {
+    const t = speakable(text);
+    if (!canSpeak || !t || !/[A-Za-z]/.test(t)) return '';
+    return `<button type="button" class="speak${label ? ' speak-label' : ''}" data-speak="${esc(t)}" title="듣기" aria-label="영어 듣기">${SPEAKER_SVG}${label ? `<span>${esc(label)}</span>` : ''}</button>`;
+  }
+  let enVoice = null;
+  function pickVoice() {
+    const voices = speechSynthesis.getVoices().filter((v) => /^en[-_]/i.test(v.lang));
+    const pref = ['Samantha', 'Google US English', 'Microsoft Aria', 'Microsoft Jenny', 'Alex'];
+    enVoice = voices.find((v) => pref.some((n) => v.name.includes(n)))
+      || voices.find((v) => /en[-_]US/i.test(v.lang)) || voices[0] || null;
+  }
+  if (canSpeak) { pickVoice(); speechSynthesis.addEventListener?.('voiceschanged', pickVoice); }
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-speak]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const wasMe = btn.classList.contains('speaking');
+    speechSynthesis.cancel();
+    document.querySelectorAll('.speak.speaking').forEach((b) => b.classList.remove('speaking'));
+    if (wasMe) return; // 읽는 중에 한 번 더 누르면 멈춤
+    const u = new SpeechSynthesisUtterance(btn.dataset.speak);
+    u.lang = enVoice ? enVoice.lang : 'en-US';
+    if (enVoice) u.voice = enVoice;
+    u.rate = 0.92;
+    u.onend = u.onerror = () => btn.classList.remove('speaking');
+    btn.classList.add('speaking');
+    speechSynthesis.speak(u);
+  }, true);
+  window.addEventListener('hashchange', () => { if (canSpeak) speechSynthesis.cancel(); });
+
   const pad = (n) => String(n).padStart(2, '0');
   function toYMD(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
   function parseYMD(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
@@ -28,6 +65,7 @@
   function startOfWeek(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); return addDays(x, -((x.getDay() + 6) % 7)); }
   function fmtDate(ymd) { const d = parseYMD(ymd); return `${d.getMonth() + 1}월 ${d.getDate()}일 (${WEEKDAYS[d.getDay()]})`; }
   function fmtShort(d) { return `${d.getMonth() + 1}/${d.getDate()}`; }
+  function sentenceCount(s) { return (s || '').split(/[.!?]+(?=\s|$)|\n+/).filter((x) => /[A-Za-z]/.test(x)).length; }
   function wordCount(s) { const m = (s || '').trim().match(/[A-Za-z0-9'’-]+/g); return m ? m.length : 0; }
   const todayYMD = () => toYMD(new Date());
   const nl2br = (s) => esc(s).replace(/\n/g, '<br>');
@@ -329,8 +367,8 @@ ${text}
   }
 
   function renderCorrections(c, { compact } = {}) {
-    const item = (x) => `<li><span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
-    const expr = (x) => `<li><span class="c-phrase">${esc(x.phrase)}</span>${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
+    const item = (x) => `<li><span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>${speakBtn(x.to)}${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
+    const expr = (x) => `<li><span class="c-phrase">${esc(x.phrase)}</span>${speakBtn(x.phrase)}${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
     const block = (title, cls, list, fn) => (list.length ? `<div class="corr ${cls}"><div class="corr-title">${title} <span class="corr-count">${list.length}</span></div><ul>${list.map(fn).join('')}</ul></div>` : '');
     const html = block('문법적으로 틀린 것', 'corr-grammar', c.grammar, item)
       + block('원어민은 이렇게 써요', 'corr-native', c.native, item)
@@ -530,11 +568,43 @@ ${text}
     const recentVideos = videos.slice(0, 4).map(videoCardMini).join('');
 
     const doneThisWeek = dates.every((d) => byDate[d] && postStatus((pbt[byDate[d].id] || {})[me]) === 'reviewed');
+
+    // 오늘 할 일: 오늘 주제 → 이번 주 밀린 글 → 다음 주제 → 다음 글쓰기 날 (주제 없음)
+    const myStatus = (t) => postStatus((pbt[t.id] || {})[me]);
+    const sortedTopics = topics.slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    const weekStart = toYMD(startOfWeek(new Date()));
+    const todayTopic = byDate[today];
+    const overdue = sortedTopics.filter((t) => t.date < today && t.date >= weekStart && myStatus(t) !== 'reviewed').pop();
+    const upcoming = sortedTopics.find((t) => t.date > today);
+    let nextDay = null;
+    for (let i = 1; i <= 14 && !nextDay; i++) { const d = addDays(new Date(), i); if (cfg.WRITING_DAYS.includes(d.getDay())) nextDay = toYMD(d); }
+    const ACTION = { none: '쓰러 가기 →', written: '검수본 입력 →', reviewed: '결과 보기 →' };
+    const taskFor = (t, label) => {
+      const st = myStatus(t);
+      const href = st === 'reviewed' ? `#/topic/${t.id}` : `#/write/${t.id}/${encodeURIComponent(me)}`;
+      return `<div class="hero-task">
+          <div class="hero-label">${label}${chip(st)}</div>
+          <a class="hero-topic" href="#/topic/${t.id}">${esc(t.title)}</a>
+          <a class="btn ${st === 'reviewed' ? '' : 'btn-primary'}" href="${href}">${ACTION[st]}</a>
+        </div>`;
+    };
+    let task = '';
+    if (todayTopic) task = taskFor(todayTopic, '오늘의 주제');
+    else if (overdue) task = taskFor(overdue, `밀린 글 · ${fmtDate(overdue.date)}`);
+    else if (upcoming) task = taskFor(upcoming, `다음 주제 · ${fmtDate(upcoming.date)}`);
+    else if (nextDay) {
+      task = `<div class="hero-task">
+          <div class="hero-label">다음 글쓰기 · ${fmtDate(nextDay)}</div>
+          ${canManageTopics() ? `<div class="hero-sub">아직 주제 없음.</div><button class="btn btn-primary" data-new-topic="${nextDay}">+ 주제 정하기</button>`
+            : `<div class="hero-sub">${esc(TOPIC_MANAGER)}님이 주제를 정할 예정.</div>`}
+        </div>`;
+    }
+
     $app.innerHTML = `
       <div class="hero">
-        <div>
+        <div class="hero-main">
           <div class="hero-title">${esc(me)}.. 영어 한 줄</div>
-          <div class="hero-sub">${doneThisWeek ? '이번 주 끝. 굿.' : `주 ${dates.length}번. 쓰고, 검수받고, 비교하기.`}</div>
+          ${task || `<div class="hero-sub">${doneThisWeek ? '이번 주 끝. 굿.' : `주 ${dates.length}번. 쓰고, 검수받고, 비교하기.`}</div>`}
         </div>
         <div class="${doneThisWeek ? 'anim-pop' : 'anim-dance anim-slow'}">${Mascot(doneThisWeek ? 'good' : 'music', 120)}</div>
       </div>
@@ -608,11 +678,14 @@ ${text}
   }
 
   // ================================================================ topic detail
+  // 내 글을 쓰기 전엔 상대 글을 가려 둠 (따라 쓰기 방지). "그래도 보기"를 누른 주제는 이 세션 동안 보임
+  const revealedTopics = new Set();
   async function viewTopic(id) {
     renderChrome('writing');
     const [topic, posts] = await Promise.all([Store.getTopic(id), Store.listPosts(id)]);
     if (!topic) { $app.innerHTML = `<div class="card empty">${Mascot('sad', 90)}주제를 찾을 수 없어요... <a href="#/writing">목록으로</a></div>`; return; }
     const byAuthor = Object.fromEntries(posts.map((p) => [p.author, p]));
+    const iHaveWritten = postStatus(byAuthor[me]) !== 'none';
 
     const cards = MEMBERS.map((name) => {
       const p = byAuthor[name];
@@ -622,6 +695,14 @@ ${text}
       let body;
       if (st === 'none') {
         body = `<div class="empty-inline">${Mascot(isMe ? 'cmon' : 'dots', 80)}${isMe ? '아직 안 씀.' : '아직 작성 전.'}</div>`;
+      } else if (!isMe && !iHaveWritten && MEMBERS.includes(me) && !revealedTopics.has(topic.id)) {
+        body = `<div class="spoiler">${Mascot('what', 76)}
+            <p><b>내 글 먼저 쓰고 보기.</b><br><span class="muted small">먼저 보면 나도 모르게 따라 쓰게 돼요.</span></p>
+            <div class="row-gap wrap">
+              <a class="btn btn-sm btn-primary" href="#/write/${topic.id}/${encodeURIComponent(me)}">내 글 쓰러 가기</a>
+              <button class="btn btn-sm" data-reveal>그래도 보기</button>
+            </div>
+          </div>`;
       } else {
         const hasRev = st === 'reviewed';
         const changes = hasRev ? TextDiff.countChanges(TextDiff.diff(p.original, p.revised)) : 0;
@@ -633,7 +714,7 @@ ${text}
           <div class="pane text-body" data-pane="orig" ${hasRev ? 'hidden' : ''}>${nl2br(p.original)}</div>
           ${hasRev ? `<div class="pane text-body" data-pane="rev" hidden>${nl2br(p.revised)}</div>
           <div class="pane text-body diff" data-pane="diff">${renderDiff(p.original, p.revised)}</div>` : ''}
-          <div class="meta muted small">${wordCount(p.original)} words${p.updated_at ? ` · 마지막 수정 ${new Date(p.updated_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</div>
+          <div class="meta muted small">${hasRev ? `${speakBtn(p.revised, '수정본 듣기')} ` : ''}${wordCount(p.original)} words${p.updated_at ? ` · 마지막 수정 ${new Date(p.updated_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</div>
           ${renderCorrections(parseCorrections(p.corrections))}
           ${p.notes ? `<div class="notes"><div class="notes-title">실수 패턴 · 메모.</div>${nl2br(p.notes)}</div>` : ''}`;
       }
@@ -663,6 +744,7 @@ ${text}
       </div>
       <div class="grid grid-2">${cards}</div>`;
 
+    $app.querySelectorAll('[data-reveal]').forEach((b) => { b.onclick = () => { revealedTopics.add(topic.id); render(); }; });
     $app.querySelectorAll('[data-tabs]').forEach((tabs) => {
       const card = tabs.closest('.post');
       tabs.querySelectorAll('button').forEach((b) => {
@@ -701,9 +783,10 @@ ${text}
       </div>
 
       <form id="editForm" class="editor">
+        <div class="draft-note" id="draftNote" hidden></div>
         <div class="card step">
           <div class="step-head"><span class="step-no">1</span><h3>직접 쓰기</h3><span class="muted small" id="wcOrig"></span></div>
-          <textarea name="original" rows="10" placeholder="주제에 맞춰 영어로 자유롭게 써보세요. 틀려도 괜찮아요!">${esc(post.original)}</textarea>
+          <textarea name="original" rows="10" lang="en" spellcheck="true" autocapitalize="sentences" placeholder="주제에 맞춰 영어로 자유롭게 써보세요. 틀려도 괜찮아요!">${esc(post.original)}</textarea>
         </div>
 
         <div class="card step">
@@ -715,7 +798,7 @@ ${text}
             <button type="button" class="btn" id="btnCopyOrig">원문을 수정본 칸에 복사</button>
           </div>
           <label>AI 검수 후 수정본
-            <textarea name="revised" rows="10" placeholder="AI 답변의 1. 수정본(코드 블록 안 영어 글)을 붙여넣으세요">${esc(post.revised || '')}</textarea>
+            <textarea name="revised" rows="10" lang="en" spellcheck="true" autocapitalize="sentences" placeholder="AI 답변의 1. 수정본(코드 블록 안 영어 글)을 붙여넣으세요">${esc(post.revised || '')}</textarea>
           </label>
           <label>수정 내역 · 원어민 표현 <span class="muted">(AI 답변 2번)</span>
             <textarea name="corrections" rows="9" placeholder="[문법] I go to home → I go home :: home은 부사라 to가 필요 없어요
@@ -745,7 +828,7 @@ ${text}
     const f = document.getElementById('editForm');
     let dirty = false;
     const update = () => {
-      document.getElementById('wcOrig').textContent = `${wordCount(f.original.value)} words`;
+      document.getElementById('wcOrig').textContent = `${wordCount(f.original.value)} words · ${sentenceCount(f.original.value)} sentences`;
       const has = f.revised.value.trim() && f.original.value.trim();
       document.getElementById('previewCard').hidden = !has;
       if (has) {
@@ -759,7 +842,44 @@ ${text}
         ? (n ? `인식됨: 문법 ${c.grammar.length} · 원어민 ${c.native.length} · 표현 ${c.expr.length}` : '<span class="error">[문법] / [원어민] / [표현] 으로 시작하는 줄을 찾지 못했어요.</span>')
         : '';
     };
-    f.addEventListener('input', () => { dirty = true; update(); });
+    // 임시 저장: 업로드 전 글을 이 브라우저에 자동 보관 (AI 창 다녀오다 날아가지 않게)
+    const draftKey = `english-study:draft:${topic.id}:${author}`;
+    const FIELDS = ['original', 'revised', 'corrections', 'notes'];
+    const savedVals = Object.fromEntries(FIELDS.map((k) => [k, post[k] || '']));
+    const clearDraft = () => { try { localStorage.removeItem(draftKey); } catch (e) { /* 저장소 막힘 */ } };
+    let draftTimer;
+    const writeDraft = () => {
+      clearTimeout(draftTimer);
+      draftTimer = setTimeout(() => {
+        const vals = Object.fromEntries(FIELDS.map((k) => [k, f[k].value]));
+        try {
+          if (FIELDS.every((k) => vals[k] === savedVals[k])) localStorage.removeItem(draftKey);
+          else localStorage.setItem(draftKey, JSON.stringify({ at: Date.now(), ...vals }));
+        } catch (e) { /* 저장소 막힘 */ }
+      }, 400);
+    };
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(draftKey) || 'null'); } catch (e) { draft = null; }
+    const savedAt = post.updated_at ? Date.parse(post.updated_at) : 0;
+    if (draft && FIELDS.some((k) => (draft[k] || '') !== savedVals[k]) && draft.at > savedAt) {
+      FIELDS.forEach((k) => { f[k].value = draft[k] || ''; });
+      dirty = true;
+      const note = document.getElementById('draftNote');
+      const when = new Date(draft.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      note.innerHTML = `${Mascot('think', 44)}<span><b>업로드 안 한 임시 글을 불러왔어요.</b> <span class="muted">(${esc(when)})</span> 저장을 눌러야 동료에게 보여요.</span>
+        <button type="button" class="btn-link" id="btnDiscardDraft">버리기</button>`;
+      note.hidden = false;
+      document.getElementById('btnDiscardDraft').onclick = () => {
+        if (!confirm('임시 글을 버리고 마지막으로 저장한 글로 되돌릴까요?')) return;
+        FIELDS.forEach((k) => { f[k].value = savedVals[k]; });
+        clearDraft();
+        dirty = false;
+        note.hidden = true;
+        update();
+      };
+    } else if (draft) clearDraft();
+
+    f.addEventListener('input', () => { dirty = true; update(); writeDraft(); });
     update();
 
     document.getElementById('btnPrompt').onclick = async () => {
@@ -772,6 +892,7 @@ ${text}
       f.revised.value = f.original.value;
       dirty = true;
       update();
+      writeDraft();
     };
 
     const leaveGuard = (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } };
@@ -791,6 +912,8 @@ ${text}
           notes: f.notes.value.trim() ? f.notes.value : null,
         }), '글 업로드 완료. 굿.');
       } catch (err) { alert(err.message); return; }
+      clearTimeout(draftTimer);
+      clearDraft();
       dirty = false;
       location.hash = `#/topic/${topic.id}`;
     };
@@ -799,6 +922,8 @@ ${text}
       del.onclick = async () => {
         if (!confirm('이 글을 삭제할까요?')) return;
         await Store.deletePost(post.id);
+        clearTimeout(draftTimer);
+        clearDraft();
         dirty = false;
         toast('삭제함.');
         location.hash = `#/topic/${topic.id}`;
@@ -963,7 +1088,8 @@ ${text}
   }
 
   // ================================================================ 표현 노트 (모든 글의 수정 내역 모음)
-  let exprFilter = { kind: 'all', who: '전체', q: '' };
+  // quiz: 가리고 복습 모드, seed: 섞기 순서 (0이면 날짜순)
+  let exprFilter = { kind: 'all', who: '전체', q: '', quiz: false, seed: 0 };
   async function viewExpressions() {
     renderChrome('expressions');
     const [topics, posts] = await Promise.all([Store.listTopics(), Store.listPosts()]);
@@ -984,27 +1110,65 @@ ${text}
       (exprFilter.who === '전체' || x.author === exprFilter.who) &&
       (!q || `${x.from || ''} ${x.to || ''} ${x.phrase || ''} ${x.note}`.toLowerCase().includes(q)));
     const KIND = { grammar: ['문법', 'k-grammar'], native: ['원어민', 'k-native'], expr: ['표현', 'k-expr'] };
-    const rows = list.map((x) => `<li class="${KIND[x.kind][1]}">
+    const quiz = exprFilter.quiz;
+    if (quiz && exprFilter.seed) {
+      const h = (str) => { let v = exprFilter.seed; for (const ch of str) v = Math.imul(v ^ ch.charCodeAt(0), 2654435761) >>> 0; return v; };
+      const key = (x) => h(`${x.topic.id}|${x.author}|${x.kind}|${x.from || x.phrase}|${x.to || ''}`);
+      list.sort((a, b) => key(a) - key(b));
+    }
+    // 복습 모드: 문법·원어민은 "고친 문장 + 설명"을, 표현은 "영어 표현"을 가리고 한국어 뜻만 보여줌
+    const rows = list.map((x) => {
+      const canQuiz = quiz && (x.kind !== 'expr' || !!x.note);
+      const isExpr = x.kind === 'expr';
+      const answer = isExpr
+        ? `<span class="q-ans"><span class="c-phrase">${esc(x.phrase)}</span>${speakBtn(x.phrase)}</span>`
+        : `<span class="q-ans"><span class="c-to">${esc(x.to)}</span>${speakBtn(x.to)}</span>`;
+      const blank = canQuiz ? `<span class="q-blank">${isExpr ? '영어로는? 탭해서 확인' : '어떻게 고칠까? 탭해서 확인'}</span>` : '';
+      const note = x.note ? `<div class="c-note${isExpr ? '' : ' q-ans'}">${glue(esc(x.note))}</div>` : '';
+      const main = isExpr
+        ? (canQuiz ? `${note}${blank}${answer}` : `${answer}${note}`)
+        : `<span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> ${blank}${answer}${note}`;
+      return `<li class="${KIND[x.kind][1]}${canQuiz ? ' q-item' : ''}">
         <span class="kind-tag">${KIND[x.kind][0]}</span>
         <div class="expr-main">
-          ${x.kind === 'expr' ? `<span class="c-phrase">${esc(x.phrase)}</span>` : `<span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>`}
-          ${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}
+          ${main}
           <a class="expr-src" href="#/topic/${x.topic.id}">${fmtDate(x.topic.date)} · ${esc(x.topic.title)} · ${esc(x.author)}</a>
         </div>
-      </li>`).join('');
+      </li>`;
+    }).join('');
     const tab = (k, label) => `<button class="cat ${exprFilter.kind === k ? 'active' : ''}" data-kind="${k}">${label} ${counts[k]}</button>`;
+    const quizCount = quiz ? (rows.match(/ q-item"/g) || []).length : 0;
     $app.innerHTML = `
       <div class="section-head"><h2>표현 노트</h2></div>
-      <p class="muted">글마다 정리한 문법 실수와 원어민 표현이 여기에 모여요. 복습용.</p>
+      <p class="muted">글마다 정리한 문법 실수와 원어민 표현이 여기에 모여요. <b>가리고 복습</b>을 켜면 정답을 가려 두고 하나씩 떠올려 볼 수 있어요.</p>
       <div class="filters">
-        <div class="cat-chips">${tab('all', '전체')}${tab('native', '원어민')}${tab('grammar', '문법')}${tab('expr', '표현')}</div>
+        <div class="cat-chips">${tab('all', '전체')}${tab('native', '원어민')}${tab('grammar', '문법')}${tab('expr', '표현')}
+          <button class="cat cat-quiz ${quiz ? 'active' : ''}" id="btnQuiz" aria-pressed="${quiz}">${quiz ? '복습 끄기' : '가리고 복습'}</button></div>
         <div class="row-gap">
           <select id="exprWho">${['전체', ...MEMBERS].map((n) => `<option ${n === exprFilter.who ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select>
           <input type="search" id="exprSearch" placeholder="검색" value="${esc(exprFilter.q)}">
         </div>
       </div>
-      ${rows ? `<ul class="card expr-list">${rows}</ul>` : `<div class="card empty">${Mascot(items.length ? 'dots' : 'think', 90)}${items.length ? '조건에 맞는 표현 없음.' : '아직 정리된 표현이 없어요. 글쓰기에서 AI 답변 2번을 수정 내역 칸에 붙여넣어 보세요.'}</div>`}`;
+      ${quiz && quizCount ? `<div class="quiz-bar">
+          <span id="qProgress">확인 0 / ${quizCount}</span>
+          <span class="row-gap"><button class="btn btn-sm" id="btnShuffle">섞기</button><button class="btn btn-sm" id="btnRevealAll">전부 보기</button></span>
+        </div>` : ''}
+      ${rows ? `<ul class="card expr-list${quiz ? ' quiz' : ''}">${rows}</ul>` : `<div class="card empty">${Mascot(items.length ? 'dots' : 'think', 90)}${items.length ? '조건에 맞는 표현 없음.' : '아직 정리된 표현이 없어요. 글쓰기에서 AI 답변 2번을 수정 내역 칸에 붙여넣어 보세요.'}</div>`}`;
     $app.querySelectorAll('[data-kind]').forEach((b) => { b.onclick = () => { exprFilter.kind = b.dataset.kind; render(); }; });
+    document.getElementById('btnQuiz').onclick = () => { exprFilter.quiz = !exprFilter.quiz; exprFilter.seed = 0; render(); };
+    if (quiz && quizCount) {
+      const listEl = $app.querySelector('.expr-list');
+      const progress = () => { document.getElementById('qProgress').textContent = `확인 ${listEl.querySelectorAll('.q-item.revealed').length} / ${quizCount}`; };
+      listEl.onclick = (e) => {
+        if (e.target.closest('a')) return;
+        const li = e.target.closest('.q-item');
+        if (!li) return;
+        li.classList.toggle('revealed');
+        progress();
+      };
+      document.getElementById('btnShuffle').onclick = () => { exprFilter.seed = (Math.random() * 2 ** 31) | 1; render(); };
+      document.getElementById('btnRevealAll').onclick = () => { listEl.querySelectorAll('.q-item').forEach((li) => li.classList.add('revealed')); progress(); };
+    }
     document.getElementById('exprWho').onchange = (e) => { exprFilter.who = e.target.value; render(); };
     const search = document.getElementById('exprSearch');
     search.oninput = () => {
@@ -1016,6 +1180,188 @@ ${text}
         el.focus();
         el.setSelectionRange(el.value.length, el.value.length);
       }, 250);
+    };
+  }
+
+  // ================================================================ 내 노트 (나만 보는 메모장)
+  const NOTE_KINDS = {
+    word: { label: '단어', en: '영단어 · 표현', enPh: 'e.g. procrastinate', ko: '뜻', koPh: '미루다, 질질 끌다', memoPh: '예문, 비슷한 말, 발음 팁…', speak: true },
+    sentence: { label: '문장', en: '영어 문장', enPh: "e.g. I'm swamped with work today.", ko: '해석', koPh: '오늘 일이 너무 많아.', memoPh: '어디서 봤는지, 언제 쓰는지…', speak: true },
+    grammar: { label: '문법', en: '문법 포인트', enPh: 'e.g. used to + 동사원형 vs be used to + -ing', ko: '설명', koPh: '~하곤 했다 / ~에 익숙하다', memoPh: '예문, 헷갈렸던 점…' },
+    etc: { label: '기타', en: '내용', enPh: '무엇이든', ko: '설명', koPh: '', memoPh: '' },
+  };
+  let noteFilter = { kind: 'all', q: '', hide: false };
+  let noteKind = 'word';   // 입력 칸에서 마지막으로 고른 종류·날짜는 다음 입력 때도 유지
+  let noteDate = null;     // null = 오늘
+
+  // 입력 칸 (새 노트 / 수정 모달 공용)
+  function noteFields(n) {
+    const k = NOTE_KINDS[n.kind] || NOTE_KINDS.word;
+    return `<div class="note-kinds" role="radiogroup">${Object.entries(NOTE_KINDS).map(([key, v]) => `<label class="cat ${key === n.kind ? 'active' : ''}"><input type="radio" name="kind" value="${key}" ${key === n.kind ? 'checked' : ''} hidden>${v.label}</label>`).join('')}
+        <input type="date" name="date" value="${esc(n.date)}" required aria-label="날짜"></div>
+      <label><span data-l="en">${k.en}</span><textarea name="en" rows="${n.kind === 'word' ? 1 : 2}" lang="en" spellcheck="true" required placeholder="${esc(k.enPh)}">${esc(n.en || '')}</textarea></label>
+      <label><span data-l="ko">${k.ko}</span> <span class="muted">(선택)</span><textarea name="ko" rows="1" placeholder="${esc(k.koPh)}">${esc(n.ko || '')}</textarea></label>
+      <label>메모 <span class="muted">(선택)</span><textarea name="memo" rows="2" placeholder="${esc(k.memoPh)}">${esc(n.memo || '')}</textarea></label>`;
+  }
+  // 종류를 바꾸면 칸 이름·예시만 바꿈 (써둔 내용은 그대로)
+  function bindNoteForm(f, onSubmit) {
+    const apply = () => {
+      const kind = f.querySelector('input[name=kind]:checked').value;
+      const k = NOTE_KINDS[kind];
+      f.querySelectorAll('.note-kinds .cat').forEach((c) => c.classList.toggle('active', c.querySelector('input').checked));
+      f.querySelector('[data-l=en]').textContent = k.en;
+      f.querySelector('[data-l=ko]').textContent = k.ko;
+      f.en.placeholder = k.enPh; f.ko.placeholder = k.koPh; f.memo.placeholder = k.memoPh;
+      f.en.rows = kind === 'word' ? 1 : 2;
+      return kind;
+    };
+    f.querySelectorAll('input[name=kind]').forEach((r) => { r.onchange = () => { apply(); f.en.focus(); }; });
+    // Ctrl/⌘ + Enter 로 저장. 단어는 한 줄이라 Enter 만 눌러도 저장
+    f.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || e.isComposing) return;
+      const kind = f.querySelector('input[name=kind]:checked').value;
+      if (e.metaKey || e.ctrlKey || (kind === 'word' && e.target === f.en)) { e.preventDefault(); f.requestSubmit(); }
+    });
+    f.onsubmit = (e) => {
+      e.preventDefault();
+      const en = f.en.value.trim();
+      if (!en) { f.en.focus(); return; }
+      onSubmit({ kind: f.querySelector('input[name=kind]:checked').value, date: f.date.value || todayYMD(), en, ko: f.ko.value.trim() || null, memo: f.memo.value.trim() || null });
+    };
+    return apply;
+  }
+
+  async function viewNotes() {
+    renderChrome('notes');
+    let notes = await Store.listNotes(me);
+    const today = todayYMD();
+
+    $app.innerHTML = `
+      <div class="section-head"><h2>내 노트</h2><span class="muted" id="noteCount"></span></div>
+      <p class="muted">나만 보는 메모장. 영단어 · 영어 문장 · 문법을 그날그날 적어 두세요. 동료에게는 안 보여요.</p>
+      <form class="card note-form" id="noteForm">
+        ${noteFields({ kind: noteKind, date: noteDate || today })}
+        <div class="row-between">
+          <span class="muted small">${navigator.platform && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'} + Enter 로 저장</span>
+          <button type="submit" class="btn btn-primary">메모하기</button>
+        </div>
+      </form>
+      <div class="filters">
+        <div class="cat-chips" id="noteTabs"></div>
+        <div class="row-gap">
+          <input type="search" id="noteSearch" placeholder="노트 검색" value="${esc(noteFilter.q)}">
+        </div>
+      </div>
+      <div id="noteList"></div>`;
+
+    const KIND_CLASS = { word: 'k-word', sentence: 'k-sentence', grammar: 'k-gram', etc: 'k-etc' };
+    const row = (n) => {
+      const k = NOTE_KINDS[n.kind] || NOTE_KINDS.etc;
+      const hasAns = !!(n.ko || n.memo);
+      const q = noteFilter.hide && hasAns;
+      return `<li class="note ${KIND_CLASS[n.kind] || ''}${q ? ' q-item' : ''}" data-id="${esc(n.id)}">
+        <span class="kind-tag">${k.label}</span>
+        <div class="note-main">
+          <div class="note-en">${nl2br(n.en)}${k.speak ? speakBtn(n.en) : ''}</div>
+          ${q ? '<span class="q-blank">뜻은? 탭해서 확인</span>' : ''}
+          ${n.ko ? `<div class="note-ko q-ans">${nl2br(n.ko)}</div>` : ''}
+          ${n.memo ? `<div class="note-memo q-ans">${nl2br(n.memo)}</div>` : ''}
+        </div>
+        <div class="note-actions">
+          <button type="button" class="icon-btn" data-edit title="수정" aria-label="수정">✎</button>
+          <button type="button" class="icon-btn" data-del title="삭제" aria-label="삭제">✕</button>
+        </div>
+      </li>`;
+    };
+
+    function drawList() {
+      const counts = { all: notes.length, word: 0, sentence: 0, grammar: 0, etc: 0 };
+      notes.forEach((n) => { counts[n.kind] = (counts[n.kind] || 0) + 1; });
+      const todayN = notes.filter((n) => n.date === today).length;
+      document.getElementById('noteCount').textContent = notes.length ? `전체 ${notes.length} · 오늘 ${todayN}` : '';
+      const tab = (k, label) => `<button type="button" class="cat ${noteFilter.kind === k ? 'active' : ''}" data-nkind="${k}">${label} ${counts[k]}</button>`;
+      document.getElementById('noteTabs').innerHTML = tab('all', '전체') + Object.entries(NOTE_KINDS).map(([k, v]) => tab(k, v.label)).join('')
+        + `<button type="button" class="cat cat-quiz ${noteFilter.hide ? 'active' : ''}" id="btnNoteHide" aria-pressed="${noteFilter.hide}">${noteFilter.hide ? '가리기 끄기' : '뜻 가리기'}</button>`;
+
+      const q = noteFilter.q.trim().toLowerCase();
+      const list = notes.filter((n) => (noteFilter.kind === 'all' || n.kind === noteFilter.kind)
+        && (!q || `${n.en} ${n.ko || ''} ${n.memo || ''}`.toLowerCase().includes(q)));
+      const days = [];
+      list.forEach((n) => {
+        let d = days[days.length - 1];
+        if (!d || d.date !== n.date) { d = { date: n.date, items: [] }; days.push(d); }
+        d.items.push(n);
+      });
+      document.getElementById('noteList').innerHTML = days.length
+        ? days.map((d) => `<section class="note-day">
+            <div class="note-day-head"><b>${fmtDate(d.date)}</b>${d.date === today ? '<span class="today-badge">오늘</span>' : ''}<span class="muted">${d.items.length}개</span></div>
+            <ul class="card note-list${noteFilter.hide ? ' quiz' : ''}">${d.items.map(row).join('')}</ul>
+          </section>`).join('')
+        : `<div class="card empty">${Mascot(notes.length ? 'dots' : 'study', 90)}${notes.length ? '조건에 맞는 메모 없음.' : '아직 메모 없음. 오늘 본 단어 하나부터.'}</div>`;
+    }
+    drawList();
+
+    // 새 메모
+    const f = document.getElementById('noteForm');
+    bindNoteForm(f, async (data) => {
+      const btn = f.querySelector('button[type=submit]');
+      btn.disabled = true;
+      try {
+        const saved = await Store.saveNote(Object.assign({ author: me }, data));
+        notes = [saved, ...notes].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (a.created_at < b.created_at ? 1 : -1)));
+        noteKind = data.kind;
+        noteDate = data.date === today ? null : data.date;
+        f.en.value = ''; f.ko.value = ''; f.memo.value = '';
+        drawList();
+        toast('메모함.');
+      } catch (err) { alert(err.message); }
+      btn.disabled = false;
+      f.en.focus();
+    });
+
+    // 필터 · 검색 · 가리기
+    document.getElementById('noteTabs').onclick = (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      if (b.id === 'btnNoteHide') noteFilter.hide = !noteFilter.hide;
+      else noteFilter.kind = b.dataset.nkind;
+      drawList();
+    };
+    const search = document.getElementById('noteSearch');
+    search.oninput = () => { noteFilter.q = search.value; drawList(); };
+
+    // 수정 · 삭제 · 가린 뜻 보기
+    document.getElementById('noteList').onclick = async (e) => {
+      const li = e.target.closest('.note');
+      if (!li) return;
+      const n = notes.find((x) => x.id === li.dataset.id);
+      if (!n) return;
+      if (e.target.closest('[data-del]')) {
+        if (!confirm(`"${n.en.slice(0, 40)}" 메모를 삭제할까요?`)) return;
+        try { await Store.deleteNote(n.id); } catch (err) { alert(err.message); return; }
+        notes = notes.filter((x) => x.id !== n.id);
+        drawList();
+        toast('삭제함.');
+        return;
+      }
+      if (e.target.closest('[data-edit]')) {
+        const m = modal(`<form id="noteEdit"><h2>메모 수정</h2>${noteFields(n)}
+          <div class="row-between"><span></span><button type="submit" class="btn btn-primary">저장</button></div></form>`);
+        const ef = m.el.querySelector('#noteEdit');
+        bindNoteForm(ef, async (data) => {
+          try {
+            const saved = await Store.saveNote(Object.assign({ id: n.id }, data));
+            notes = notes.map((x) => (x.id === n.id ? Object.assign({}, x, saved) : x))
+              .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (a.created_at < b.created_at ? 1 : -1)));
+            m.close();
+            drawList();
+            toast('수정함.');
+          } catch (err) { alert(err.message); }
+        });
+        ef.en.focus();
+        return;
+      }
+      if (li.classList.contains('q-item') && !e.target.closest('a, button')) li.classList.toggle('revealed');
     };
   }
 
@@ -1031,7 +1377,7 @@ ${text}
     const prev = cats[idx - 1];
     const next = cats[idx + 1];
     const examples = (list) => (list && list.length ? `<ul class="g-examples">${list.map(([en, ko, note]) => `<li>
-        <div class="g-en">${fmt(en)}</div>
+        <div class="g-en">${fmt(en)}${speakBtn(en)}</div>
         <div class="g-ko">${fmt(ko)}${note ? ` <span class="g-note">·\u00a0${fmt(note)}</span>` : ''}</div>
       </li>`).join('')}</ul>` : '');
     const sections = (cat.sections || []).map((sec) => `<div class="g-section">
@@ -1064,13 +1410,17 @@ ${text}
 
         ${cat.native && cat.native.length ? `<div class="corr corr-native"><div class="corr-title">원어민 감각</div><ul>${cat.native.map((n) => `<li>${fmt(n)}</li>`).join('')}</ul></div>` : ''}
 
-        ${cat.mistakes && cat.mistakes.length ? `<div class="corr corr-grammar"><div class="corr-title">자주 하는 실수 <span class="corr-count">${cat.mistakes.length}</span></div><ul>${cat.mistakes.map(([wrong, right, why]) => `<li><span class="c-from">${esc(wrong)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(right)}</span>${why ? `<div class="c-note">${fmt(why)}</div>` : ''}</li>`).join('')}</ul></div>` : ''}
+        ${cat.mistakes && cat.mistakes.length ? `<div class="corr corr-grammar"><div class="corr-title">자주 하는 실수 <span class="corr-count">${cat.mistakes.length}</span></div><ul>${cat.mistakes.map(([wrong, right, why]) => `<li><span class="c-from">${esc(wrong)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(right)}</span>${speakBtn(right)}${why ? `<div class="c-note">${fmt(why)}</div>` : ''}</li>`).join('')}</ul></div>` : ''}
 
         <nav class="g-nav">
           ${prev ? `<a class="btn" href="#/grammar/${prev.id}">‹ ${esc(prev.title)}</a>` : '<span></span>'}
           ${next ? `<a class="btn btn-primary" href="#/grammar/${next.id}">${esc(next.title)} ›</a>` : '<span></span>'}
         </nav>
       </article>`;
+    // 모바일에선 카테고리 탭이 가로 스크롤 한 줄 → 지금 보는 카테고리를 가운데로
+    const tabs = $app.querySelector('.g-tabs');
+    const active = tabs.querySelector('.active');
+    if (active && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = active.offsetLeft - tabs.offsetLeft - (tabs.clientWidth - active.offsetWidth) / 2;
   }
 
   // ================================================================ router
@@ -1082,6 +1432,7 @@ ${text}
     [/^#\/videos$/, viewVideos],
     [/^#\/expressions$/, viewExpressions],
     [/^#\/grammar(?:\/([\w-]+))?$/, viewGrammar],
+    [/^#\/notes$/, viewNotes],
   ];
 
   async function render(scrollTop) {

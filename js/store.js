@@ -11,11 +11,13 @@ window.Store = (function () {
 
   const byDateDesc = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
   const byCreatedDesc = (a, b) => (a.created_at < b.created_at ? 1 : -1);
+  // 내 노트: 날짜 최신순, 같은 날이면 나중에 쓴 게 위
+  const byNoteOrder = (a, b) => byDateDesc(a, b) || byCreatedDesc(a, b);
 
   // ---------------------------------------------------------------- local
   function localBackend() {
     const KEY = 'english-study:data:v1';
-    const empty = () => ({ topics: [], posts: [], videos: [] });
+    const empty = () => ({ topics: [], posts: [], videos: [], notes: [] });
 
     function load() {
       try { return Object.assign(empty(), JSON.parse(localStorage.getItem(KEY)) || {}); }
@@ -34,6 +36,7 @@ window.Store = (function () {
       d.topics.forEach((t) => { t.created_by = rn(t.created_by); });
       d.posts.forEach((p) => { p.author = rn(p.author); });
       d.videos.forEach((v) => { v.added_by = rn(v.added_by); v.watched_by = (v.watched_by || []).map(rn); });
+      d.notes.forEach((n) => { n.author = rn(n.author); });
       if (JSON.stringify(d) !== before) save(d);
       const me = localStorage.getItem(ME_KEY);
       if (me && rn(me) !== me) localStorage.setItem(ME_KEY, rn(me));
@@ -109,12 +112,33 @@ window.Store = (function () {
         save(d);
       },
 
+      // 개인 노트 — 로컬 모드에선 같은 브라우저를 쓰면 다른 멤버 노트도 저장돼 있으므로 이름으로 거름
+      async listNotes(author) { return load().notes.filter((n) => n.author === author).sort(byNoteOrder); },
+      async saveNote(n) {
+        const d = load();
+        let row;
+        if (n.id) {
+          const i = d.notes.findIndex((x) => x.id === n.id);
+          row = d.notes[i] = Object.assign({}, d.notes[i], n, { updated_at: now() });
+        } else {
+          row = Object.assign({ id: uid(), created_at: now(), updated_at: now() }, n);
+          d.notes.push(row);
+        }
+        save(d);
+        return row;
+      },
+      async deleteNote(id) {
+        const d = load();
+        d.notes = d.notes.filter((n) => n.id !== id);
+        save(d);
+      },
+
       exportData() { return load(); },
       importData(data) {
         if (!data || !Array.isArray(data.topics) || !Array.isArray(data.posts) || !Array.isArray(data.videos)) {
           throw new Error('올바른 백업 파일이 아니에요.');
         }
-        save(data);
+        save(Object.assign(empty(), data));
       },
     };
   }
@@ -200,6 +224,19 @@ window.Store = (function () {
         return check(await q.select().single());
       },
       async deleteVideo(id) { check(await sb.from('videos').delete().eq('id', id)); },
+
+      // 개인 노트 — DB 정책(RLS)으로 본인 노트만 읽고 쓸 수 있음
+      async listNotes(author) {
+        return check(await sb.from('notes').select('*').eq('author', author)
+          .order('date', { ascending: false }).order('created_at', { ascending: false }));
+      },
+      async saveNote(n) {
+        const q = n.id
+          ? sb.from('notes').update(Object.assign({}, n, { updated_at: new Date().toISOString() })).eq('id', n.id)
+          : sb.from('notes').insert(n);
+        return check(await q.select().single());
+      },
+      async deleteNote(id) { check(await sb.from('notes').delete().eq('id', id)); },
     };
   }
 

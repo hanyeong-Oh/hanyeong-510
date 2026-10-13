@@ -108,9 +108,15 @@ section { margin-bottom: 40px; }
 }
 .hero-sub { font-size: 26px; font-weight: 700; margin-top: 4px; }
 .hero .mascot { flex-shrink: 0; }
+.hero-main { min-width: 0; }
+.hero-task { margin-top: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.hero-label { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 22px; font-weight: 700; color: #444; }
+.hero-topic { font-size: 32px; font-weight: 700; line-height: 1.2; text-decoration: none; text-wrap: balance; }
+.hero-topic:hover { text-decoration: underline; }
 @media (max-width: 640px) {
   .hero { padding: 10px 18px; }
   .hero-title { font-size: 36px; }
+  .hero-topic { font-size: 27px; }
   .hero .mascot { height: 100px !important; }
 }
 
@@ -282,11 +288,15 @@ a.video-title:hover { text-decoration: underline; }
 
 @media (max-width: 640px) {
   body { font-size: 22px; }
-  .topbar-inner { gap: 6px 10px; }
-  .brand-text { font-size: 30px; }
-  .nav { order: 3; flex-basis: 100%; overflow-x: auto; }
-  .nav a { font-size: 23px; padding: 0 10px; }
-  .user { margin-left: auto; }
+  .topbar-inner { gap: 4px 8px; padding-top: 6px; padding-bottom: 6px; }
+  .brand-text { font-size: 28px; }
+  .brand .mascot { height: 40px !important; width: auto; }
+  /* 모바일: 메뉴 5개를 짧은 이름으로 한 줄에 다 보이게 */
+  .nav { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(6, auto); justify-content: space-between; gap: 2px; }
+  .nav a { font-size: 21px; padding: 0 5px; text-align: center; }
+  .nav-long { display: none; }
+  .user { margin-left: auto; gap: 6px; font-size: 21px; }
+  .user .user-name { display: none; }
   h1 { font-size: 32px; }
   h2 { font-size: 28px; }
   .stat-grid b { font-size: 30px; }
@@ -400,4 +410,80 @@ a.video-title:hover { text-decoration: underline; }
 @media (max-width: 640px) {
   .g-head .mascot { display: none; }
   .g-summary { font-size: 20px; }
+}
+
+/* ---------- 영어 듣기 버튼 ---------- */
+.speak {
+  display: inline-flex; align-items: center; gap: 3px; vertical-align: -3px; margin-left: 6px;
+  border: 2px solid var(--ink); border-radius: var(--wobble); background: #fff; color: var(--ink);
+  padding: 1px 5px; cursor: pointer; line-height: 1; font-family: var(--hand); font-weight: 700; font-size: 19px;
+}
+.speak:hover { background: var(--soft); }
+.speak.speaking { background: var(--ink); color: #fff; animation: speak-pulse .9s ease-in-out infinite; }
+@keyframes speak-pulse { 50% { transform: scale(1.08); } }
+.speak-label { padding: 2px 9px 2px 6px; vertical-align: middle; }
+.speak-label span { margin-top: 1px; }
+
+@media (max-width: 640px) {
+  /* 문법 카테고리 탭: 한 줄 가로 스크롤 */
+  .g-tabs { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px 14px; padding: 2px 16px 8px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .g-tabs::-webkit-scrollbar { display: none; }
+  .g-tabs .cat { flex-shrink: 0; white-space: nowrap; }
+}
+
+/* ---------- 표현 노트: 가리고 복습 ---------- */
+.cat-quiz { border-style: dashed; }
+.cat-quiz.active { border-style: solid; }
+.quiz-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; font-weight: 700; font-size: 22px; }
+.q-blank { display: none; }
+.expr-list.quiz .q-item { cursor: pointer; }
+.expr-list.quiz .q-item:not(.revealed) .q-ans { display: none; }
+.expr-list.quiz .q-item:not(.revealed) .q-blank {
+  display: inline-block; margin: 2px 0; padding: 0 10px; border: 2px dashed #999; border-radius: var(--wobble);
+  font-family: var(--hand); font-size: 19px; font-weight: 700; color: var(--muted); background: #fff;
+}
+.expr-list.quiz .q-item:not(.revealed):hover .q-blank { border-color: var(--ink); color: var(--ink); }
+.expr-list.quiz .k-expr.q-item .c-note { font-size: 15px; color: var(--ink); font-weight: 600; margin: 0 0 2px; }
+
+/* ---------- 상대 글 가리기 / 임시 저장 안내 ---------- */
+.spoiler { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 14px 8px 6px; }
+.spoiler p { margin: 0; font-size: 23px; line-height: 1.35; }
+.draft-note { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border: 2.5px dashed var(--ink); border-radius: var(--wobble-2); background: var(--blue-soft); padding: 6px 14px; margin-bottom: 14px; font-size: 21px; }
+.draft-note > span { flex: 1; min-width: 200px; }
+
+/* ---------- 내 노트 ---------- */
+.note-form { display: flex; flex-direction: column; gap: 2px; margin-bottom: 22px; }
+.note-form label, #noteEdit label { margin-top: 8px; }
+.note-form textarea, #noteEdit textarea { resize: vertical; min-height: 0; }
+.note-kinds { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.note-kinds .cat { margin: 0; font-size: 22px; }
+.note-kinds input[type=date] { width: auto; margin: 0 0 0 auto; padding: 4px 8px; font-size: 15px; }
+.note-day { margin: 18px 0 0; }
+.note-day-head { display: flex; align-items: center; gap: 8px; font-size: 24px; margin: 0 4px 6px; }
+.note-day-head .muted { font-size: 20px; }
+.note-list { list-style: none; margin: 0; padding: 4px 0; }
+.note { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px 10px 20px; border-bottom: 2px dashed #ddd; font-family: var(--text); font-size: 15px; line-height: 1.6; }
+.note:last-child { border-bottom: 0; }
+.note-main { flex: 1; min-width: 0; }
+.note-en { font-weight: 700; font-size: 16.5px; }
+.note.k-gram .note-en { font-weight: 600; font-size: 15.5px; }
+.note-ko { color: #333; }
+.note-memo { color: var(--muted); font-size: 14px; white-space: pre-wrap; margin-top: 2px; }
+.note-actions { display: flex; gap: 2px; flex-shrink: 0; opacity: .45; }
+.note:hover .note-actions, .note:focus-within .note-actions { opacity: 1; }
+.note-actions .icon-btn { font-size: 17px; color: var(--ink); }
+.note.k-word .kind-tag { background: var(--blue-soft); }
+.note.k-sentence .kind-tag { background: #fff; }
+.note.k-gram .kind-tag { background: var(--soft); }
+.note.k-etc .kind-tag { border-style: dashed; }
+.note-list.quiz .q-item { cursor: pointer; }
+.note-list.quiz .q-item:not(.revealed) .q-ans { display: none; }
+.note-list.quiz .q-item:not(.revealed) .q-blank {
+  display: inline-block; margin: 2px 0; padding: 0 10px; border: 2px dashed #999; border-radius: var(--wobble);
+  font-family: var(--hand); font-size: 19px; font-weight: 700; color: var(--muted);
+}
+@media (hover: none) { .note-actions { opacity: 1; } }
+@media (max-width: 640px) {
+  .note { padding: 10px 10px 10px 14px; gap: 8px; }
+  .note-kinds input[type=date] { margin-left: 0; }
 }

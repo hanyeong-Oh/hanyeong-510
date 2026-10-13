@@ -43,6 +43,20 @@ create table if not exists public.videos (
   created_at  timestamptz not null default now()
 );
 
+-- 내 노트: 멤버 각자만 보는 메모 (영단어 · 문장 · 문법)
+create table if not exists public.notes (
+  id          uuid primary key default gen_random_uuid(),
+  author      text not null,                     -- 멤버 이름 (본인만 읽고 쓸 수 있음)
+  date        date not null default current_date,
+  kind        text not null default 'word' check (kind in ('word', 'sentence', 'grammar', 'etc')),
+  en          text not null default '',          -- 영단어 / 영어 문장 / 문법 포인트
+  ko          text,                              -- 뜻 / 해석 / 설명
+  memo        text,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+create index if not exists notes_author_date_idx on public.notes (author, date desc);
+
 -- 예전 스키마로 이미 테이블을 만든 경우를 위한 보정
 alter table public.videos alter column youtube_id drop not null;
 alter table public.videos add column if not exists playlist_id text;
@@ -61,6 +75,18 @@ as $$
 $$;
 revoke execute on function public.is_member() from public, anon;
 grant execute on function public.is_member() to authenticated;
+
+-- 로그인한 사람의 멤버 이름 (내 노트 권한에 사용)
+create or replace function public.my_member_name()
+returns text
+language sql stable security definer set search_path = ''
+as $$
+  select m.name from public.members m
+  where lower(m.email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+  limit 1;
+$$;
+revoke execute on function public.my_member_name() from public, anon;
+grant execute on function public.my_member_name() to authenticated;
 
 -- 멤버 이메일로 가입하면 인증 메일 없이 바로 로그인 가능
 create or replace function public.auto_confirm_members()
@@ -85,16 +111,21 @@ alter table public.members enable row level security;
 alter table public.topics  enable row level security;
 alter table public.posts   enable row level security;
 alter table public.videos  enable row level security;
+alter table public.notes   enable row level security;
 
 drop policy if exists "members read members" on public.members;
 drop policy if exists "members only" on public.topics;
 drop policy if exists "members only" on public.posts;
 drop policy if exists "members only" on public.videos;
+drop policy if exists "owner only" on public.notes;
 
 create policy "members read members" on public.members for select to authenticated using (public.is_member());
 create policy "members only" on public.topics for all to authenticated using (public.is_member()) with check (public.is_member());
 create policy "members only" on public.posts  for all to authenticated using (public.is_member()) with check (public.is_member());
 create policy "members only" on public.videos for all to authenticated using (public.is_member()) with check (public.is_member());
+-- 내 노트는 본인 것만
+create policy "owner only" on public.notes for all to authenticated
+  using (author = (select public.my_member_name())) with check (author = (select public.my_member_name()));
 
 create index if not exists posts_topic_id_idx on public.posts (topic_id);
 
