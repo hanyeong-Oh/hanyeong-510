@@ -20,9 +20,13 @@ window.APP_CONFIG = {
   // 영어공부 영상 카테고리
   VIDEO_CATEGORIES: ['리스닝', '스피킹', '문법', '어휘·표현', '발음', '비즈니스 영어', '기타'],
 
-  // 처음 열었을 때 영상 목록에 기본으로 넣어둘 유튜브 영상/재생목록
+  // 영상 목록에 기본으로 넣어둘 유튜브 영상/재생목록 (위에 적은 것이 위에 보임)
+  // 나중에 여기에 추가해도 아직 안 들어간 것만 자동으로 추가됩니다.
   // (제목과 썸네일은 사이트를 열면 자동으로 채워집니다)
   DEFAULT_VIDEOS: [
+    { url: 'https://www.youtube.com/watch?v=GzzaEedWRXQ', category: '기타' },
+    { url: 'https://www.youtube.com/watch?v=yv8aBYXPOZ8', category: '기타' },
+    { url: 'https://www.youtube.com/watch?v=VFwgqMjWeEc', category: '기타' },
     { url: 'https://www.youtube.com/playlist?list=PLxoOU8azGw9Wnc1o0bdvfbBJBwa1Q-v9F', category: '기타' },
     { url: 'https://www.youtube.com/playlist?list=PLxoOU8azGw9UQ1XEK0SmGje0lZnycvNc1', category: '기타' },
     { url: 'https://www.youtube.com/playlist?list=PLxoOU8azGw9X3mcBKRRjcIeD_xoFAcv3Q', category: '기타' },

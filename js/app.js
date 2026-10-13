@@ -211,15 +211,26 @@
     if (changed && location.hash === '#/videos') render();
   }
 
-  // config.js 의 DEFAULT_VIDEOS 를 처음 한 번만 추가 (로컬 모드)
+  // config.js 의 DEFAULT_VIDEOS 중 아직 안 넣은 것만 추가 (로컬 모드)
+  // 한 번 넣은 항목은 기억해 두어서, 지운 영상이 다시 생기지 않음
   async function seedDefaultVideos() {
-    const KEY = 'english-study:seeded-videos:v1';
-    if (Store.mode !== 'local' || localStorage.getItem(KEY)) return;
+    const KEY = 'english-study:seeded-videos:v2';
+    if (Store.mode !== 'local') return;
+    let done;
+    try { done = new Set(JSON.parse(localStorage.getItem(KEY)) || []); } catch (e) { done = new Set(); }
+    // 예전 방식(v1)으로 이미 넣은 재생목록 5개는 넣은 것으로 처리
+    if (localStorage.getItem('english-study:seeded-videos:v1')) {
+      (cfg.DEFAULT_VIDEOS || []).forEach((item) => { const yt = parseYoutube(item.url); if (yt && yt.playlist) done.add(yt.playlist); });
+    }
     const existing = await Store.listVideos();
     const base = Date.now();
     for (const [i, item] of (cfg.DEFAULT_VIDEOS || []).entries()) {
       const yt = parseYoutube(item.url);
-      if (!yt || existing.some((v) => (yt.playlist && v.playlist_id === yt.playlist) || (yt.video && v.youtube_id === yt.video))) continue;
+      if (!yt) continue;
+      const key = yt.video || yt.playlist;
+      if (done.has(key)) continue;
+      done.add(key);
+      if (existing.some((v) => (yt.playlist && v.playlist_id === yt.playlist) || (yt.video && v.youtube_id === yt.video))) continue;
       await Store.saveVideo({
         youtube_id: yt.video,
         playlist_id: yt.playlist,
@@ -231,7 +242,7 @@
         created_at: new Date(base - i * 1000).toISOString(), // 적어둔 순서대로 위에서부터 보이게
       });
     }
-    localStorage.setItem(KEY, '1');
+    localStorage.setItem(KEY, JSON.stringify([...done]));
   }
 
   function thumbButton(v) {

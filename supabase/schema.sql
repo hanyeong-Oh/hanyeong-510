@@ -65,3 +65,13 @@ from (values
   ('https://www.youtube.com/playlist?list=PLXF8cvSejlGkqCgLA793Tyuyvjo5NBKDV', 'PLXF8cvSejlGkqCgLA793Tyuyvjo5NBKDV', 4)
 ) as v(url, playlist_id, ord)
 where not exists (select 1 from public.videos x where x.playlist_id = v.playlist_id);
+
+-- 기본 영어공부 영상
+insert into public.videos (url, youtube_id, category, added_by, created_at)
+select v.url, v.youtube_id, '기타', '한영', now() + make_interval(secs => 10 - v.ord)
+from (values
+  ('https://www.youtube.com/watch?v=GzzaEedWRXQ', 'GzzaEedWRXQ', 0),
+  ('https://www.youtube.com/watch?v=yv8aBYXPOZ8', 'yv8aBYXPOZ8', 1),
+  ('https://www.youtube.com/watch?v=VFwgqMjWeEc', 'VFwgqMjWeEc', 2)
+) as v(url, youtube_id, ord)
+where not exists (select 1 from public.videos x where x.youtube_id = v.youtube_id);
