@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Study Club</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#/" class="brand"><span class="brand-mark">E</span><span id="brandName">English Study Club</span></a>
+      <nav class="nav" id="nav">
+        <a href="#/" data-nav="home">홈</a>
+        <a href="#/writing" data-nav="writing">영어 글쓰기</a>
+        <a href="#/videos" data-nav="videos">영어공부 영상</a>
+      </nav>
+      <div class="user" id="userBox"></div>
+    </div>
+  </header>
+
+  <div id="modeBanner"></div>
+  <main id="app" class="container"></main>
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/diff.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
