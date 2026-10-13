@@ -286,3 +286,41 @@ a.video-title:hover { text-decoration: underline; }
   .stat-grid b { font-size: 30px; }
 }
 .mascot { user-select: none; pointer-events: none; }
+
+/* ---------- 움직이는 스티커 (로딩 / 업로드) ---------- */
+.loader {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(255, 255, 255, .96);
+  display: grid; place-items: center;
+  animation: loader-in .15s ease-out;
+}
+.loader-solid { background: #fff; animation: none; }
+.loader-box { text-align: center; }
+.loader-text { font-size: 32px; font-weight: 700; margin-top: 8px; }
+.loader-text .dots { display: inline-block; width: 0; overflow: hidden; vertical-align: bottom; animation: dots 1.2s steps(4, jump-none) infinite; }
+.loader-text .dots::after { content: "..."; }
+@keyframes loader-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dots { from { width: 0; } to { width: 1.1em; } }
+
+/* 이모티콘처럼 2프레임으로 툭툭 움직임 */
+.anim-dance, .anim-hop, .anim-pop { display: inline-block; transform-origin: 50% 90%; }
+.anim-dance { animation: dance .7s steps(2, jump-none) infinite; }
+.anim-slow { animation-duration: 1.2s; }
+.anim-hop { animation: hop .5s steps(2, jump-none) infinite; }
+.anim-pop { animation: pop .45s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes dance {
+  from { transform: rotate(-9deg) translateY(0); }
+  to { transform: rotate(9deg) translateY(-6px); }
+}
+@keyframes hop {
+  from { transform: translateY(0) rotate(-3deg); }
+  to { transform: translateY(-18px) rotate(3deg); }
+}
+@keyframes pop {
+  from { transform: scale(.3) rotate(-12deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-dance, .anim-hop, .anim-pop, .loader-text .dots { animation: none; }
+  .loader-text .dots { width: auto; }
+}

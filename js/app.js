@@ -67,6 +67,38 @@
     toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
   }
 
+  // ================================================================ 움직이는 스티커 로딩
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  let loaderEl = null;
+  let booting = true;
+
+  function showLoader(variant, text, anim, dots = true, solid = false) {
+    hideLoader();
+    loaderEl = document.createElement('div');
+    loaderEl.className = `loader${solid ? ' loader-solid' : ''}`;
+    loaderEl.innerHTML = `<div class="loader-box">
+      <div class="anim-${anim}">${Mascot(variant, 110)}</div>
+      <div class="loader-text">${esc(text)}${dots ? '<span class="dots"></span>' : ''}</div>
+    </div>`;
+    document.body.appendChild(loaderEl);
+  }
+  function hideLoader() {
+    if (loaderEl) { loaderEl.remove(); loaderEl = null; }
+  }
+
+  // 업로드 중에는 스티커가 콩콩 뛰고, 끝나면 "굿." 스티커가 튀어나옴
+  async function withUpload(task, doneText) {
+    showLoader('cmon', '업로드 중', 'hop');
+    try {
+      const [result] = await Promise.all([task(), sleep(900)]);
+      showLoader('good', doneText, 'pop', false);
+      await sleep(900);
+      return result;
+    } finally {
+      hideLoader();
+    }
+  }
+
   function modal(html, { wide } = {}) {
     const wrap = document.createElement('div');
     wrap.className = 'modal-backdrop';
@@ -257,9 +289,8 @@
       const payload = { date: f.date.value, title: f.title.value.trim(), description: f.description.value.trim() };
       if (topic) payload.id = topic.id; else payload.created_by = me;
       try {
-        const saved = await Store.saveTopic(payload);
+        const saved = await withUpload(() => Store.saveTopic(payload), '주제 등록. 굿.');
         m.close();
-        toast('주제 저장.');
         if (!topic && saved && saved.id) location.hash = `#/topic/${saved.id}`; else render();
       } catch (err) { alert(err.message); }
     };
@@ -331,7 +362,7 @@
           <div class="hero-title">${esc(me)}.. 영어 한 줄</div>
           <div class="hero-sub">${doneThisWeek ? '이번 주 끝. 굿.' : `주 ${dates.length}번. 쓰고, 검수받고, 비교하기.`}</div>
         </div>
-        ${Mascot(doneThisWeek ? 'good' : 'music', 120)}
+        <div class="${doneThisWeek ? 'anim-pop' : 'anim-dance anim-slow'}">${Mascot(doneThisWeek ? 'good' : 'music', 120)}</div>
       </div>
       <section>
         <div class="section-head">
@@ -565,15 +596,16 @@
     f.onsubmit = async (e) => {
       e.preventDefault();
       if (!f.original.value.trim()) { alert('원문을 입력해 주세요.'); return; }
-      await Store.savePost({
-        topic_id: topic.id,
-        author,
-        original: f.original.value,
-        revised: f.revised.value.trim() ? f.revised.value : null,
-        notes: f.notes.value.trim() ? f.notes.value : null,
-      });
+      try {
+        await withUpload(() => Store.savePost({
+          topic_id: topic.id,
+          author,
+          original: f.original.value,
+          revised: f.revised.value.trim() ? f.revised.value : null,
+          notes: f.notes.value.trim() ? f.notes.value : null,
+        }), '글 업로드 완료. 굿.');
+      } catch (err) { alert(err.message); return; }
       dirty = false;
-      toast('저장 완료.');
       location.hash = `#/topic/${topic.id}`;
     };
     const del = document.getElementById('btnDelPost');
@@ -741,9 +773,8 @@
       };
       if (video) payload.id = video.id; else payload.added_by = me;
       try {
-        await Store.saveVideo(payload);
+        await withUpload(() => Store.saveVideo(payload), '영상 등록. 굿.');
         m.close();
-        toast('영상 저장.');
         render();
       } catch (err) { m.el.querySelector('#videoError').textContent = err.message; }
     };
@@ -765,10 +796,16 @@
     for (const [re, view] of routes) {
       const m = hash.match(re);
       if (m) {
+        // 빨리 끝나면 깜빡이지 않도록 조금 기다렸다가 로딩 스티커 표시
+        let shown = false;
+        const timer = booting ? null : setTimeout(() => { shown = true; showLoader('music', '로딩 중', 'dance'); }, 150);
         try { await view(...m.slice(1)); }
         catch (err) {
           console.error(err);
           $app.innerHTML = `<div class="card empty">${Mascot('sweat', 90)}문제가 생겼어요: ${esc(err.message)}</div>`;
+        } finally {
+          clearTimeout(timer);
+          if (shown) hideLoader();
         }
         if (scrollTop === true) window.scrollTo(0, 0);
         return;
@@ -780,9 +817,15 @@
   window.addEventListener('hashchange', () => render(true));
 
   (async function start() {
+    // 첫 화면: 춤추는 스티커 로딩
+    showLoader('music', '로딩 중', 'dance', true, true);
+    const t0 = Date.now();
     try { await Store.init(); } catch (e) { console.error(e); }
     me = await Store.member();
     if (me && Store.mode === 'local' && !MEMBERS.includes(me)) me = null;
-    render();
+    await render();
+    await sleep(Math.max(0, 1000 - (Date.now() - t0)));
+    hideLoader();
+    booting = false;
   })();
 })();
