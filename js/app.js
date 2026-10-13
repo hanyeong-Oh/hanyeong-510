@@ -9,49 +9,9 @@
   let homeWeekOffset = 0;
   let videoFilter = { category: '전체', q: '' };
 
-  // 주제 추천 목록
-  const TOPIC_IDEAS = [
-    ['Introduce yourself', '자기소개 — 하는 일, 취미, 요즘 관심사'],
-    ['My morning routine', '출근 전 아침 루틴을 소개해 보세요'],
-    ['A memorable trip', '가장 기억에 남는 여행'],
-    ['My favorite food', '좋아하는 음식과 그 이유'],
-    ['What I did last weekend', '지난 주말에 한 일'],
-    ['My dream job', '꿈꾸던 직업 혹은 해보고 싶은 일'],
-    ['Working from home vs. office', '재택근무와 사무실 근무, 어느 쪽이 좋은가요?'],
-    ['A book or movie I recommend', '추천하고 싶은 책/영화'],
-    ['How I deal with stress', '스트레스를 푸는 나만의 방법'],
-    ['My goals for this year', '올해 이루고 싶은 목표'],
-    ['A difficult problem I solved at work', '회사에서 해결했던 어려운 문제'],
-    ['Describe your workplace', '내 회사/팀을 소개해 보세요'],
-    ['The best advice I ever got', '살면서 들은 최고의 조언'],
-    ['If I won the lottery', '복권에 당첨된다면?'],
-    ['My hometown', '내 고향 소개'],
-    ['A skill I want to learn', '배우고 싶은 기술'],
-    ['Pros and cons of social media', 'SNS의 장단점'],
-    ['How technology changed my life', '기술이 내 삶을 어떻게 바꿨나'],
-    ['A person I respect', '존경하는 사람'],
-    ['My favorite season', '좋아하는 계절과 그 이유'],
-    ['Writing an email to a client', '고객에게 일정 변경을 요청하는 이메일 쓰기'],
-    ['Giving feedback to a coworker', '동료에게 정중하게 피드백 주기'],
-    ['A mistake I learned from', '실수에서 배운 점'],
-    ['Healthy habits', '건강을 위해 실천하는 습관'],
-    ['My ideal weekend', '내가 꿈꾸는 완벽한 주말'],
-    ['AI at work', '업무에서 AI를 어떻게 활용하고 있나요?'],
-    ['Explain your job to a child', '아이에게 내 직업을 설명한다면'],
-    ['A recent news story', '최근 관심 있게 본 뉴스'],
-    ['Small talk at a business dinner', '비즈니스 저녁 자리에서의 스몰토크'],
-    ['Where I see myself in 5 years', '5년 후의 나'],
-    ['My favorite app', '자주 쓰는 앱 소개'],
-    ['Cooking something at home', '집에서 요리하는 법 설명하기'],
-    ['A place I want to visit', '가보고 싶은 곳'],
-    ['Team project experience', '팀 프로젝트 경험'],
-    ['Saving money tips', '돈 모으는 나만의 팁'],
-    ['Describe a typical workday', '평범한 하루 업무 묘사'],
-    ['A hobby I enjoy', '즐기는 취미'],
-    ['Making a complaint politely', '정중하게 불만 제기하기 (호텔/식당 상황)'],
-    ['Why I study English', '내가 영어를 공부하는 이유'],
-    ['Presenting a new idea', '회의에서 새로운 아이디어 제안하기'],
-  ];
+  // 주제는 TOPIC_MANAGER 로 지정된 멤버만 정할 수 있음 (비워두면 모두 가능)
+  const TOPIC_MANAGER = cfg.TOPIC_MANAGER || '';
+  const canManageTopics = () => !TOPIC_MANAGER || me === TOPIC_MANAGER;
 
   // ================================================================ utils
   function esc(s) {
@@ -284,18 +244,11 @@
       <label>주제 (영어)<input type="text" name="title" value="${esc(t.title)}" placeholder="e.g. My morning routine" required></label>
       <label>설명 / 가이드 <span class="muted">(선택)</span><textarea name="description" rows="3" placeholder="어떤 내용을 쓰면 좋을지, 분량 등">${esc(t.description || '')}</textarea></label>
       <div class="row-between">
-        <button type="button" class="btn" id="btnIdea">🎲 랜덤 주제 추천</button>
+        <span></span>
         <button type="submit" class="btn btn-primary">저장</button>
       </div>
     </form>`);
     const f = m.el.querySelector('#topicForm');
-    m.el.querySelector('#btnIdea').onclick = () => {
-      const used = new Set(topics.map((x) => x.title.toLowerCase()));
-      const pool = TOPIC_IDEAS.filter(([title]) => !used.has(title.toLowerCase()));
-      const [title, desc] = (pool.length ? pool : TOPIC_IDEAS)[Math.floor(Math.random() * (pool.length || TOPIC_IDEAS.length))];
-      f.title.value = title;
-      f.description.value = desc;
-    };
     f.onsubmit = async (e) => {
       e.preventDefault();
       const payload = { date: f.date.value, title: f.title.value.trim(), description: f.description.value.trim() };
@@ -336,8 +289,10 @@
           ${t.description ? `<p class="muted small">${esc(t.description)}</p>` : ''}
           <ul class="member-status">${rows}</ul>`;
       } else {
-        body = `<p class="muted">아직 주제가 없어요.</p>
-          <button class="btn btn-sm" data-new-topic="${ymd}">+ 주제 정하기</button>`;
+        body = canManageTopics()
+          ? `<p class="muted">아직 주제가 없어요.</p>
+          <button class="btn btn-sm" data-new-topic="${ymd}">+ 주제 정하기</button>`
+          : `<p class="muted">${esc(TOPIC_MANAGER)}님이 주제를 정할 예정이에요.</p>`;
       }
       return `<div class="card session ${isToday ? 'session-today' : ''} ${past && !t ? 'session-missed' : ''}">
         <div class="session-date">${fmtDate(ymd)}${isToday ? '<span class="today-badge">오늘</span>' : ''}</div>
@@ -429,11 +384,12 @@
     $app.innerHTML = `
       <div class="section-head">
         <h2>✍️ 영어 글쓰기</h2>
-        <button class="btn btn-primary" id="btnNewTopic">+ 새 주제</button>
+        ${canManageTopics() ? '<button class="btn btn-primary" id="btnNewTopic">+ 새 주제</button>' : ''}
       </div>
       <p class="muted">주 ${cfg.WRITING_DAYS.length}회 (${cfg.WRITING_DAYS.map((d) => WEEKDAYS[d]).join('·')}) 주제에 맞춰 글을 쓰고, AI로 검수한 수정본을 함께 기록해요.</p>
-      ${html || '<div class="card empty">아직 주제가 없어요. 첫 주제를 정해보세요!</div>'}`;
-    document.getElementById('btnNewTopic').onclick = () => openTopicModal();
+      ${html || `<div class="card empty">아직 주제가 없어요. ${canManageTopics() ? '첫 주제를 정해보세요!' : `${esc(TOPIC_MANAGER)}님이 주제를 정할 예정이에요.`}</div>`}`;
+    const btnNew = document.getElementById('btnNewTopic');
+    if (btnNew) btnNew.onclick = () => openTopicModal();
   }
 
   // ================================================================ topic detail
@@ -484,10 +440,10 @@
           <h1>${esc(topic.title)}</h1>
           ${topic.description ? `<p>${nl2br(topic.description)}</p>` : ''}
         </div>
-        <div class="row-gap">
+        ${canManageTopics() ? `<div class="row-gap">
           <button class="btn btn-sm" id="btnEditTopic">주제 수정</button>
           <button class="btn btn-sm btn-danger" id="btnDelTopic">삭제</button>
-        </div>
+        </div>` : ''}
       </div>
       <div class="grid grid-2">${cards}</div>`;
 
@@ -500,6 +456,7 @@
         };
       });
     });
+    if (!canManageTopics()) return;
     document.getElementById('btnEditTopic').onclick = () => openTopicModal({ topic });
     document.getElementById('btnDelTopic').onclick = async () => {
       if (!confirm(`"${topic.title}" 주제와 이 주제의 글을 모두 삭제할까요?`)) return;
