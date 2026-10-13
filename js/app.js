@@ -212,9 +212,10 @@
     if (Store.mode !== 'local') return;
     let done;
     try { done = new Set(JSON.parse(localStorage.getItem(KEY)) || []); } catch (e) { done = new Set(); }
-    // 예전 방식(v1)으로 이미 넣은 재생목록 5개는 넣은 것으로 처리
+    // 예전 방식(v1)으로 이미 넣은 첫 재생목록 5개는 넣은 것으로 처리
     if (localStorage.getItem('english-study:seeded-videos:v1')) {
-      (cfg.DEFAULT_VIDEOS || []).forEach((item) => { const yt = parseYoutube(item.url); if (yt && yt.playlist) done.add(yt.playlist); });
+      ['PLxoOU8azGw9Wnc1o0bdvfbBJBwa1Q-v9F', 'PLxoOU8azGw9UQ1XEK0SmGje0lZnycvNc1', 'PLxoOU8azGw9X3mcBKRRjcIeD_xoFAcv3Q',
+        'PLxoOU8azGw9V7iNiPIlJsiBF39GL3GWna', 'PLXF8cvSejlGkqCgLA793Tyuyvjo5NBKDV'].forEach((id) => done.add(id));
     }
     const existing = await Store.listVideos();
     const base = Date.now();
