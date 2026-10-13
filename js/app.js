@@ -154,6 +154,7 @@
   // ================================================================ chrome
   function renderChrome(active) {
     document.getElementById('brandName').textContent = cfg.SITE_NAME;
+    document.getElementById('brandMascot').innerHTML = Mascot('happy', 46);
     document.title = cfg.SITE_NAME;
     document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('active', a.dataset.nav === active));
 
@@ -202,6 +203,7 @@
   function viewPickMember() {
     renderChrome('');
     $app.innerHTML = `<div class="center-card card">
+      ${Mascot('think', 110)}
       <h1>누구인가요?</h1>
       <p class="muted">글을 쓸 멤버를 선택하세요.</p>
       <div class="member-pick">${MEMBERS.map((m) => `<button class="btn btn-lg" data-member="${esc(m)}">${esc(m)}</button>`).join('')}</div>
@@ -214,6 +216,7 @@
   function viewLogin() {
     renderChrome('');
     $app.innerHTML = `<form class="center-card card" id="loginForm">
+      ${Mascot('basic', 110)}
       <h1>로그인</h1>
       <p class="muted">스터디 멤버 계정으로 로그인하세요.</p>
       <label>이메일<input type="email" name="email" required autocomplete="username"></label>
@@ -289,10 +292,10 @@
           ${t.description ? `<p class="muted small">${esc(t.description)}</p>` : ''}
           <ul class="member-status">${rows}</ul>`;
       } else {
-        body = canManageTopics()
-          ? `<p class="muted">아직 주제가 없어요.</p>
-          <button class="btn btn-sm" data-new-topic="${ymd}">+ 주제 정하기</button>`
-          : `<p class="muted">${esc(TOPIC_MANAGER)}님이 주제를 정할 예정이에요.</p>`;
+        body = `<div class="session-empty"><div>
+            <p class="muted">${canManageTopics() ? '흠. 아직 주제가 없어요.' : `${esc(TOPIC_MANAGER)}님이 주제를 정할 예정이에요.`}</p>
+            ${canManageTopics() ? `<button class="btn btn-sm" data-new-topic="${ymd}">+ 주제 정하기</button>` : ''}
+          </div>${Mascot('think', 64)}</div>`;
       }
       return `<div class="card session ${isToday ? 'session-today' : ''} ${past && !t ? 'session-missed' : ''}">
         <div class="session-date">${fmtDate(ymd)}${isToday ? '<span class="today-badge">오늘</span>' : ''}</div>
@@ -321,10 +324,18 @@
 
     const recentVideos = videos.slice(0, 4).map(videoCardMini).join('');
 
+    const doneThisWeek = dates.every((d) => byDate[d] && postStatus((pbt[byDate[d].id] || {})[me]) === 'reviewed');
     $app.innerHTML = `
+      <div class="hero">
+        <div>
+          <div class="hero-title">${esc(me)}! 오늘도 영어 한 줄</div>
+          <div class="hero-sub">${doneThisWeek ? '이번 주 글쓰기 다 했다! 굿.' : `주 ${dates.length}번, 쓰고 → AI 검수 → 비교하며 복습하기`}</div>
+        </div>
+        ${Mascot(doneThisWeek ? 'good' : 'happy', 120)}
+      </div>
       <section>
         <div class="section-head">
-          <h2>📅 이번 주 글쓰기</h2>
+          <h2>${Paw()} 이번 주 글쓰기</h2>
           <div class="week-nav">
             <button class="btn btn-sm" id="prevWeek">‹</button>
             <span>${fmtShort(monday)} ~ ${fmtShort(addDays(monday, 6))}</span>
@@ -335,12 +346,12 @@
         <div class="grid grid-3">${sessions}</div>
       </section>
       <section>
-        <div class="section-head"><h2>📊 진행 현황</h2></div>
+        <div class="section-head"><h2>${Paw()} 진행 현황</h2></div>
         <div class="grid grid-2">${stats}</div>
       </section>
       <section>
-        <div class="section-head"><h2>🎬 최근 추가된 영상</h2><a class="btn-link" href="#/videos">전체 보기 →</a></div>
-        ${recentVideos ? `<div class="grid grid-4">${recentVideos}</div>` : '<div class="card empty">아직 영상이 없어요. <a href="#/videos">영상 추가하기</a></div>'}
+        <div class="section-head"><h2>${Paw()} 최근 추가된 영상</h2><a class="btn-link" href="#/videos">전체 보기 →</a></div>
+        ${recentVideos ? `<div class="grid grid-4">${recentVideos}</div>` : `<div class="card empty">${Mascot('basic', 80)}<span>아직 영상이 없어요...</span><a href="#/videos">영상 추가하기</a></div>`}
       </section>`;
 
     document.getElementById('prevWeek').onclick = () => { homeWeekOffset--; render(); };
@@ -383,11 +394,11 @@
 
     $app.innerHTML = `
       <div class="section-head">
-        <h2>✍️ 영어 글쓰기</h2>
+        <h2>${Paw()} 영어 글쓰기</h2>
         ${canManageTopics() ? '<button class="btn btn-primary" id="btnNewTopic">+ 새 주제</button>' : ''}
       </div>
       <p class="muted">주 ${cfg.WRITING_DAYS.length}회 (${cfg.WRITING_DAYS.map((d) => WEEKDAYS[d]).join('·')}) 주제에 맞춰 글을 쓰고, AI로 검수한 수정본을 함께 기록해요.</p>
-      ${html || `<div class="card empty">아직 주제가 없어요. ${canManageTopics() ? '첫 주제를 정해보세요!' : `${esc(TOPIC_MANAGER)}님이 주제를 정할 예정이에요.`}</div>`}`;
+      ${html || `<div class="card empty">${Mascot('think', 90)}아직 주제가 없어요. ${canManageTopics() ? '첫 주제를 정해보세요!' : `${esc(TOPIC_MANAGER)}님이 주제를 정할 예정이에요.`}</div>`}`;
     const btnNew = document.getElementById('btnNewTopic');
     if (btnNew) btnNew.onclick = () => openTopicModal();
   }
@@ -396,7 +407,7 @@
   async function viewTopic(id) {
     renderChrome('writing');
     const [topic, posts] = await Promise.all([Store.getTopic(id), Store.listPosts(id)]);
-    if (!topic) { $app.innerHTML = '<div class="card empty">주제를 찾을 수 없어요. <a href="#/writing">목록으로</a></div>'; return; }
+    if (!topic) { $app.innerHTML = `<div class="card empty">${Mascot('sad', 90)}주제를 찾을 수 없어요... <a href="#/writing">목록으로</a></div>`; return; }
     const byAuthor = Object.fromEntries(posts.map((p) => [p.author, p]));
 
     const cards = MEMBERS.map((name) => {
@@ -406,7 +417,7 @@
       const isMe = name === me;
       let body;
       if (st === 'none') {
-        body = `<div class="empty-inline">${isMe ? '아직 글을 쓰지 않았어요.' : '아직 작성 전이에요.'}</div>`;
+        body = `<div class="empty-inline">${Mascot(isMe ? 'think' : 'basic', 80)}${isMe ? '아직 글을 쓰지 않았어요.' : '아직 작성 전이에요...'}</div>`;
       } else {
         const hasRev = st === 'reviewed';
         const changes = hasRev ? TextDiff.countChanges(TextDiff.diff(p.original, p.revised)) : 0;
@@ -641,14 +652,14 @@
 
     $app.innerHTML = `
       <div class="section-head">
-        <h2>🎬 영어공부 영상</h2>
+        <h2>${Paw()} 영어공부 영상</h2>
         <button class="btn btn-primary" id="btnAddVideo">+ 영상 추가</button>
       </div>
       <div class="filters">
         <div class="cat-chips">${cats.map((c) => `<button class="cat ${videoFilter.category === c ? 'active' : ''}" data-cat="${esc(c)}">${esc(c)}${c === '전체' ? ` ${videos.length}` : counts[c] ? ` ${counts[c]}` : ''}</button>`).join('')}</div>
         <input type="search" id="videoSearch" placeholder="제목·메모 검색" value="${esc(videoFilter.q)}">
       </div>
-      ${cards ? `<div class="grid grid-3">${cards}</div>` : `<div class="card empty">${videos.length ? '조건에 맞는 영상이 없어요.' : '유튜브 링크를 추가해서 함께 볼 영상을 모아보세요!'}</div>`}`;
+      ${cards ? `<div class="grid grid-3">${cards}</div>` : `<div class="card empty">${Mascot(videos.length ? 'sad' : 'happy', 90)}${videos.length ? '조건에 맞는 영상이 없어요...' : '유튜브 링크를 추가해서 함께 볼 영상을 모아보세요!'}</div>`}`;
 
     document.getElementById('btnAddVideo').onclick = () => openVideoModal();
     $app.querySelectorAll('[data-cat]').forEach((b) => { b.onclick = () => { videoFilter.category = b.dataset.cat; render(); }; });
@@ -757,7 +768,7 @@
         try { await view(...m.slice(1)); }
         catch (err) {
           console.error(err);
-          $app.innerHTML = `<div class="card empty">문제가 생겼어요: ${esc(err.message)}</div>`;
+          $app.innerHTML = `<div class="card empty">${Mascot('sad', 90)}문제가 생겼어요: ${esc(err.message)}</div>`;
         }
         if (scrollTop === true) window.scrollTo(0, 0);
         return;
