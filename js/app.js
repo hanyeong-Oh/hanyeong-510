@@ -154,7 +154,7 @@
   // ================================================================ chrome
   function renderChrome(active) {
     document.getElementById('brandName').textContent = cfg.SITE_NAME;
-    document.getElementById('brandMascot').innerHTML = Mascot('happy', 46);
+    document.getElementById('brandMascot').innerHTML = Mascot('basic', 46);
     document.title = cfg.SITE_NAME;
     document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('active', a.dataset.nav === active));
 
@@ -173,7 +173,7 @@
     const banner = document.getElementById('modeBanner');
     if (Store.mode === 'local') {
       banner.innerHTML = `<div class="banner"><div class="container banner-inner">
-        <span>💾 <b>로컬 모드</b> — 데이터가 이 브라우저에만 저장돼요. 동료와 함께 쓰려면 README의 Supabase 설정을 따라주세요.</span>
+        <span><b>로컬 모드.</b> 데이터가 이 브라우저에만 저장돼요. 동료와 함께 쓰려면 README의 Supabase 설정을 따라주세요.</span>
         <span class="banner-actions"><button class="btn-link" id="btnExport">백업 내보내기</button>
         <label class="btn-link">백업 가져오기<input type="file" id="fileImport" accept="application/json" hidden></label></span>
       </div></div>`;
@@ -190,7 +190,7 @@
         if (!file) return;
         try {
           Store.importData(JSON.parse(await file.text()));
-          toast('백업을 가져왔어요.');
+          toast('백업 가져옴.');
           render();
         } catch (err) { alert(err.message); }
       };
@@ -259,7 +259,7 @@
       try {
         const saved = await Store.saveTopic(payload);
         m.close();
-        toast('주제를 저장했어요.');
+        toast('주제 저장.');
         if (!topic && saved && saved.id) location.hash = `#/topic/${saved.id}`; else render();
       } catch (err) { alert(err.message); }
     };
@@ -293,7 +293,7 @@
           <ul class="member-status">${rows}</ul>`;
       } else {
         body = `<div class="session-empty"><div>
-            <p class="muted">${canManageTopics() ? '흠. 아직 주제가 없어요.' : `${esc(TOPIC_MANAGER)}님이 주제를 정할 예정이에요.`}</p>
+            <p class="muted">${canManageTopics() ? '아직 주제 없음.' : `${esc(TOPIC_MANAGER)}님이 정할 예정.`}</p>
             ${canManageTopics() ? `<button class="btn btn-sm" data-new-topic="${ymd}">+ 주제 정하기</button>` : ''}
           </div>${Mascot('think', 64)}</div>`;
       }
@@ -328,14 +328,14 @@
     $app.innerHTML = `
       <div class="hero">
         <div>
-          <div class="hero-title">${esc(me)}! 오늘도 영어 한 줄</div>
-          <div class="hero-sub">${doneThisWeek ? '이번 주 글쓰기 다 했다! 굿.' : `주 ${dates.length}번, 쓰고 → AI 검수 → 비교하며 복습하기`}</div>
+          <div class="hero-title">${esc(me)}.. 영어 한 줄</div>
+          <div class="hero-sub">${doneThisWeek ? '이번 주 끝. 굿.' : `주 ${dates.length}번. 쓰고, 검수받고, 비교하기.`}</div>
         </div>
-        ${Mascot(doneThisWeek ? 'good' : 'happy', 120)}
+        ${Mascot(doneThisWeek ? 'good' : 'basic', 120)}
       </div>
       <section>
         <div class="section-head">
-          <h2>${Paw()} 이번 주 글쓰기</h2>
+          <h2>이번 주 글쓰기</h2>
           <div class="week-nav">
             <button class="btn btn-sm" id="prevWeek">‹</button>
             <span>${fmtShort(monday)} ~ ${fmtShort(addDays(monday, 6))}</span>
@@ -346,12 +346,12 @@
         <div class="grid grid-3">${sessions}</div>
       </section>
       <section>
-        <div class="section-head"><h2>${Paw()} 진행 현황</h2></div>
+        <div class="section-head"><h2>진행 현황</h2></div>
         <div class="grid grid-2">${stats}</div>
       </section>
       <section>
-        <div class="section-head"><h2>${Paw()} 최근 추가된 영상</h2><a class="btn-link" href="#/videos">전체 보기 →</a></div>
-        ${recentVideos ? `<div class="grid grid-4">${recentVideos}</div>` : `<div class="card empty">${Mascot('basic', 80)}<span>아직 영상이 없어요...</span><a href="#/videos">영상 추가하기</a></div>`}
+        <div class="section-head"><h2>최근 추가된 영상</h2><a class="btn-link" href="#/videos">전체 보기 →</a></div>
+        ${recentVideos ? `<div class="grid grid-4">${recentVideos}</div>` : `<div class="card empty">${Mascot('dots', 80)}<span>아직 영상 없음.</span><a href="#/videos">영상 추가하기</a></div>`}
       </section>`;
 
     document.getElementById('prevWeek').onclick = () => { homeWeekOffset--; render(); };
@@ -394,11 +394,11 @@
 
     $app.innerHTML = `
       <div class="section-head">
-        <h2>${Paw()} 영어 글쓰기</h2>
+        <h2>영어 글쓰기</h2>
         ${canManageTopics() ? '<button class="btn btn-primary" id="btnNewTopic">+ 새 주제</button>' : ''}
       </div>
       <p class="muted">주 ${cfg.WRITING_DAYS.length}회 (${cfg.WRITING_DAYS.map((d) => WEEKDAYS[d]).join('·')}) 주제에 맞춰 글을 쓰고, AI로 검수한 수정본을 함께 기록해요.</p>
-      ${html || `<div class="card empty">${Mascot('think', 90)}아직 주제가 없어요. ${canManageTopics() ? '첫 주제를 정해보세요!' : `${esc(TOPIC_MANAGER)}님이 주제를 정할 예정이에요.`}</div>`}`;
+      ${html || `<div class="card empty">${Mascot('dots', 90)}아직 주제 없음. ${canManageTopics() ? '첫 주제를 정해주세요.' : `${esc(TOPIC_MANAGER)}님이 정할 예정.`}</div>`}`;
     const btnNew = document.getElementById('btnNewTopic');
     if (btnNew) btnNew.onclick = () => openTopicModal();
   }
@@ -417,7 +417,7 @@
       const isMe = name === me;
       let body;
       if (st === 'none') {
-        body = `<div class="empty-inline">${Mascot(isMe ? 'think' : 'basic', 80)}${isMe ? '아직 글을 쓰지 않았어요.' : '아직 작성 전이에요...'}</div>`;
+        body = `<div class="empty-inline">${Mascot(isMe ? 'think' : 'dots', 80)}${isMe ? '아직 안 씀.' : '아직 작성 전.'}</div>`;
       } else {
         const hasRev = st === 'reviewed';
         const changes = hasRev ? TextDiff.countChanges(TextDiff.diff(p.original, p.revised)) : 0;
@@ -430,9 +430,9 @@
           ${hasRev ? `<div class="pane text-body" data-pane="rev" hidden>${nl2br(p.revised)}</div>
           <div class="pane text-body diff" data-pane="diff">${renderDiff(p.original, p.revised)}</div>` : ''}
           <div class="meta muted small">${wordCount(p.original)} words${p.updated_at ? ` · 마지막 수정 ${new Date(p.updated_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</div>
-          ${p.notes ? `<div class="notes"><div class="notes-title">💡 AI 피드백 / 배운 점</div>${nl2br(p.notes)}</div>` : ''}`;
+          ${p.notes ? `<div class="notes"><div class="notes-title">AI 피드백 / 배운 점.</div>${nl2br(p.notes)}</div>` : ''}`;
       }
-      const btnLabel = isMe ? (st === 'none' ? '✍️ 글쓰기' : st === 'written' ? '🤖 검수본 입력' : '수정하기') : '편집';
+      const btnLabel = isMe ? (st === 'none' ? '글쓰기' : st === 'written' ? '검수본 입력' : '수정하기') : '편집';
       const showBtn = isMe || st !== 'none';
       return `<div class="card post">
         <div class="post-head">
@@ -472,7 +472,7 @@
     document.getElementById('btnDelTopic').onclick = async () => {
       if (!confirm(`"${topic.title}" 주제와 이 주제의 글을 모두 삭제할까요?`)) return;
       await Store.deleteTopic(topic.id);
-      toast('삭제했어요.');
+      toast('삭제함.');
       location.hash = '#/writing';
     };
   }
@@ -506,7 +506,7 @@
           <p class="muted small">아래 버튼으로 검수 요청 문구를 복사해서 ChatGPT · Claude · Gemini 등에 붙여넣으세요.
             받은 수정본과 피드백을 아래에 입력하면 원문과 비교해서 보여줘요.</p>
           <div class="row-gap wrap">
-            <button type="button" class="btn" id="btnPrompt">📋 AI 검수 요청문 복사</button>
+            <button type="button" class="btn" id="btnPrompt">AI 검수 요청문 복사</button>
             <button type="button" class="btn" id="btnCopyOrig">원문을 수정본 칸에 복사</button>
           </div>
           <label>AI 검수 후 수정본
@@ -549,7 +549,7 @@
     document.getElementById('btnPrompt').onclick = async () => {
       if (!f.original.value.trim()) { alert('먼저 원문을 작성해 주세요.'); return; }
       await copyText(buildReviewPrompt(topic, f.original.value));
-      toast('검수 요청문을 복사했어요. AI 채팅창에 붙여넣으세요!');
+      toast('복사함. AI 채팅창에 붙여넣기.');
     };
     document.getElementById('btnCopyOrig').onclick = () => {
       if (f.revised.value.trim() && !confirm('수정본 칸의 내용을 원문으로 덮어쓸까요?')) return;
@@ -573,7 +573,7 @@
         notes: f.notes.value.trim() ? f.notes.value : null,
       });
       dirty = false;
-      toast('저장했어요!');
+      toast('저장 완료.');
       location.hash = `#/topic/${topic.id}`;
     };
     const del = document.getElementById('btnDelPost');
@@ -582,7 +582,7 @@
         if (!confirm('이 글을 삭제할까요?')) return;
         await Store.deletePost(post.id);
         dirty = false;
-        toast('삭제했어요.');
+        toast('삭제함.');
         location.hash = `#/topic/${topic.id}`;
       };
     }
@@ -652,14 +652,14 @@
 
     $app.innerHTML = `
       <div class="section-head">
-        <h2>${Paw()} 영어공부 영상</h2>
+        <h2>영어공부 영상</h2>
         <button class="btn btn-primary" id="btnAddVideo">+ 영상 추가</button>
       </div>
       <div class="filters">
         <div class="cat-chips">${cats.map((c) => `<button class="cat ${videoFilter.category === c ? 'active' : ''}" data-cat="${esc(c)}">${esc(c)}${c === '전체' ? ` ${videos.length}` : counts[c] ? ` ${counts[c]}` : ''}</button>`).join('')}</div>
         <input type="search" id="videoSearch" placeholder="제목·메모 검색" value="${esc(videoFilter.q)}">
       </div>
-      ${cards ? `<div class="grid grid-3">${cards}</div>` : `<div class="card empty">${Mascot(videos.length ? 'sad' : 'happy', 90)}${videos.length ? '조건에 맞는 영상이 없어요...' : '유튜브 링크를 추가해서 함께 볼 영상을 모아보세요!'}</div>`}`;
+      ${cards ? `<div class="grid grid-3">${cards}</div>` : `<div class="card empty">${Mascot(videos.length ? 'dots' : 'basic', 90)}${videos.length ? '그런 영상 없음.' : '유튜브 링크 추가해서 같이 볼 영상 모으기.'}</div>`}`;
 
     document.getElementById('btnAddVideo').onclick = () => openVideoModal();
     $app.querySelectorAll('[data-cat]').forEach((b) => { b.onclick = () => { videoFilter.category = b.dataset.cat; render(); }; });
@@ -691,7 +691,7 @@
         const v = videos.find((x) => x.id === b.dataset.delVideo);
         if (!confirm(`"${v.title || '이 영상'}"을(를) 삭제할까요?`)) return;
         await Store.deleteVideo(v.id);
-        toast('삭제했어요.');
+        toast('삭제함.');
         render();
       };
     });
@@ -743,7 +743,7 @@
       try {
         await Store.saveVideo(payload);
         m.close();
-        toast('영상을 저장했어요.');
+        toast('영상 저장.');
         render();
       } catch (err) { m.el.querySelector('#videoError').textContent = err.message; }
     };
