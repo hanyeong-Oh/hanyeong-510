@@ -42,6 +42,8 @@ window.Store = (function () {
     return {
       async init() { applyRenames(); },
       async member() { return localStorage.getItem(ME_KEY); },
+      signedIn() { return true; },
+      email() { return ''; },
       setMember(name) { localStorage.setItem(ME_KEY, name); },
       async signIn() {},
       async signOut() { localStorage.removeItem(ME_KEY); },
@@ -135,17 +137,33 @@ window.Store = (function () {
         const { data } = await sb.auth.getSession();
         session = data.session;
       },
+      // 멤버 이름은 DB의 members 테이블(이메일 → 이름)에서 가져옴. 멤버가 아니면 null
       async member() {
         if (!session) return null;
         const email = (session.user.email || '').toLowerCase();
-        const m = cfg.MEMBERS.find((x) => (x.email || '').toLowerCase() === email);
-        return m ? m.name : email.split('@')[0];
+        const { data } = await sb.from('members').select('name').eq('email', email).maybeSingle();
+        return data ? data.name : null;
       },
+      signedIn() { return !!session; },
+      email() { return session ? session.user.email : ''; },
       setMember() {},
       async signIn(email, password) {
         const { data, error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) throw new Error('로그인 실패: 이메일 또는 비밀번호를 확인하세요.');
+        if (error) {
+          if (/not confirmed/i.test(error.message)) throw new Error('등록된 멤버 이메일이 아니에요.');
+          throw new Error('로그인 실패: 이메일 또는 비밀번호를 확인하세요.');
+        }
         session = data.session;
+      },
+      // 처음 한 번 비밀번호 만들기 (멤버 이메일은 인증 메일 없이 바로 로그인됨)
+      async signUp(email, password) {
+        const { error } = await sb.auth.signUp({ email, password });
+        if (error) {
+          if (/already registered|already been registered|exists/i.test(error.message)) throw new Error('이미 가입된 이메일이에요. 로그인해 주세요.');
+          if (/password/i.test(error.message)) throw new Error('비밀번호는 6자 이상으로 정해주세요.');
+          throw new Error(`가입 실패: ${error.message}`);
+        }
+        await this.signIn(email, password);
       },
       async signOut() {
         await sb.auth.signOut();

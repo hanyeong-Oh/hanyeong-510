@@ -334,28 +334,47 @@
     });
   }
 
-  function viewLogin() {
+  function viewLogin(mode = 'login') {
     renderChrome('');
+    const isSignup = mode === 'signup';
     $app.innerHTML = `<form class="center-card card" id="loginForm">
       ${Mascot('study', 110)}
-      <h1>로그인</h1>
-      <p class="muted">스터디 멤버 계정으로 로그인하세요.</p>
+      <h1>${isSignup ? '처음이면 가입' : '로그인'}</h1>
+      <p class="muted">${isSignup ? '등록된 멤버 이메일로 비밀번호를 만들어요. (한 번만)' : '스터디 멤버 계정으로 로그인하세요.'}</p>
       <label>이메일<input type="email" name="email" required autocomplete="username"></label>
-      <label>비밀번호<input type="password" name="password" required autocomplete="current-password"></label>
+      <label>비밀번호${isSignup ? ' <span class="muted">(6자 이상)</span>' : ''}<input type="password" name="password" required minlength="6" autocomplete="${isSignup ? 'new-password' : 'current-password'}"></label>
       <p class="error" id="loginError"></p>
-      <button class="btn btn-primary btn-block" type="submit">로그인</button>
+      <button class="btn btn-primary btn-block" type="submit">${isSignup ? '가입하고 시작' : '로그인'}</button>
+      <p class="small" style="margin-top:14px"><button type="button" class="btn-link" id="btnMode">${isSignup ? '이미 가입했으면 로그인' : '처음이면 가입하기'}</button></p>
     </form>`;
+    document.getElementById('btnMode').onclick = () => viewLogin(isSignup ? 'login' : 'signup');
     document.getElementById('loginForm').onsubmit = async (e) => {
       e.preventDefault();
       const f = e.target;
+      const btn = f.querySelector('button[type=submit]');
+      btn.disabled = true;
       try {
-        await Store.signIn(f.email.value.trim(), f.password.value);
+        if (isSignup) await Store.signUp(f.email.value.trim(), f.password.value);
+        else await Store.signIn(f.email.value.trim(), f.password.value);
         me = await Store.member();
-        render();
+        render(true);
       } catch (err) {
         document.getElementById('loginError').textContent = err.message;
+        btn.disabled = false;
       }
     };
+  }
+
+  // 로그인은 했지만 멤버 목록에 없는 이메일
+  function viewNotMember() {
+    renderChrome('');
+    $app.innerHTML = `<div class="center-card card">
+      ${Mascot('sweat', 110)}
+      <h1>멤버가 아니에요</h1>
+      <p class="muted">${esc(Store.email())} 은(는) 등록된 스터디 멤버 이메일이 아니에요.</p>
+      <button class="btn btn-block" id="btnOut">다른 계정으로 로그인</button>
+    </div>`;
+    document.getElementById('btnOut').onclick = async () => { await Store.signOut(); render(); };
   }
 
   // ================================================================ topic modal
@@ -888,7 +907,10 @@
   ];
 
   async function render(scrollTop) {
-    if (!me) return Store.mode === 'remote' ? viewLogin() : viewPickMember();
+    if (!me) {
+      if (Store.mode === 'local') return viewPickMember();
+      return Store.signedIn() ? viewNotMember() : viewLogin();
+    }
     const hash = location.hash || '#/';
     for (const [re, view] of routes) {
       const m = hash.match(re);

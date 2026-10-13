@@ -4,11 +4,11 @@
 window.APP_CONFIG = {
   SITE_NAME: 'English Study Club',
 
-  // 스터디 멤버 (2명). name 은 화면에 표시되는 이름,
-  // email 은 Supabase 로그인에 사용하는 이메일입니다. (로컬 모드에서는 비워둬도 됨)
+  // 스터디 멤버 (2명). name 은 화면에 표시되는 이름입니다.
+  // 로그인 이메일은 공개 저장소에 올라가지 않도록 Supabase 의 members 테이블에만 저장합니다.
   MEMBERS: [
-    { name: '오한영', email: '' },
-    { name: '박정민', email: '' },
+    { name: '오한영' },
+    { name: '박정민' },
   ],
 
   // 이름을 바꿨을 때: 예전 이름으로 저장된 글·영상 기록을 새 이름으로 옮겨줌 { 예전: 새 }
@@ -39,6 +39,7 @@ window.APP_CONFIG = {
 
   // Supabase 연결 정보 (README 참고). 비워두면 "로컬 모드"로 동작하며
   // 데이터가 이 브라우저에만 저장됩니다.
-  SUPABASE_URL: '',
-  SUPABASE_ANON_KEY: '',
+  // (anon 키는 공개돼도 되는 키예요. 데이터는 멤버로 로그인해야만 보입니다)
+  SUPABASE_URL: 'https://xebzhefptewaswiccwtr.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhlYnpoZWZwdGV3YXN3aWNjd3RyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4ODY2MTUsImV4cCI6MjEwNzQ2MjYxNX0.hYZcoM9GuheY_Stjiom0Lb4umF8GXidsEzsvwGVSp-w',
 };

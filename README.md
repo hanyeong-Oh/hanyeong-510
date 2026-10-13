@@ -52,25 +52,15 @@ WRITING_DAYS: [1, 3, 5], // 월·수·금
 `index.html`을 브라우저로 열면 됩니다. 이때는 **이 브라우저에만** 저장되므로 혼자 테스트할 때 쓰세요.
 (상단 배너의 `백업 내보내기/가져오기`로 JSON 백업 가능)
 
-### 3단계 — 동료와 함께 쓰기 (Supabase 연결, 무료)
-두 사람이 같은 데이터를 보려면 온라인 DB가 필요합니다. [Supabase](https://supabase.com) 무료 플랜이면 충분합니다.
+### 3단계 — 동료와 함께 쓰기 (Supabase, 연결 완료)
+`english-study-club` Supabase 프로젝트(서울 리전)에 연결돼 있습니다. `js/config.js`에 주소와 anon 키가 들어 있어요.
 
-1. supabase.com 가입 → **New project** 생성
-2. 왼쪽 메뉴 **SQL Editor** → `supabase/schema.sql` 내용을 붙여넣고 **Run**
-3. **Authentication → Users → Add user** 로 두 사람의 계정(이메일 + 비밀번호)을 만듭니다.
-   - ⚠️ 그 다음 **Authentication → Sign In / Providers** 에서 **Allow new users to sign up** 을 꺼주세요. (모르는 사람이 가입하지 못하게)
-4. **Project Settings → API** 에서 `Project URL`과 `anon public` 키를 복사해 `js/config.js`에 넣습니다.
+- **처음 접속하면** 로그인 화면에서 `처음이면 가입하기` → 등록된 멤버 이메일 + 원하는 비밀번호(6자 이상)로 가입하면 바로 시작됩니다. 인증 메일이 와도 무시해도 돼요.
+- **멤버 이메일**은 공개 저장소에 올라가지 않도록 Supabase의 `members` 테이블에만 저장돼 있습니다. 바꾸려면 Supabase 대시보드 → **Table Editor → members** 에서 수정하세요.
+- 멤버가 아닌 이메일은 가입하더라도 아무 데이터도 볼 수 없습니다 (RLS).
+- 처음부터 새로 만들 때는 `supabase/schema.sql`을 SQL Editor에서 실행하고, 맨 아래 예시처럼 `members`에 두 사람 이메일을 넣으면 됩니다.
 
-```js
-MEMBERS: [
-  { name: '오한영', email: 'me@company.com' },     // 3번에서 만든 이메일
-  { name: '박정민', email: 'coworker@company.com' },
-],
-SUPABASE_URL: 'https://xxxx.supabase.co',
-SUPABASE_ANON_KEY: 'eyJhbGciOi...',
-```
-
-> anon 키는 공개돼도 괜찮은 키입니다. 테이블은 로그인한 사용자만 읽고 쓸 수 있도록 막혀 있습니다(RLS).
+> anon 키는 공개돼도 괜찮은 키입니다. 데이터는 멤버로 로그인해야만 보입니다.
 
 ### 4단계 — 인터넷에 올리기 (GitHub Pages, 무료)
 1. 이 저장소의 **Settings → Pages**
