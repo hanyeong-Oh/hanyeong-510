@@ -348,4 +348,103 @@ window.GRAMMAR = [
       ['It can be done by nobody.', 'Nobody can do it.', 'by nobody ✗. 능동으로 말하는 게 자연스러워요.'],
     ],
   },
+
+  {
+    id: 'conditional',
+    title: '가정법',
+    sub: '"만약 ~라면" · I wish · as if',
+    summary: '핵심은 하나예요. 현실이 아닌 상상을 말할 땐 시제를 한 칸 과거로 내린다.',
+    basics: [
+      '"만약 ~라면"에는 두 종류가 있어요. **실제로 일어날 수 있는 일**(조건문)과 **사실이 아닌 상상**(가정법).',
+      '상상일 때는 시제를 **한 칸 과거로** 내려서 "이건 현실이 아니야"라는 거리감을 줘요.',
+      '지금 사실과 반대 → **과거형** (If I had…, I would…)',
+      '과거 사실과 반대 → **과거완료형** (If I had done…, I would have done…)',
+      '시제는 과거형이지만 뜻은 **지금/과거의 반대 상황**이라는 점만 기억하면 돼요.',
+    ],
+    sections: [
+      {
+        title: '① 현실 조건문 — 진짜 일어날 수 있는 일',
+        points: [
+          '**If + 현재형, will + 동사원형**',
+          'if절에는 미래라도 **will을 쓰지 않아요.** (If it will rain ✗)',
+        ],
+        examples: [
+          ["If it rains tomorrow, I'll stay home.", '내일 비 오면 집에 있을 거야.', '비가 올 수도 있음'],
+          ['If you heat ice, it melts.', '얼음을 데우면 녹는다.', '항상 그런 사실'],
+        ],
+      },
+      {
+        title: '② 가정법 과거 — 지금 사실과 반대',
+        points: [
+          '**If + 과거형, would/could + 동사원형**',
+          'be동사는 주어와 상관없이 **were**가 기본이에요. (If I were you)',
+        ],
+        examples: [
+          ['If I had more time, I would travel more.', '시간이 더 있으면 여행을 더 할 텐데.', '실제론 시간이 없음'],
+          ["If I were you, I'd take the job.", '내가 너라면 그 일 할 거야.', '조언할 때 최고로 많이 쓰는 문장'],
+          ['If I knew his number, I could call him.', '번호를 알면 전화할 수 있을 텐데.', '실제론 모름'],
+        ],
+      },
+      {
+        title: '③ 가정법 과거완료 — 과거 사실과 반대 (후회)',
+        points: [
+          '**If + had p.p., would/could have p.p.**',
+          '이미 지나간 일에 대한 후회나 아쉬움을 말할 때 써요.',
+        ],
+        examples: [
+          ["If I had known, I would have told you.", '알았더라면 너한테 말했을 텐데.', '실제론 몰랐음'],
+          ['If we had left earlier, we could have caught the train.', '더 일찍 나왔으면 기차를 탈 수 있었을 텐데.'],
+        ],
+      },
+      {
+        title: '④ 혼합 가정법 — 과거의 일이 지금에 영향',
+        points: [
+          '**If + had p.p.(과거), would + 동사원형(지금)**',
+        ],
+        examples: [
+          ['If I had studied harder, I would be a doctor now.', '그때 더 열심히 공부했더라면 지금 의사일 텐데.'],
+        ],
+      },
+      {
+        title: '⑤ I wish / If only / as if',
+        points: [
+          '**I wish + 과거형** → 지금 이랬으면 좋겠다 / **I wish + had p.p.** → 그때 그랬으면 좋았을 텐데',
+          '**If only** 는 I wish 보다 더 간절한 느낌',
+          '**as if + 과거형** → 실제로는 아닌데 마치 ~인 것처럼',
+          "**It's time + 과거형** → 진작 했어야 할 시간이야 (It's time we left.)",
+        ],
+        examples: [
+          ['I wish I knew the answer.', '답을 알면 좋을 텐데.'],
+          ['I wish I had gone to the party.', '그 파티 갈 걸 그랬어.'],
+          ['He talks as if he knew everything.', '그는 마치 다 아는 것처럼 말한다.'],
+          ["It's about time we went home.", '이제 진짜 집에 갈 시간이야.'],
+        ],
+      },
+      {
+        title: '⑥ if 없이 쓰는 가정 — 업무 메일에서 자주',
+        points: [
+          '**Should you ~** = If you should ~ (혹시 ~하시면) → 메일 끝인사의 단골',
+          '**Had I known** = If I had known (격식체)',
+          '**Without / But for ~** = ~이 없다면/없었다면',
+        ],
+        examples: [
+          ['Should you have any questions, please let me know.', '궁금한 점 있으시면 말씀해 주세요.'],
+          ['Without your help, I couldn\'t have finished it.', '네 도움이 없었으면 못 끝냈을 거야.'],
+        ],
+      },
+    ],
+    native: [
+      '조언은 거의 항상 "**If I were you, I\'d ~**". 회화에선 "If I was you"도 흔히 들려요. (글에선 were가 안전)',
+      '말할 땐 축약해요: I would → **I\'d**, would have → **would\'ve** (발음은 "우더브/woulda").',
+      '가정법의 "거리감"은 공손함에도 쓰여요. "**I was wondering if** you could help me." / "**Would** you mind…?" / "**I\'d appreciate it if** you could…" — 현재형보다 훨씬 부드러워요.',
+      '후회 말할 때 짧게: "**I should\'ve** told you." (말했어야 했는데) / "**You could\'ve** asked me." (나한테 물어봐도 됐잖아)',
+    ],
+    mistakes: [
+      ["If it will rain, I'll stay home.", "If it rains, I'll stay home.", 'if절에는 미래도 현재형으로.'],
+      ['If I would have known, I would have told you.', 'If I had known, I would have told you.', 'if절에는 would가 아니라 had p.p.'],
+      ['I wish I can speak English fluently.', 'I wish I could speak English fluently.', 'I wish 뒤엔 한 칸 과거로 (can → could).'],
+      ['If I am you, I will quit.', "If I were you, I'd quit.", '상상이니까 과거형 + would.'],
+      ['I would of called you.', "I would've (would have) called you.", "would've 발음 때문에 생긴 철자 실수. of 아니에요."],
+    ],
+  },
 ];
