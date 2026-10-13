@@ -22,7 +22,8 @@ create table if not exists public.posts (
   author      text not null,                     -- 멤버 이름 (config.js 의 MEMBERS.name)
   original    text not null default '',          -- 직접 쓴 원문
   revised     text,                              -- AI 검수 후 수정본
-  notes       text,                              -- AI 피드백 / 배운 표현 메모
+  corrections text,                              -- 수정 내역: [문법]/[원어민]/[표현] 줄 목록
+  notes       text,                              -- 실수 패턴 · 평가 · 메모
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now(),
   unique (topic_id, author)
@@ -46,6 +47,7 @@ create table if not exists public.videos (
 alter table public.videos alter column youtube_id drop not null;
 alter table public.videos add column if not exists playlist_id text;
 alter table public.videos add column if not exists thumb_url text;
+alter table public.posts add column if not exists corrections text;
 
 -- 로그인한 사람이 members 테이블에 있는지 확인
 create or replace function public.is_member()

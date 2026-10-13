@@ -250,52 +250,89 @@
   }
 
   // ================================================================ AI prompt
-  // AI(ChatGPT·Claude·Gemini 등)에 붙여넣을 검수 요청문
+  // AI(ChatGPT·Claude·Gemini 등)에 붙여넣을 검수 요청문 — 교과서 문법보다 원어민이 실제로 쓰는 영어 기준
   function buildReviewPrompt(topic, original) {
     const text = original.trim();
-    return `당신은 한국인 직장인을 가르치는 꼼꼼하고 친절한 영어 글쓰기 선생님입니다.
-아래는 제가 주제에 맞춰 직접 쓴 영어 글입니다. 문장 하나하나 빠짐없이 검수해 주세요.
+    return `당신은 미국에서 오래 일한 원어민 영어 코치입니다. 한국인 직장인의 영어 글을 "원어민이 실제로 이렇게 말하고 쓰는가?"를 기준으로 꼼꼼하게 검수해 주세요.
+교과서식 문법 설명보다, 원어민이 직장 동료와 대화하거나 메신저·이메일을 쓸 때 실제로 쓰는 표현과 문장 구조를 알려주는 것이 목표입니다.
 
 [주제] ${topic.title}${topic.description ? `\n[주제 설명] ${topic.description}` : ''}
 [분량] ${wordCount(text)} words
 
-[검수 원칙]
-- 제 원래 의미, 말투, 내용은 최대한 유지하고 새로운 내용은 추가하지 마세요.
-- 틀린 부분뿐 아니라, 문법적으로는 맞지만 원어민이 어색하게 느낄 표현도 모두 고쳐 주세요.
-- 문법, 시제, 관사(a/the), 전치사, 단수·복수, 주어-동사 일치, 어순, 단어 선택(콜로케이션), 철자, 대소문자, 문장부호를 문장마다 하나씩 확인해 주세요.
-- 너무 격식 있거나 어려운 표현으로 바꾸지 말고, 직장인이 실제로 말하고 쓸 수 있는 자연스러운 수준으로 고쳐 주세요.
-- 고칠 곳이 없는 문장은 억지로 바꾸지 마세요.
+[검수 기준]
+- 문장마다 빠짐없이 확인하고, 제 의미와 내용은 유지하되 새로운 내용은 추가하지 마세요.
+- 실제로 틀린 문법(시제, 관사, 전치사, 수 일치, 어순 등)은 [문법]으로 고쳐 주세요.
+- 문법은 맞지만 원어민이 잘 쓰지 않는 표현은 [원어민]으로 고쳐 주세요. 특히 아래를 적극적으로 바꿔 주세요.
+  · 한국어를 직역한 듯한 표현, 딱딱한 교과서 표현
+  · 원어민이 더 자주 쓰는 구동사(phrasal verb), 단어 조합(collocation), 관용 표현
+  · 자연스러운 축약형(I'm, don't, it's 등)과 말할 때 쓰는 문장 구조
+  · 너무 길거나 단조로운 문장의 자연스러운 연결
+- 지나치게 격식 있거나 어려운 단어는 피하고, 직장인이 일상에서 바로 쓸 수 있는 수준으로 맞춰 주세요.
+- 고칠 필요가 없는 문장은 그대로 두세요.
 
-[답변 형식] 아래 순서와 제목을 그대로 지켜 주세요.
+[답변 형식] 아래 순서와 형식을 정확히 지켜 주세요. 1번과 2번은 제가 사이트에 그대로 붙여넣어 자동으로 정리합니다.
 
 1. 수정본
-- 원문의 문단·줄바꿈 구조를 그대로 유지한 채, 고친 글 전체를 코드 블록 하나에 넣어 주세요.
-- 코드 블록 안에는 설명이나 표시(굵게, 괄호, 취소선 등) 없이 수정된 영어 글만 넣어 주세요. (원문과 자동으로 비교할 예정입니다)
+- 원어민이 자연스럽게 쓸 수준으로 고친 글 전체를 코드 블록 하나에 넣어 주세요.
+- 원문의 문단·줄바꿈 구조를 그대로 유지하고, 코드 블록 안에는 수정된 영어 글만 넣어 주세요.
 
-2. 수정 내역
-- 고친 곳마다 아래 형식으로 빠짐없이 적어 주세요. 한 문장에 여러 군데가 있으면 각각 따로 적어 주세요.
-  번호. [원래 표현] → [수정 표현]
-     - 종류: 문법 / 시제 / 관사 / 전치사 / 단어 선택 / 어순 / 철자 / 문장부호 / 자연스러운 표현 중 하나
-     - 이유: 왜 틀렸거나 어색한지 한국어로 쉽게 설명 (한국인이 자주 하는 실수라면 그 점도 알려주세요)
+2. 수정 내역 + 원어민 표현
+- 아래 세 가지 형식의 줄만 코드 블록 하나에 넣어 주세요. 한 줄에 하나씩, 설명은 한국어로 짧고 구체적으로 써 주세요.
+  [문법] 원래 표현 → 고친 표현 :: 왜 틀렸는지
+  [원어민] 원래 표현 → 원어민이 쓰는 표현 :: 왜 원어민은 이렇게 말하는지, 뉘앙스 차이
+  [표현] 원어민이 자주 쓰는 표현 :: 뜻 / 언제 쓰는지 / 예문
+- [문법]과 [원어민]은 고친 곳마다 빠짐없이 각각 한 줄씩 적어 주세요. (한 문장에 여러 군데면 여러 줄)
+- [표현]은 이 주제로 원어민이 실제로 자주 쓰는 구동사·관용 표현·자연스러운 문장 패턴 5개를 적어 주세요.
+- 예시:
+  [문법] I go to home → I go home :: home은 '집으로'라는 부사라서 to를 쓰지 않아요
+  [원어민] I was very tired → I was beat :: 일상 대화에서는 very tired보다 beat, wiped out을 훨씬 자주 써요
+  [표현] call it a day :: 오늘 일은 여기까지 하다 / 퇴근하거나 작업을 끝낼 때 / Let's call it a day and grab dinner.
 
-3. 더 자연스러운 버전
-- 원어민이라면 이렇게 쓸 것 같은 한 단계 더 자연스러운 버전을 보여 주고, 수정본과 다른 점 2~3가지를 한 줄씩 설명해 주세요.
+3. 나의 실수 패턴
+- 이번 글에서 반복되는 실수나 한국어식 습관 1~3가지와, 원어민처럼 쓰려면 다음에 무엇을 바꾸면 좋을지 알려주세요.
 
-4. 나의 실수 패턴
-- 이번 글에서 반복되는 실수나 약점 1~3가지와, 다음 글에서 주의할 점을 알려주세요.
-
-5. 오늘의 표현
-- 이 주제에서 바로 써먹을 수 있는 유용한 영어 표현 5개를 아래 형식으로 알려주세요.
-  표현 — 한국어 뜻 — 예문 1개 (한국어 해석 포함)
-
-6. 평가
-- 문법 / 어휘 / 자연스러움 / 내용 전달을 각각 5점 만점으로 매기고, 대략적인 수준(CEFR A2~C1)을 알려주세요.
+4. 평가
+- 문법 정확도 / 원어민다운 자연스러움 / 어휘 다양성 / 내용 전달을 각각 5점 만점으로 매기고, 대략적인 수준(CEFR A2~C1)을 알려주세요.
 - 잘한 점 1가지를 꼭 칭찬해 주세요.
 
 [제가 쓴 글]
 """
 ${text}
 """`;
+  }
+
+  // AI 답변 2번(수정 내역 + 원어민 표현)을 줄 단위로 읽어서 정리
+  //   [문법] 원래 → 고친 :: 설명 / [원어민] 원래 → 원어민 표현 :: 설명 / [표현] 표현 :: 뜻·예문
+  const CORR_KIND = { '문법': 'grammar', grammar: 'grammar', '원어민': 'native', native: 'native', '표현': 'expr', expression: 'expr', phrase: 'expr' };
+  function parseCorrections(text) {
+    const out = { grammar: [], native: [], expr: [] };
+    (text || '').split('\n').forEach((raw) => {
+      const line = raw.replace(/[*`]/g, '').trim();
+      const m = line.match(/^(?:[-•]\s*)?(?:\d+[.)]\s*)?\[([^\]]+)\]\s*(.+)$/);
+      if (!m) return;
+      const kind = CORR_KIND[m[1].trim().toLowerCase()];
+      if (!kind) return;
+      const [body, ...why] = m[2].split('::');
+      const note = why.join('::').trim();
+      if (kind === 'expr') {
+        if (body.trim()) out.expr.push({ phrase: body.trim(), note });
+        return;
+      }
+      const arrow = body.split(/\s*(?:→|->|=>)\s*/);
+      if (arrow.length < 2) return;
+      out[kind].push({ from: arrow[0].trim(), to: arrow.slice(1).join(' → ').trim(), note });
+    });
+    return out;
+  }
+
+  function renderCorrections(c, { compact } = {}) {
+    const item = (x) => `<li><span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>${x.note ? `<div class="c-note">${esc(x.note)}</div>` : ''}</li>`;
+    const expr = (x) => `<li><span class="c-phrase">${esc(x.phrase)}</span>${x.note ? `<div class="c-note">${esc(x.note)}</div>` : ''}</li>`;
+    const block = (title, cls, list, fn) => (list.length ? `<div class="corr ${cls}"><div class="corr-title">${title} <span class="corr-count">${list.length}</span></div><ul>${list.map(fn).join('')}</ul></div>` : '');
+    const html = block('문법적으로 틀린 것', 'corr-grammar', c.grammar, item)
+      + block('원어민은 이렇게 써요', 'corr-native', c.native, item)
+      + (compact ? '' : block('원어민이 자주 쓰는 표현', 'corr-expr', c.expr, expr));
+    return html;
   }
 
   // ================================================================ chrome
@@ -594,7 +631,8 @@ ${text}
           ${hasRev ? `<div class="pane text-body" data-pane="rev" hidden>${nl2br(p.revised)}</div>
           <div class="pane text-body diff" data-pane="diff">${renderDiff(p.original, p.revised)}</div>` : ''}
           <div class="meta muted small">${wordCount(p.original)} words${p.updated_at ? ` · 마지막 수정 ${new Date(p.updated_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</div>
-          ${p.notes ? `<div class="notes"><div class="notes-title">AI 피드백 / 배운 점.</div>${nl2br(p.notes)}</div>` : ''}`;
+          ${renderCorrections(parseCorrections(p.corrections))}
+          ${p.notes ? `<div class="notes"><div class="notes-title">실수 패턴 · 메모.</div>${nl2br(p.notes)}</div>` : ''}`;
       }
       const btnLabel = isMe ? (st === 'none' ? '글쓰기' : st === 'written' ? '검수본 입력' : '수정하기') : '편집';
       const showBtn = isMe || st !== 'none';
@@ -668,7 +706,7 @@ ${text}
         <div class="card step">
           <div class="step-head"><span class="step-no">2</span><h3>AI 검수</h3></div>
           <p class="muted small">아래 버튼으로 검수 요청문을 복사해서 ChatGPT · Claude · Gemini 등에 붙여넣으세요.<br>
-            AI 답변의 <b>1. 수정본</b>(코드 블록)은 수정본 칸에, <b>2~6번</b>(수정 내역·실수 패턴·오늘의 표현 등)은 메모 칸에 붙여넣으면 돼요.</p>
+            AI 답변의 <b>1번</b>은 수정본 칸, <b>2번</b>은 수정 내역 칸, <b>3~4번</b>은 메모 칸에 붙여넣으면 돼요.</p>
           <div class="row-gap wrap">
             <button type="button" class="btn" id="btnPrompt">AI 검수 요청문 복사</button>
             <button type="button" class="btn" id="btnCopyOrig">원문을 수정본 칸에 복사</button>
@@ -676,8 +714,14 @@ ${text}
           <label>AI 검수 후 수정본
             <textarea name="revised" rows="10" placeholder="AI 답변의 1. 수정본(코드 블록 안 영어 글)을 붙여넣으세요">${esc(post.revised || '')}</textarea>
           </label>
-          <label>AI 피드백 / 배운 표현 메모 <span class="muted">(선택)</span>
-            <textarea name="notes" rows="8" placeholder="AI 답변의 2~6번을 붙여넣거나, 기억할 표현을 적어두세요. 예) go to home → go home : home은 부사라 to가 필요 없음">${esc(post.notes || '')}</textarea>
+          <label>수정 내역 · 원어민 표현 <span class="muted">(AI 답변 2번)</span>
+            <textarea name="corrections" rows="9" placeholder="[문법] I go to home → I go home :: home은 부사라 to가 필요 없어요
+[원어민] I was very tired → I was beat :: 일상 대화에선 beat를 훨씬 자주 써요
+[표현] call it a day :: 오늘 일은 여기까지 하다 / Let's call it a day.">${esc(post.corrections || '')}</textarea>
+          </label>
+          <div class="corr-preview" id="corrPreview"></div>
+          <label>실수 패턴 · 평가 · 메모 <span class="muted">(AI 답변 3~4번, 선택)</span>
+            <textarea name="notes" rows="6" placeholder="AI 답변의 3~4번을 붙여넣거나, 기억하고 싶은 것을 적어두세요.">${esc(post.notes || '')}</textarea>
           </label>
         </div>
 
@@ -706,6 +750,11 @@ ${text}
         document.getElementById('diffPreview').innerHTML = parts.map((p) => (p.type === 'eq' ? esc(p.text) : `<${p.type}>${esc(p.text)}</${p.type}>`)).join('');
         document.getElementById('changeCount').textContent = `${TextDiff.countChanges(parts)}곳 변경`;
       }
+      const c = parseCorrections(f.corrections.value);
+      const n = c.grammar.length + c.native.length + c.expr.length;
+      document.getElementById('corrPreview').innerHTML = f.corrections.value.trim()
+        ? (n ? `인식됨: 문법 ${c.grammar.length} · 원어민 ${c.native.length} · 표현 ${c.expr.length}` : '<span class="error">[문법] / [원어민] / [표현] 으로 시작하는 줄을 찾지 못했어요.</span>')
+        : '';
     };
     f.addEventListener('input', () => { dirty = true; update(); });
     update();
@@ -735,6 +784,7 @@ ${text}
           author,
           original: f.original.value,
           revised: f.revised.value.trim() ? f.revised.value : null,
+          corrections: f.corrections.value.trim() ? f.corrections.value : null,
           notes: f.notes.value.trim() ? f.notes.value : null,
         }), '글 업로드 완료. 굿.');
       } catch (err) { alert(err.message); return; }
@@ -909,6 +959,63 @@ ${text}
     f.url.focus();
   }
 
+  // ================================================================ 표현 노트 (모든 글의 수정 내역 모음)
+  let exprFilter = { kind: 'all', who: '전체', q: '' };
+  async function viewExpressions() {
+    renderChrome('expressions');
+    const [topics, posts] = await Promise.all([Store.listTopics(), Store.listPosts()]);
+    const topicById = Object.fromEntries(topics.map((t) => [t.id, t]));
+    const items = [];
+    posts.forEach((p) => {
+      const t = topicById[p.topic_id];
+      if (!t) return;
+      const c = parseCorrections(p.corrections);
+      ['grammar', 'native', 'expr'].forEach((kind) => c[kind].forEach((x) => items.push(Object.assign({ kind, author: p.author, topic: t }, x))));
+    });
+    items.sort((a, b) => (a.topic.date === b.topic.date ? 0 : a.topic.date < b.topic.date ? 1 : -1));
+    const counts = { all: items.length, grammar: 0, native: 0, expr: 0 };
+    items.forEach((x) => { counts[x.kind]++; });
+    const q = exprFilter.q.toLowerCase();
+    const list = items.filter((x) =>
+      (exprFilter.kind === 'all' || x.kind === exprFilter.kind) &&
+      (exprFilter.who === '전체' || x.author === exprFilter.who) &&
+      (!q || `${x.from || ''} ${x.to || ''} ${x.phrase || ''} ${x.note}`.toLowerCase().includes(q)));
+    const KIND = { grammar: ['문법', 'k-grammar'], native: ['원어민', 'k-native'], expr: ['표현', 'k-expr'] };
+    const rows = list.map((x) => `<li class="${KIND[x.kind][1]}">
+        <span class="kind-tag">${KIND[x.kind][0]}</span>
+        <div class="expr-main">
+          ${x.kind === 'expr' ? `<span class="c-phrase">${esc(x.phrase)}</span>` : `<span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>`}
+          ${x.note ? `<div class="c-note">${esc(x.note)}</div>` : ''}
+          <a class="expr-src" href="#/topic/${x.topic.id}">${fmtDate(x.topic.date)} · ${esc(x.topic.title)} · ${esc(x.author)}</a>
+        </div>
+      </li>`).join('');
+    const tab = (k, label) => `<button class="cat ${exprFilter.kind === k ? 'active' : ''}" data-kind="${k}">${label} ${counts[k]}</button>`;
+    $app.innerHTML = `
+      <div class="section-head"><h2>표현 노트</h2></div>
+      <p class="muted">글마다 정리한 문법 실수와 원어민 표현이 여기에 모여요. 복습용.</p>
+      <div class="filters">
+        <div class="cat-chips">${tab('all', '전체')}${tab('native', '원어민')}${tab('grammar', '문법')}${tab('expr', '표현')}</div>
+        <div class="row-gap">
+          <select id="exprWho">${['전체', ...MEMBERS].map((n) => `<option ${n === exprFilter.who ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select>
+          <input type="search" id="exprSearch" placeholder="검색" value="${esc(exprFilter.q)}">
+        </div>
+      </div>
+      ${rows ? `<ul class="card expr-list">${rows}</ul>` : `<div class="card empty">${Mascot(items.length ? 'dots' : 'think', 90)}${items.length ? '조건에 맞는 표현 없음.' : '아직 정리된 표현이 없어요. 글쓰기에서 AI 답변 2번을 수정 내역 칸에 붙여넣어 보세요.'}</div>`}`;
+    $app.querySelectorAll('[data-kind]').forEach((b) => { b.onclick = () => { exprFilter.kind = b.dataset.kind; render(); }; });
+    document.getElementById('exprWho').onchange = (e) => { exprFilter.who = e.target.value; render(); };
+    const search = document.getElementById('exprSearch');
+    search.oninput = () => {
+      exprFilter.q = search.value;
+      clearTimeout(search._t);
+      search._t = setTimeout(async () => {
+        await render();
+        const el = document.getElementById('exprSearch');
+        el.focus();
+        el.setSelectionRange(el.value.length, el.value.length);
+      }, 250);
+    };
+  }
+
   // ================================================================ router
   const routes = [
     [/^#?\/?$/, viewHome],
@@ -916,6 +1023,7 @@ ${text}
     [/^#\/topic\/([^/]+)$/, viewTopic],
     [/^#\/write\/([^/]+)\/(.+)$/, viewEditor],
     [/^#\/videos$/, viewVideos],
+    [/^#\/expressions$/, viewExpressions],
   ];
 
   async function render(scrollTop) {
