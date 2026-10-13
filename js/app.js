@@ -21,6 +21,43 @@
   }
   // 한글 줄바꿈(keep-all)에서 ")는", "~에게" 처럼 기호 뒤 조사가 다음 줄로 떨어지지 않게 붙여 줌 (U+2060 단어 결합자)
   const glue = (html) => html.replace(/([)\]~]|&quot;|&#39;)((?:<\/?b>)?)(?=[가-힣])/g, '$1\u2060$2');
+  // 영어 듣기 — 브라우저 음성 합성(Web Speech API). 지원 안 하는 브라우저에선 버튼을 숨김
+  const canSpeak = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+  const SPEAKER_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M15.5 9c1.2 1.6 1.2 4.4 0 6M18.3 6.6c2.6 3 2.6 7.8 0 10.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  // 듣기용 텍스트: **굵게** 표시와 한국어 괄호 설명 "(이미 약속됨)" 은 빼고 읽기
+  const speakable = (s) => String(s || '').replace(/\*\*/g, '').replace(/\([^)]*[가-힣][^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+  function speakBtn(text, label = '') {
+    const t = speakable(text);
+    if (!canSpeak || !t || !/[A-Za-z]/.test(t)) return '';
+    return `<button type="button" class="speak${label ? ' speak-label' : ''}" data-speak="${esc(t)}" title="듣기" aria-label="영어 듣기">${SPEAKER_SVG}${label ? `<span>${esc(label)}</span>` : ''}</button>`;
+  }
+  let enVoice = null;
+  function pickVoice() {
+    const voices = speechSynthesis.getVoices().filter((v) => /^en[-_]/i.test(v.lang));
+    const pref = ['Samantha', 'Google US English', 'Microsoft Aria', 'Microsoft Jenny', 'Alex'];
+    enVoice = voices.find((v) => pref.some((n) => v.name.includes(n)))
+      || voices.find((v) => /en[-_]US/i.test(v.lang)) || voices[0] || null;
+  }
+  if (canSpeak) { pickVoice(); speechSynthesis.addEventListener?.('voiceschanged', pickVoice); }
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-speak]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const wasMe = btn.classList.contains('speaking');
+    speechSynthesis.cancel();
+    document.querySelectorAll('.speak.speaking').forEach((b) => b.classList.remove('speaking'));
+    if (wasMe) return; // 읽는 중에 한 번 더 누르면 멈춤
+    const u = new SpeechSynthesisUtterance(btn.dataset.speak);
+    u.lang = enVoice ? enVoice.lang : 'en-US';
+    if (enVoice) u.voice = enVoice;
+    u.rate = 0.92;
+    u.onend = u.onerror = () => btn.classList.remove('speaking');
+    btn.classList.add('speaking');
+    speechSynthesis.speak(u);
+  }, true);
+  window.addEventListener('hashchange', () => { if (canSpeak) speechSynthesis.cancel(); });
+
   const pad = (n) => String(n).padStart(2, '0');
   function toYMD(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
   function parseYMD(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
@@ -28,6 +65,7 @@
   function startOfWeek(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); return addDays(x, -((x.getDay() + 6) % 7)); }
   function fmtDate(ymd) { const d = parseYMD(ymd); return `${d.getMonth() + 1}월 ${d.getDate()}일 (${WEEKDAYS[d.getDay()]})`; }
   function fmtShort(d) { return `${d.getMonth() + 1}/${d.getDate()}`; }
+  function sentenceCount(s) { return (s || '').split(/[.!?]+(?=\s|$)|\n+/).filter((x) => /[A-Za-z]/.test(x)).length; }
   function wordCount(s) { const m = (s || '').trim().match(/[A-Za-z0-9'’-]+/g); return m ? m.length : 0; }
   const todayYMD = () => toYMD(new Date());
   const nl2br = (s) => esc(s).replace(/\n/g, '<br>');
@@ -329,8 +367,8 @@ ${text}
   }
 
   function renderCorrections(c, { compact } = {}) {
-    const item = (x) => `<li><span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
-    const expr = (x) => `<li><span class="c-phrase">${esc(x.phrase)}</span>${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
+    const item = (x) => `<li><span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>${speakBtn(x.to)}${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
+    const expr = (x) => `<li><span class="c-phrase">${esc(x.phrase)}</span>${speakBtn(x.phrase)}${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
     const block = (title, cls, list, fn) => (list.length ? `<div class="corr ${cls}"><div class="corr-title">${title} <span class="corr-count">${list.length}</span></div><ul>${list.map(fn).join('')}</ul></div>` : '');
     const html = block('문법적으로 틀린 것', 'corr-grammar', c.grammar, item)
       + block('원어민은 이렇게 써요', 'corr-native', c.native, item)
@@ -530,11 +568,43 @@ ${text}
     const recentVideos = videos.slice(0, 4).map(videoCardMini).join('');
 
     const doneThisWeek = dates.every((d) => byDate[d] && postStatus((pbt[byDate[d].id] || {})[me]) === 'reviewed');
+
+    // 오늘 할 일: 오늘 주제 → 이번 주 밀린 글 → 다음 주제 → 다음 글쓰기 날 (주제 없음)
+    const myStatus = (t) => postStatus((pbt[t.id] || {})[me]);
+    const sortedTopics = topics.slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    const weekStart = toYMD(startOfWeek(new Date()));
+    const todayTopic = byDate[today];
+    const overdue = sortedTopics.filter((t) => t.date < today && t.date >= weekStart && myStatus(t) !== 'reviewed').pop();
+    const upcoming = sortedTopics.find((t) => t.date > today);
+    let nextDay = null;
+    for (let i = 1; i <= 14 && !nextDay; i++) { const d = addDays(new Date(), i); if (cfg.WRITING_DAYS.includes(d.getDay())) nextDay = toYMD(d); }
+    const ACTION = { none: '쓰러 가기 →', written: '검수본 입력 →', reviewed: '결과 보기 →' };
+    const taskFor = (t, label) => {
+      const st = myStatus(t);
+      const href = st === 'reviewed' ? `#/topic/${t.id}` : `#/write/${t.id}/${encodeURIComponent(me)}`;
+      return `<div class="hero-task">
+          <div class="hero-label">${label}${chip(st)}</div>
+          <a class="hero-topic" href="#/topic/${t.id}">${esc(t.title)}</a>
+          <a class="btn ${st === 'reviewed' ? '' : 'btn-primary'}" href="${href}">${ACTION[st]}</a>
+        </div>`;
+    };
+    let task = '';
+    if (todayTopic) task = taskFor(todayTopic, '오늘의 주제');
+    else if (overdue) task = taskFor(overdue, `밀린 글 · ${fmtDate(overdue.date)}`);
+    else if (upcoming) task = taskFor(upcoming, `다음 주제 · ${fmtDate(upcoming.date)}`);
+    else if (nextDay) {
+      task = `<div class="hero-task">
+          <div class="hero-label">다음 글쓰기 · ${fmtDate(nextDay)}</div>
+          ${canManageTopics() ? `<div class="hero-sub">아직 주제 없음.</div><button class="btn btn-primary" data-new-topic="${nextDay}">+ 주제 정하기</button>`
+            : `<div class="hero-sub">${esc(TOPIC_MANAGER)}님이 주제를 정할 예정.</div>`}
+        </div>`;
+    }
+
     $app.innerHTML = `
       <div class="hero">
-        <div>
+        <div class="hero-main">
           <div class="hero-title">${esc(me)}.. 영어 한 줄</div>
-          <div class="hero-sub">${doneThisWeek ? '이번 주 끝. 굿.' : `주 ${dates.length}번. 쓰고, 검수받고, 비교하기.`}</div>
+          ${task || `<div class="hero-sub">${doneThisWeek ? '이번 주 끝. 굿.' : `주 ${dates.length}번. 쓰고, 검수받고, 비교하기.`}</div>`}
         </div>
         <div class="${doneThisWeek ? 'anim-pop' : 'anim-dance anim-slow'}">${Mascot(doneThisWeek ? 'good' : 'music', 120)}</div>
       </div>
@@ -608,11 +678,14 @@ ${text}
   }
 
   // ================================================================ topic detail
+  // 내 글을 쓰기 전엔 상대 글을 가려 둠 (따라 쓰기 방지). "그래도 보기"를 누른 주제는 이 세션 동안 보임
+  const revealedTopics = new Set();
   async function viewTopic(id) {
     renderChrome('writing');
     const [topic, posts] = await Promise.all([Store.getTopic(id), Store.listPosts(id)]);
     if (!topic) { $app.innerHTML = `<div class="card empty">${Mascot('sad', 90)}주제를 찾을 수 없어요... <a href="#/writing">목록으로</a></div>`; return; }
     const byAuthor = Object.fromEntries(posts.map((p) => [p.author, p]));
+    const iHaveWritten = postStatus(byAuthor[me]) !== 'none';
 
     const cards = MEMBERS.map((name) => {
       const p = byAuthor[name];
@@ -622,6 +695,14 @@ ${text}
       let body;
       if (st === 'none') {
         body = `<div class="empty-inline">${Mascot(isMe ? 'cmon' : 'dots', 80)}${isMe ? '아직 안 씀.' : '아직 작성 전.'}</div>`;
+      } else if (!isMe && !iHaveWritten && MEMBERS.includes(me) && !revealedTopics.has(topic.id)) {
+        body = `<div class="spoiler">${Mascot('what', 76)}
+            <p><b>내 글 먼저 쓰고 보기.</b><br><span class="muted small">먼저 보면 나도 모르게 따라 쓰게 돼요.</span></p>
+            <div class="row-gap wrap">
+              <a class="btn btn-sm btn-primary" href="#/write/${topic.id}/${encodeURIComponent(me)}">내 글 쓰러 가기</a>
+              <button class="btn btn-sm" data-reveal>그래도 보기</button>
+            </div>
+          </div>`;
       } else {
         const hasRev = st === 'reviewed';
         const changes = hasRev ? TextDiff.countChanges(TextDiff.diff(p.original, p.revised)) : 0;
@@ -633,7 +714,7 @@ ${text}
           <div class="pane text-body" data-pane="orig" ${hasRev ? 'hidden' : ''}>${nl2br(p.original)}</div>
           ${hasRev ? `<div class="pane text-body" data-pane="rev" hidden>${nl2br(p.revised)}</div>
           <div class="pane text-body diff" data-pane="diff">${renderDiff(p.original, p.revised)}</div>` : ''}
-          <div class="meta muted small">${wordCount(p.original)} words${p.updated_at ? ` · 마지막 수정 ${new Date(p.updated_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</div>
+          <div class="meta muted small">${hasRev ? `${speakBtn(p.revised, '수정본 듣기')} ` : ''}${wordCount(p.original)} words${p.updated_at ? ` · 마지막 수정 ${new Date(p.updated_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</div>
           ${renderCorrections(parseCorrections(p.corrections))}
           ${p.notes ? `<div class="notes"><div class="notes-title">실수 패턴 · 메모.</div>${nl2br(p.notes)}</div>` : ''}`;
       }
@@ -663,6 +744,7 @@ ${text}
       </div>
       <div class="grid grid-2">${cards}</div>`;
 
+    $app.querySelectorAll('[data-reveal]').forEach((b) => { b.onclick = () => { revealedTopics.add(topic.id); render(); }; });
     $app.querySelectorAll('[data-tabs]').forEach((tabs) => {
       const card = tabs.closest('.post');
       tabs.querySelectorAll('button').forEach((b) => {
@@ -701,9 +783,10 @@ ${text}
       </div>
 
       <form id="editForm" class="editor">
+        <div class="draft-note" id="draftNote" hidden></div>
         <div class="card step">
           <div class="step-head"><span class="step-no">1</span><h3>직접 쓰기</h3><span class="muted small" id="wcOrig"></span></div>
-          <textarea name="original" rows="10" placeholder="주제에 맞춰 영어로 자유롭게 써보세요. 틀려도 괜찮아요!">${esc(post.original)}</textarea>
+          <textarea name="original" rows="10" lang="en" spellcheck="true" autocapitalize="sentences" placeholder="주제에 맞춰 영어로 자유롭게 써보세요. 틀려도 괜찮아요!">${esc(post.original)}</textarea>
         </div>
 
         <div class="card step">
@@ -715,7 +798,7 @@ ${text}
             <button type="button" class="btn" id="btnCopyOrig">원문을 수정본 칸에 복사</button>
           </div>
           <label>AI 검수 후 수정본
-            <textarea name="revised" rows="10" placeholder="AI 답변의 1. 수정본(코드 블록 안 영어 글)을 붙여넣으세요">${esc(post.revised || '')}</textarea>
+            <textarea name="revised" rows="10" lang="en" spellcheck="true" autocapitalize="sentences" placeholder="AI 답변의 1. 수정본(코드 블록 안 영어 글)을 붙여넣으세요">${esc(post.revised || '')}</textarea>
           </label>
           <label>수정 내역 · 원어민 표현 <span class="muted">(AI 답변 2번)</span>
             <textarea name="corrections" rows="9" placeholder="[문법] I go to home → I go home :: home은 부사라 to가 필요 없어요
@@ -745,7 +828,7 @@ ${text}
     const f = document.getElementById('editForm');
     let dirty = false;
     const update = () => {
-      document.getElementById('wcOrig').textContent = `${wordCount(f.original.value)} words`;
+      document.getElementById('wcOrig').textContent = `${wordCount(f.original.value)} words · ${sentenceCount(f.original.value)} sentences`;
       const has = f.revised.value.trim() && f.original.value.trim();
       document.getElementById('previewCard').hidden = !has;
       if (has) {
@@ -759,7 +842,44 @@ ${text}
         ? (n ? `인식됨: 문법 ${c.grammar.length} · 원어민 ${c.native.length} · 표현 ${c.expr.length}` : '<span class="error">[문법] / [원어민] / [표현] 으로 시작하는 줄을 찾지 못했어요.</span>')
         : '';
     };
-    f.addEventListener('input', () => { dirty = true; update(); });
+    // 임시 저장: 업로드 전 글을 이 브라우저에 자동 보관 (AI 창 다녀오다 날아가지 않게)
+    const draftKey = `english-study:draft:${topic.id}:${author}`;
+    const FIELDS = ['original', 'revised', 'corrections', 'notes'];
+    const savedVals = Object.fromEntries(FIELDS.map((k) => [k, post[k] || '']));
+    const clearDraft = () => { try { localStorage.removeItem(draftKey); } catch (e) { /* 저장소 막힘 */ } };
+    let draftTimer;
+    const writeDraft = () => {
+      clearTimeout(draftTimer);
+      draftTimer = setTimeout(() => {
+        const vals = Object.fromEntries(FIELDS.map((k) => [k, f[k].value]));
+        try {
+          if (FIELDS.every((k) => vals[k] === savedVals[k])) localStorage.removeItem(draftKey);
+          else localStorage.setItem(draftKey, JSON.stringify({ at: Date.now(), ...vals }));
+        } catch (e) { /* 저장소 막힘 */ }
+      }, 400);
+    };
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(draftKey) || 'null'); } catch (e) { draft = null; }
+    const savedAt = post.updated_at ? Date.parse(post.updated_at) : 0;
+    if (draft && FIELDS.some((k) => (draft[k] || '') !== savedVals[k]) && draft.at > savedAt) {
+      FIELDS.forEach((k) => { f[k].value = draft[k] || ''; });
+      dirty = true;
+      const note = document.getElementById('draftNote');
+      const when = new Date(draft.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      note.innerHTML = `${Mascot('think', 44)}<span><b>업로드 안 한 임시 글을 불러왔어요.</b> <span class="muted">(${esc(when)})</span> 저장을 눌러야 동료에게 보여요.</span>
+        <button type="button" class="btn-link" id="btnDiscardDraft">버리기</button>`;
+      note.hidden = false;
+      document.getElementById('btnDiscardDraft').onclick = () => {
+        if (!confirm('임시 글을 버리고 마지막으로 저장한 글로 되돌릴까요?')) return;
+        FIELDS.forEach((k) => { f[k].value = savedVals[k]; });
+        clearDraft();
+        dirty = false;
+        note.hidden = true;
+        update();
+      };
+    } else if (draft) clearDraft();
+
+    f.addEventListener('input', () => { dirty = true; update(); writeDraft(); });
     update();
 
     document.getElementById('btnPrompt').onclick = async () => {
@@ -772,6 +892,7 @@ ${text}
       f.revised.value = f.original.value;
       dirty = true;
       update();
+      writeDraft();
     };
 
     const leaveGuard = (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } };
@@ -791,6 +912,8 @@ ${text}
           notes: f.notes.value.trim() ? f.notes.value : null,
         }), '글 업로드 완료. 굿.');
       } catch (err) { alert(err.message); return; }
+      clearTimeout(draftTimer);
+      clearDraft();
       dirty = false;
       location.hash = `#/topic/${topic.id}`;
     };
@@ -799,6 +922,8 @@ ${text}
       del.onclick = async () => {
         if (!confirm('이 글을 삭제할까요?')) return;
         await Store.deletePost(post.id);
+        clearTimeout(draftTimer);
+        clearDraft();
         dirty = false;
         toast('삭제함.');
         location.hash = `#/topic/${topic.id}`;
@@ -963,7 +1088,8 @@ ${text}
   }
 
   // ================================================================ 표현 노트 (모든 글의 수정 내역 모음)
-  let exprFilter = { kind: 'all', who: '전체', q: '' };
+  // quiz: 가리고 복습 모드, seed: 섞기 순서 (0이면 날짜순)
+  let exprFilter = { kind: 'all', who: '전체', q: '', quiz: false, seed: 0 };
   async function viewExpressions() {
     renderChrome('expressions');
     const [topics, posts] = await Promise.all([Store.listTopics(), Store.listPosts()]);
@@ -984,27 +1110,65 @@ ${text}
       (exprFilter.who === '전체' || x.author === exprFilter.who) &&
       (!q || `${x.from || ''} ${x.to || ''} ${x.phrase || ''} ${x.note}`.toLowerCase().includes(q)));
     const KIND = { grammar: ['문법', 'k-grammar'], native: ['원어민', 'k-native'], expr: ['표현', 'k-expr'] };
-    const rows = list.map((x) => `<li class="${KIND[x.kind][1]}">
+    const quiz = exprFilter.quiz;
+    if (quiz && exprFilter.seed) {
+      const h = (str) => { let v = exprFilter.seed; for (const ch of str) v = Math.imul(v ^ ch.charCodeAt(0), 2654435761) >>> 0; return v; };
+      const key = (x) => h(`${x.topic.id}|${x.author}|${x.kind}|${x.from || x.phrase}|${x.to || ''}`);
+      list.sort((a, b) => key(a) - key(b));
+    }
+    // 복습 모드: 문법·원어민은 "고친 문장 + 설명"을, 표현은 "영어 표현"을 가리고 한국어 뜻만 보여줌
+    const rows = list.map((x) => {
+      const canQuiz = quiz && (x.kind !== 'expr' || !!x.note);
+      const isExpr = x.kind === 'expr';
+      const answer = isExpr
+        ? `<span class="q-ans"><span class="c-phrase">${esc(x.phrase)}</span>${speakBtn(x.phrase)}</span>`
+        : `<span class="q-ans"><span class="c-to">${esc(x.to)}</span>${speakBtn(x.to)}</span>`;
+      const blank = canQuiz ? `<span class="q-blank">${isExpr ? '영어로는? 탭해서 확인' : '어떻게 고칠까? 탭해서 확인'}</span>` : '';
+      const note = x.note ? `<div class="c-note${isExpr ? '' : ' q-ans'}">${glue(esc(x.note))}</div>` : '';
+      const main = isExpr
+        ? (canQuiz ? `${note}${blank}${answer}` : `${answer}${note}`)
+        : `<span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> ${blank}${answer}${note}`;
+      return `<li class="${KIND[x.kind][1]}${canQuiz ? ' q-item' : ''}">
         <span class="kind-tag">${KIND[x.kind][0]}</span>
         <div class="expr-main">
-          ${x.kind === 'expr' ? `<span class="c-phrase">${esc(x.phrase)}</span>` : `<span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>`}
-          ${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}
+          ${main}
           <a class="expr-src" href="#/topic/${x.topic.id}">${fmtDate(x.topic.date)} · ${esc(x.topic.title)} · ${esc(x.author)}</a>
         </div>
-      </li>`).join('');
+      </li>`;
+    }).join('');
     const tab = (k, label) => `<button class="cat ${exprFilter.kind === k ? 'active' : ''}" data-kind="${k}">${label} ${counts[k]}</button>`;
+    const quizCount = quiz ? (rows.match(/ q-item"/g) || []).length : 0;
     $app.innerHTML = `
       <div class="section-head"><h2>표현 노트</h2></div>
-      <p class="muted">글마다 정리한 문법 실수와 원어민 표현이 여기에 모여요. 복습용.</p>
+      <p class="muted">글마다 정리한 문법 실수와 원어민 표현이 여기에 모여요. <b>가리고 복습</b>을 켜면 정답을 가려 두고 하나씩 떠올려 볼 수 있어요.</p>
       <div class="filters">
-        <div class="cat-chips">${tab('all', '전체')}${tab('native', '원어민')}${tab('grammar', '문법')}${tab('expr', '표현')}</div>
+        <div class="cat-chips">${tab('all', '전체')}${tab('native', '원어민')}${tab('grammar', '문법')}${tab('expr', '표현')}
+          <button class="cat cat-quiz ${quiz ? 'active' : ''}" id="btnQuiz" aria-pressed="${quiz}">${quiz ? '복습 끄기' : '가리고 복습'}</button></div>
         <div class="row-gap">
           <select id="exprWho">${['전체', ...MEMBERS].map((n) => `<option ${n === exprFilter.who ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select>
           <input type="search" id="exprSearch" placeholder="검색" value="${esc(exprFilter.q)}">
         </div>
       </div>
-      ${rows ? `<ul class="card expr-list">${rows}</ul>` : `<div class="card empty">${Mascot(items.length ? 'dots' : 'think', 90)}${items.length ? '조건에 맞는 표현 없음.' : '아직 정리된 표현이 없어요. 글쓰기에서 AI 답변 2번을 수정 내역 칸에 붙여넣어 보세요.'}</div>`}`;
+      ${quiz && quizCount ? `<div class="quiz-bar">
+          <span id="qProgress">확인 0 / ${quizCount}</span>
+          <span class="row-gap"><button class="btn btn-sm" id="btnShuffle">섞기</button><button class="btn btn-sm" id="btnRevealAll">전부 보기</button></span>
+        </div>` : ''}
+      ${rows ? `<ul class="card expr-list${quiz ? ' quiz' : ''}">${rows}</ul>` : `<div class="card empty">${Mascot(items.length ? 'dots' : 'think', 90)}${items.length ? '조건에 맞는 표현 없음.' : '아직 정리된 표현이 없어요. 글쓰기에서 AI 답변 2번을 수정 내역 칸에 붙여넣어 보세요.'}</div>`}`;
     $app.querySelectorAll('[data-kind]').forEach((b) => { b.onclick = () => { exprFilter.kind = b.dataset.kind; render(); }; });
+    document.getElementById('btnQuiz').onclick = () => { exprFilter.quiz = !exprFilter.quiz; exprFilter.seed = 0; render(); };
+    if (quiz && quizCount) {
+      const listEl = $app.querySelector('.expr-list');
+      const progress = () => { document.getElementById('qProgress').textContent = `확인 ${listEl.querySelectorAll('.q-item.revealed').length} / ${quizCount}`; };
+      listEl.onclick = (e) => {
+        if (e.target.closest('a')) return;
+        const li = e.target.closest('.q-item');
+        if (!li) return;
+        li.classList.toggle('revealed');
+        progress();
+      };
+      document.getElementById('btnShuffle').onclick = () => { exprFilter.seed = (Math.random() * 2 ** 31) | 1; render(); };
+      document.getElementById('btnRevealAll').onclick = () => { listEl.querySelectorAll('.q-item').forEach((li) => li.classList.add('revealed')); progress(); };
+    }
     document.getElementById('exprWho').onchange = (e) => { exprFilter.who = e.target.value; render(); };
     const search = document.getElementById('exprSearch');
     search.oninput = () => {
@@ -1031,7 +1195,7 @@ ${text}
     const prev = cats[idx - 1];
     const next = cats[idx + 1];
     const examples = (list) => (list && list.length ? `<ul class="g-examples">${list.map(([en, ko, note]) => `<li>
-        <div class="g-en">${fmt(en)}</div>
+        <div class="g-en">${fmt(en)}${speakBtn(en)}</div>
         <div class="g-ko">${fmt(ko)}${note ? ` <span class="g-note">·\u00a0${fmt(note)}</span>` : ''}</div>
       </li>`).join('')}</ul>` : '');
     const sections = (cat.sections || []).map((sec) => `<div class="g-section">
@@ -1064,13 +1228,17 @@ ${text}
 
         ${cat.native && cat.native.length ? `<div class="corr corr-native"><div class="corr-title">원어민 감각</div><ul>${cat.native.map((n) => `<li>${fmt(n)}</li>`).join('')}</ul></div>` : ''}
 
-        ${cat.mistakes && cat.mistakes.length ? `<div class="corr corr-grammar"><div class="corr-title">자주 하는 실수 <span class="corr-count">${cat.mistakes.length}</span></div><ul>${cat.mistakes.map(([wrong, right, why]) => `<li><span class="c-from">${esc(wrong)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(right)}</span>${why ? `<div class="c-note">${fmt(why)}</div>` : ''}</li>`).join('')}</ul></div>` : ''}
+        ${cat.mistakes && cat.mistakes.length ? `<div class="corr corr-grammar"><div class="corr-title">자주 하는 실수 <span class="corr-count">${cat.mistakes.length}</span></div><ul>${cat.mistakes.map(([wrong, right, why]) => `<li><span class="c-from">${esc(wrong)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(right)}</span>${speakBtn(right)}${why ? `<div class="c-note">${fmt(why)}</div>` : ''}</li>`).join('')}</ul></div>` : ''}
 
         <nav class="g-nav">
           ${prev ? `<a class="btn" href="#/grammar/${prev.id}">‹ ${esc(prev.title)}</a>` : '<span></span>'}
           ${next ? `<a class="btn btn-primary" href="#/grammar/${next.id}">${esc(next.title)} ›</a>` : '<span></span>'}
         </nav>
       </article>`;
+    // 모바일에선 카테고리 탭이 가로 스크롤 한 줄 → 지금 보는 카테고리를 가운데로
+    const tabs = $app.querySelector('.g-tabs');
+    const active = tabs.querySelector('.active');
+    if (active && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = active.offsetLeft - tabs.offsetLeft - (tabs.clientWidth - active.offsetWidth) / 2;
   }
 
   // ================================================================ router
