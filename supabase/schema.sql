@@ -169,3 +169,13 @@ where not exists (
   select 1 from public.videos x
   where x.youtube_id is not distinct from v.youtube_id and x.playlist_id is not distinct from v.playlist_id
 );
+
+-- 기본 영어공부 영상 (3차)
+insert into public.videos (url, youtube_id, category, added_by, created_at)
+select v.url, v.youtube_id, '기타', '오한영', now() + make_interval(secs => 30 - v.ord)
+from (values
+  ('https://www.youtube.com/watch?v=TIx-yVScq9g', 'TIx-yVScq9g', 0),
+  ('https://www.youtube.com/watch?v=H6XNM8x3Bt4', 'H6XNM8x3Bt4', 1),
+  ('https://www.youtube.com/watch?v=Gaw7MoofW8s', 'Gaw7MoofW8s', 2)
+) as v(url, youtube_id, ord)
+where not exists (select 1 from public.videos x where x.youtube_id = v.youtube_id);
