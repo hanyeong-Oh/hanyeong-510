@@ -27,6 +27,9 @@ window.APP_CONFIG = {
   // 나중에 여기에 추가해도 아직 안 들어간 것만 자동으로 추가됩니다.
   // (제목과 썸네일은 사이트를 열면 자동으로 채워집니다)
   DEFAULT_VIDEOS: [
+    { url: 'https://www.youtube.com/watch?v=TIx-yVScq9g', category: '기타' },
+    { url: 'https://www.youtube.com/watch?v=H6XNM8x3Bt4', category: '기타' },
+    { url: 'https://www.youtube.com/watch?v=Gaw7MoofW8s', category: '기타' },
     { url: 'https://www.youtube.com/playlist?list=PLg8Zuy2VA0n9R-oAhPrYoiU-dcwj7TE9l', category: '기타' },
     { url: 'https://www.youtube.com/watch?v=fccvj1TKpkg', category: '기타' },
     { url: 'https://www.youtube.com/watch?v=3mWbOzQ6kKg', category: '기타' },
