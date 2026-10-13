@@ -49,7 +49,7 @@ window.GRAMMAR = [
   {
     id: 'tense',
     title: '시제',
-    sub: '현재 · 진행 · 현재완료 · 과거 · 미래',
+    sub: '현재 · 진행 · 현재완료 · 과거 · 미래 · 미래완료',
     summary: '시제는 "언제"보다 "말하는 사람이 그 일을 어떻게 보느냐"예요.',
     basics: [
       '**현재형**은 "지금 이 순간"이 아니라 **늘 그런 일**(습관, 사실)이에요. I work in Seoul.',
@@ -81,6 +81,37 @@ window.GRAMMAR = [
           '**현재진행형**: 약속·일정이 확정된 가까운 미래 → I\'m meeting a client at 3.',
         ],
       },
+      {
+        title: '미래완료 — 미래의 한 시점에서 뒤돌아보기',
+        points: [
+          '**will (be going to) + have p.p.** = 미래의 어느 시점까지 **이미 끝나 있을** 일',
+          '현재완료가 "지금"을 기준으로 뒤돌아본다면, 미래완료는 **미래의 한 시점**을 기준으로 뒤돌아봐요.',
+          '그래서 기준 시점이 꼭 있어요: **when / before / by / by the time** ~',
+          '**기간**도 말할 수 있어요: 그 시점이 되면 ~한 지 얼마나 된다 (for + 기간)',
+          '해석할 때 "**이미**", "~해 있을 거야"를 넣으면 자연스러워요.',
+        ],
+        examples: [
+          ['When you arrive, the train will have left.', '네가 도착할 때쯤이면 기차는 이미 떠났을 거야.', '도착하는 시점 기준으로 이미 끝남'],
+          ['I will have arrived at the office by 8.', '8시까지는 사무실에 도착해 있을 거야.'],
+          ['By the time I finish this course, I will have taken ten tests.', '이 수업 끝날 때쯤이면 시험을 열 번 본 셈이 될 거야.'],
+          ['By next November, I will have received my promotion.', '내년 11월쯤이면 승진해 있을 거야.'],
+          ['Will you have eaten when I pick you up?', '내가 데리러 갈 때쯤엔 밥 먹었을까?'],
+          ['I will have been in London for six months by the time I leave.', '떠날 때쯤이면 런던에 온 지 6개월이 될 거야.', '기간'],
+          ['Next Monday we will have been married for ten years.', '다음 주 월요일이면 우리 결혼한 지 10년이야.', '기간'],
+        ],
+      },
+      {
+        title: '미래 vs 미래완료 — at과 by',
+        points: [
+          'I will leave **at** 10. → 10시 **정각에** 떠날 거야. (그 순간에 하는 일)',
+          'I will have left **by** 10. → 10시 **전에 이미** 떠나 있을 거야. (그때쯤엔 끝나 있음)',
+          '덤으로, will have p.p.는 **"아마 ~했을 거야"(지금이나 방금 전 일에 대한 강한 추측)**로도 써요. 이때 will은 미래가 아니라 확신이에요.',
+        ],
+        examples: [
+          ['The train will have left by now.', '기차는 지금쯤 떠났을 거야.', '지금 시점 추측'],
+          ['As you will have noticed, ...', '눈치채셨겠지만, ...', '메일·발표에서 자주 쓰는 표현'],
+        ],
+      },
     ],
     native: [
       '대화에선 going to → **gonna**, want to → **wanna**로 들려요. (글로 쓸 땐 원래대로)',
@@ -91,6 +122,7 @@ window.GRAMMAR = [
       ['I have seen him yesterday.', 'I saw him yesterday.', 'yesterday(끝난 시점)엔 현재완료 ✗'],
       ['I am working here since 2020.', "I've been working here since 2020.", 'since + 과거부터 지금까지 → 현재완료(진행)'],
       ['I will meet my friend tomorrow. (이미 약속됨)', "I'm meeting my friend tomorrow.", '확정된 약속은 현재진행형이 자연스러워요.'],
+      ['I will finish it by the time you will come.', 'I will have finished it by the time you come.', 'by the time 절 안은 현재형, 그때까지 끝나 있을 일은 미래완료'],
     ],
   },
 
@@ -403,6 +435,63 @@ window.GRAMMAR = [
   },
 
   {
+    id: 'time-conj',
+    title: '시간 표현 · 양보 접속사',
+    sub: 'after · later · in · since · before · ago / even if · even though · although · though',
+    summary: '"언제부터 세느냐"(기준점)와 "진짜 일어난 일이냐"만 구별하면 돼요.',
+    basics: [
+      '시간 표현은 **기준점**이 다 달라요. 지금 기준인지, 어떤 일·시점 기준인지 먼저 보세요.',
+      '"~지만 / ~라도"(양보)는 **실제로 그런 일인지, 그냥 가정인지**로 나눠요.',
+    ],
+    sections: [
+      {
+        title: '시간 표현 — 기준점이 뭐냐',
+        points: [
+          '**after** = 특정한 일·시점 **다음에** → after lunch, after the meeting, after 6',
+          '**later** = 기준 없이 "나중에", 혹은 "그로부터 ~ 뒤에" (과거·미래 둘 다 OK) → See you later. / two days later',
+          '**in** = **지금부터** ~ 뒤에 (미래) → in 10 minutes, in a week',
+          '**since** = 과거의 한 시점부터 **지금까지** 쭉 → 현재완료와 같이 써요.',
+          '**before** = 특정한 일·시점 **전에** → before dinner, before I leave',
+          '**ago** = **지금부터** 거꾸로 ~ 전에 → 과거형과 같이 써요. (two years ago)',
+        ],
+        examples: [
+          ["I'll call you after the meeting.", '회의 끝나고 전화할게.', '회의가 기준'],
+          ['He left, and two days later he came back.', '그는 떠났고, 이틀 뒤에 돌아왔다.', '"떠난 날"로부터 이틀 뒤 = later'],
+          ["I'll be there in 10 minutes.", '10분 뒤에 도착해.', '지금부터 10분 뒤'],
+          ["I've lived here since 2020.", '2020년부터 여기 살고 있어.', '2020 → 지금까지'],
+          ['I met her three years ago.', '3년 전에 그녀를 만났어.', '지금부터 3년 전, 과거형'],
+        ],
+      },
+      {
+        title: '양보 접속사 — 진짜냐, 가정이냐',
+        points: [
+          '**even if** = (일어날지 모르지만) **설령 ~하더라도** → 가정, 실제 일 아님',
+          '**even though** = (이미 그런데도) **~인데도** → 실제 사실, 강조',
+          '**although** = ~이지만 → 실제 사실, 조금 격식 있는 말',
+          '**though** = ~이지만 → 실제 사실, 더 가벼운 말. 문장 **맨 끝**에도 붙일 수 있어요.',
+        ],
+        examples: [
+          ["Even if it rains, I'll go.", '설령 비가 오더라도 갈 거야.', '비가 올지 안 올지 모름'],
+          ['Even though it was raining, I went.', '비가 오고 있었는데도 갔어.', '실제로 비가 왔음'],
+          ['Although he is young, he is very wise.', '그는 어리지만 아주 현명하다.'],
+          ['It was a good movie. A bit long, though.', '좋은 영화였어. 좀 길긴 했지만.', '문장 끝 though'],
+        ],
+      },
+    ],
+    native: [
+      '말할 땐 although보다 **though**가 훨씬 많이 나와요. 특히 문장 끝에 툭 붙이는 "~, though."',
+      '"See you later", "Talk to you later", "Catch you later"는 헤어질 때 인사 단골.',
+      '"I\'ll be back in a sec / in a minute"(금방 올게)처럼 in은 회화에서 자주 써요.',
+    ],
+    mistakes: [
+      ['I met her before 3 years.', 'I met her 3 years ago.', '지금부터 ~ 전 = ago'],
+      ["I'll be back after 10 minutes.", "I'll be back in 10 minutes.", '지금부터 ~ 뒤 = in'],
+      ['I have lived here since 3 years.', "I've lived here for 3 years.", 'since 뒤엔 시점, 기간은 for'],
+      ['Even if it was raining, I went out.', 'Even though it was raining, I went out.', '실제로 비가 왔으면 even though'],
+    ],
+  },
+
+  {
     id: 'modal',
     title: '조동사',
     sub: 'can · will · should · must · may',
@@ -628,19 +717,33 @@ window.GRAMMAR = [
 
   {
     id: 'relative',
-    title: '관계사',
-    sub: 'who · which · that · what',
+    title: '관계사 (형용사절)',
+    sub: 'who · which · that · whose · what',
     summary: '명사 뒤에 문장을 붙여서 "어떤 명사인지" 설명하는 연결고리예요.',
     basics: [
       '두 문장을 하나로 잇는 방법: I have a friend. + She lives in London. → I have a friend **who** lives in London.',
-      '사람 → **who**, 사물 → **which**, 둘 다 → **that** (대화에선 that이 제일 흔해요)',
-      '**what** = the thing which (~하는 것). 앞에 명사가 없어요.',
+      '**선행사(명사) + 관계대명사 + 불완전한 문장** = 앞 명사를 꾸미는 **형용사절**이에요.',
+      '"불완전한 문장" = 주어나 목적어가 하나 빠진 문장. 빠진 자리를 관계대명사가 대신해요.',
+      '사람 → **who**, 사물 → **which**, 둘 다 → **that** (대화에선 that이 제일 흔해요), 소유 → **whose**',
+      '**what** = the thing which (~하는 것). 앞에 명사(선행사)가 없어요. → 형용사절이 아니라 **명사절**이에요.',
     ],
     sections: [
       {
+        title: '주격 vs 목적격 — 빠진 자리 찾기',
+        points: [
+          '관계대명사 바로 뒤에 **동사**가 오면 → 주어가 빠진 것 (**주격**)',
+          '관계대명사 뒤에 **주어 + 동사**가 오면 → 목적어가 빠진 것 (**목적격**)',
+        ],
+        examples: [
+          ['The box that is on the table is mine.', '탁자 위에 있는 상자는 내 거야.', 'that = 주어 (that is on the table)'],
+          ['There is a girl that I met.', '내가 만났던 여자애가 있어.', 'that = met의 목적어'],
+          ['I have a friend whose father is a pilot.', '아빠가 조종사인 친구가 있어.', 'whose + 명사 = 누구의'],
+        ],
+      },
+      {
         title: '생략할 수 있을 때',
         points: [
-          '관계사 뒤에 주어가 또 있으면(목적격) 생략 가능 → 원어민은 대부분 생략해요.',
+          '**목적격** 관계사는 생략 가능 → 원어민은 대부분 생략해요.',
           'This is the book (that) I bought yesterday.',
         ],
         examples: [
@@ -649,21 +752,163 @@ window.GRAMMAR = [
         ],
       },
       {
+        title: 'that을 못 쓰는 3가지',
+        points: [
+          '① **소유격 없음** → whose 자리에 that ✗',
+          '② **콤마(,) 뒤 ✗** → 덧붙이는 설명엔 who / which',
+          '③ **전치사 바로 뒤 ✗** → the house in which I live ⭕ / in that ✗ (전치사를 뒤로 빼면 OK: the house that I live in)',
+        ],
+      },
+      {
         title: '콤마(,) 있는 관계사 = 덧붙이는 설명',
         points: [
           'My brother, who lives in Busan, is a doctor. (형이 한 명뿐, 부산 산다는 건 추가 정보)',
-          '콤마 뒤에는 **that을 못 써요.**',
+          'which는 앞 문장 **전체**를 받을 수도 있어요: He was late again, which made me angry.',
+        ],
+      },
+      {
+        title: '관계부사 — where · when · why · how',
+        points: [
+          '관계부사 뒤에는 **완전한 문장**이 와요. (관계대명사 뒤는 불완전)',
+          'where = 장소, when = 때, why = 이유, how = 방법 (the way 와 how는 둘 중 하나만)',
+        ],
+        examples: [
+          ['This is the café where we first met.', '여기가 우리 처음 만난 카페야.'],
+          ["I remember the day when I got this job.", '이 일 얻은 날이 기억나.'],
+          ["That's the reason (why) I called you.", '그래서 너한테 전화한 거야.'],
+          ["That's how I learned English.", '그렇게 영어를 배웠어.', 'the way how ✗'],
         ],
       },
     ],
     native: [
       '말할 땐 which보다 **that**, 목적격 관계사는 **생략**이 기본이에요: "the movie I saw", "the guy I told you about".',
       '"That\'s what I\'m saying!" (내 말이 그거야!), "What I mean is ~" 처럼 what 표현은 회화 필수.',
+      '"That\'s why ~"(그래서 ~한 거야), "That\'s how ~"(그렇게 ~한 거야)는 대화에서 엄청 자주 써요.',
     ],
     mistakes: [
       ['The man which I met was kind.', 'The man (who) I met was kind.', '사람엔 who/that'],
       ['This is the thing what I wanted.', 'This is what I wanted. / the thing (that) I wanted', 'what 앞엔 명사 안 씀'],
       ['My mom, that lives in Daegu, called me.', 'My mom, who lives in Daegu, called me.', '콤마 뒤 that ✗'],
+      ['This is the house in that I live.', 'This is the house in which I live. / the house (that) I live in', '전치사 바로 뒤 that ✗'],
+    ],
+  },
+
+  {
+    id: 'noun-clause',
+    title: '명사절',
+    sub: 'that · if/whether · what · 의문사절',
+    summary: '문장 하나를 통째로 "명사"처럼 쓰는 방법이에요. "~하는 것", "~인지"로 해석돼요.',
+    basics: [
+      '**명사절** = 문장이 명사 역할을 하는 것. 명사니까 **주어 / 목적어 / 보어 / 전치사의 목적어** 자리에 들어가요.',
+      '명사절을 만드는 접속사: **that**(~라는 것), **if / whether**(~인지 아닌지), **what**(~하는 것), **의문사**(누가/언제/어디서/왜/어떻게 ~인지)',
+      '구별 포인트: that · if · whether · 의문부사(when/where/why/how) 뒤는 **완전한 문장**, what · who · which 뒤는 **불완전한 문장**이에요.',
+      '관계사와의 차이: 관계사(형용사절)는 **앞에 꾸며 줄 명사**가 있고, 명사절은 **그 자체가 명사**예요.',
+    ],
+    sections: [
+      {
+        title: '① that + 완전한 문장 = "~라는 것"',
+        points: [
+          '주어, 목적어, 보어 자리에 다 쓸 수 있어요.',
+          '단, **전치사 뒤에는 못 써요.** (about that he… ✗)',
+          '목적어 자리 that은 대화에서 거의 **생략**해요: I think (that) ~',
+          '4형식 동사 뒤 직접목적어로도 써요. "**~에게 ~라고 하다**"로 해석이 자연스러우면 OK → He told me that he was busy.',
+        ],
+        examples: [
+          ['That he attended the event is unusual.', '그가 행사에 참석했다는 것은 이례적이다.', '주어'],
+          ['I think that my mother is pretty.', '나는 우리 엄마가 예쁘다고 생각한다.', '목적어'],
+          ['The best thing about this car is that it is very convenient.', '이 차의 가장 좋은 점은 아주 편리하다는 거야.', '보어'],
+          ['He told me that he was busy.', '그는 나에게 바쁘다고 말했다.', '4형식 직접목적어'],
+        ],
+      },
+      {
+        title: '동격의 that — 앞 명사의 "내용"을 설명',
+        points: [
+          '**fact / news / claim / rumor / opinion / truth / idea + that + 완전한 문장** = "~라는 사실/소식/소문"',
+          '관계대명사 that과 달리 뒤가 **완전한 문장**이에요. 앞 명사 = that 이하 내용.',
+        ],
+        examples: [
+          ['The rumor that he stole the money is true.', '그가 돈을 훔쳤다는 소문은 사실이다.', 'rumor = 그가 돈을 훔쳤다'],
+          ['I heard the news that she got married.', '그녀가 결혼했다는 소식을 들었어.'],
+        ],
+      },
+      {
+        title: '② if / whether + 완전한 문장 = "~인지 (아닌지)"',
+        points: [
+          '**whether (or not)** 은 주어·목적어·보어·전치사 뒤 어디든 OK.',
+          '**if** 는 **동사의 목적어** 자리에서만 써요. 문장 맨 앞 주어 자리 ✗, 전치사 뒤 ✗',
+        ],
+        examples: [
+          ["I don't know if he will come.", '그가 올지 모르겠어.', '목적어 → if OK'],
+          ['Whether he comes or not is not important.', '그가 오든 안 오든 중요하지 않아.', '주어 → whether만'],
+          ["It depends on whether we have time.", '우리가 시간이 있느냐에 달렸어.', '전치사 뒤 → whether만'],
+        ],
+      },
+      {
+        title: '③ what + 불완전한 문장 = "~하는 것"',
+        points: [
+          '관계대명사 what = **the thing which**. 앞에 명사(선행사)가 없어요.',
+          '**what vs that**: 뒤 문장이 **불완전**하면 what, **완전**하면 that',
+        ],
+        examples: [
+          ['What I really want is that I live happily.', '내가 정말 원하는 건 행복하게 사는 거야.', 'What I want (want의 목적어가 빠짐) / that I live happily (완전)'],
+          ["I can't believe what he said.", '그가 한 말을 믿을 수가 없어.'],
+          ['I believe that he is honest.', '나는 그가 정직하다고 믿어.', '뒤가 완전 → that'],
+        ],
+      },
+      {
+        title: '④ 의문사절 = 간접의문문',
+        points: [
+          '의문문이 문장 안으로 들어가면 순서가 바뀌어요: **의문사 + 주어 + 동사** (평서문 순서)',
+          'Where does he live? → I know **where he lives**. (does 사라짐)',
+          '**의문사 + to 동사원형** = 의문사 + 주어 + should + 동사원형 → I don\'t know what to do. = what I should do',
+          '의문사 자리에 **whether**도 쓸 수 있어요: whether to go or not (갈지 말지)',
+          '**의문대명사 what** = "무엇" (뒤가 불완전) / **의문형용사 what + 명사** = "어떤 ~" → what color, what time',
+        ],
+        examples: [
+          ['Do you know where he lives?', '그가 어디 사는지 알아?', 'where does he live ✗'],
+          ['Can you tell me what time it is?', '지금 몇 시인지 알려 줄래요?', 'what + 명사 = 어떤 ~'],
+          ["I don't know what to say.", '뭐라고 말해야 할지 모르겠어.', '= what I should say'],
+          ['Who do you want to meet?', '누구를 만나고 싶어?', 'who = meet의 목적어 (불완전)'],
+        ],
+      },
+      {
+        title: '⑤ 복합관계사 — ~ever',
+        points: [
+          '**whoever, whatever, whichever** + 불완전한 문장 → **명사절**(~하는 누구든/무엇이든) 또는 **부사절**(누가/무엇을 ~하더라도)',
+          '**whenever, wherever, however** + 완전한 문장 → **부사절**(언제/어디서/아무리 ~하더라도)',
+        ],
+        examples: [
+          ['You can invite whoever you want.', '네가 원하는 누구든 초대해도 돼.', '명사절 (목적어)'],
+          ['Whatever you do, do your best.', '무엇을 하든 최선을 다해.', '부사절'],
+          ['Call me whenever you need help.', '도움이 필요할 땐 언제든 전화해.'],
+        ],
+      },
+      {
+        title: 'that의 쓰임 총정리',
+        points: [
+          '① **관계대명사**: the book that I read (앞 명사 꾸밈, 뒤 불완전)',
+          '② **명사절 접속사**: I think that ~ (~라는 것, 뒤 완전)',
+          '③ **동격**: the fact that ~ (앞 명사 = 뒤 내용, 뒤 완전)',
+          '④ **부사절 접속사**: so that(~하도록), now that(~이니까), in that(~라는 점에서), so ~ that(너무 ~해서)',
+          '⑤ **지시대명사**: That is my car. (저것)',
+          '⑥ **지시형용사**: that man (저 ~)',
+          '⑦ **지시부사**: It\'s not that hard. (그렇게, 그 정도로)',
+          '⑧ **가주어-진주어**: It is true that ~ (긴 that절을 뒤로 보내고 it을 앞에)',
+          '⑨ **강조 구문**: It was Tom that broke the window. (깬 건 바로 톰이었어)',
+        ],
+      },
+    ],
+    native: [
+      '"I think ~", "I guess ~", "I heard ~", "I\'m sure ~" 뒤 that은 거의 생략해요: "I heard you got promoted!"',
+      '긴 that절을 주어로 쓰는 건 어색해요. **It ~ that** 으로 바꿔 말하는 게 자연스러워요: "It\'s weird that he came."',
+      '물어볼 땐 직접 묻기보다 간접의문문이 더 공손해요: "Do you know where the restroom is?", "Can I ask what you do?"',
+      '"Whatever." (알게 뭐야 / 아무거나), "Whenever you\'re ready." (준비되면 언제든)은 회화 단골.',
+    ],
+    mistakes: [
+      ['Do you know where does he live?', 'Do you know where he lives?', '간접의문문은 주어 + 동사 순서'],
+      ["I'm worried about that he is sick.", "I'm worried that he is sick.", '전치사 뒤 that절 ✗'],
+      ['If he comes is not important.', 'Whether he comes (or not) is not important.', '주어 자리엔 if ✗'],
+      ['That I want is a vacation.', 'What I want is a vacation.', '뒤가 불완전(want의 목적어 없음) → what'],
     ],
   },
 
