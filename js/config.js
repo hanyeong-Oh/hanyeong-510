@@ -8,7 +8,7 @@ window.APP_CONFIG = {
   // email 은 Supabase 로그인에 사용하는 이메일입니다. (로컬 모드에서는 비워둬도 됨)
   MEMBERS: [
     { name: '한영', email: '' },
-    { name: '동료', email: '' },
+    { name: '정민', email: '' },
   ],
 
   // 글쓰기 주제를 정하는 멤버 (MEMBERS 의 name 과 같아야 함). 다른 멤버는 주제를 추가/수정/삭제할 수 없습니다.

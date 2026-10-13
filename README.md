@@ -38,7 +38,7 @@ supabase/schema.sql # Supabase 테이블 생성 SQL
 ```js
 MEMBERS: [
   { name: '한영', email: '' },
-  { name: '동료', email: '' },
+  { name: '정민', email: '' },
 ],
 TOPIC_MANAGER: '한영',   // 주제를 정하는 사람
 WRITING_DAYS: [1, 3, 5], // 월·수·금
@@ -60,7 +60,7 @@ WRITING_DAYS: [1, 3, 5], // 월·수·금
 ```js
 MEMBERS: [
   { name: '한영', email: 'me@company.com' },     // 3번에서 만든 이메일
-  { name: '동료', email: 'coworker@company.com' },
+  { name: '정민', email: 'coworker@company.com' },
 ],
 SUPABASE_URL: 'https://xxxx.supabase.co',
 SUPABASE_ANON_KEY: 'eyJhbGciOi...',
