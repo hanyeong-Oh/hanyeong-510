@@ -237,7 +237,7 @@ input:focus, select:focus, textarea:focus { outline: 3px solid var(--blue); outl
 .cat.active { background: var(--ink); color: #fff; }
 
 .video, .video-mini { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
-.thumb { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; border-bottom: 2.5px solid var(--ink); padding: 0; background: var(--soft); cursor: pointer; }
+.thumb { position: relative; display: block; text-decoration: none; width: 100%; aspect-ratio: 16 / 9; border: 0; border-bottom: 2.5px solid var(--ink); padding: 0; background: var(--soft); cursor: pointer; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .thumb .play {
   position: absolute; inset: 0; margin: auto; width: 56px; height: 40px;

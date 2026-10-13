@@ -169,12 +169,6 @@
   const thumbOf = (v) => (v.youtube_id ? `https://i.ytimg.com/vi/${v.youtube_id}/hqdefault.jpg` : v.thumb_url || '');
   const videoTitle = (v) => v.title || (v.playlist_id ? '재생목록' : '(제목 없음)');
 
-  function embedSrc(v) {
-    return v.playlist_id
-      ? `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(v.playlist_id)}&autoplay=1&rel=0`
-      : `https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.youtube_id)}?autoplay=1&rel=0`;
-  }
-
   // 제목·썸네일 가져오기 (재생목록은 첫 영상 썸네일)
   async function fetchYoutubeInfo(url) {
     const endpoints = [
@@ -245,31 +239,63 @@
     localStorage.setItem(KEY, JSON.stringify([...done]));
   }
 
+  // 썸네일을 누르면 유튜브로 바로 이동 (새 탭, 휴대폰은 유튜브 앱)
   function thumbButton(v) {
     const src = thumbOf(v);
-    return `<button class="thumb ${src ? '' : 'thumb-empty'}" data-play="${v.id}">
+    return `<a class="thumb ${src ? '' : 'thumb-empty'}" href="${esc(v.url)}" target="_blank" rel="noopener" title="유튜브에서 보기">
         ${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : Mascot('study', 70)}
         ${v.playlist_id ? '<span class="pl-badge">재생목록</span>' : ''}
         <span class="play">▶</span>
-      </button>`;
+      </a>`;
   }
 
   // ================================================================ AI prompt
+  // AI(ChatGPT·Claude·Gemini 등)에 붙여넣을 검수 요청문
   function buildReviewPrompt(topic, original) {
-    return [
-      'You are a friendly English writing tutor for a Korean office worker.',
-      `Today's topic: "${topic.title}"${topic.description ? ` (${topic.description})` : ''}`,
-      '',
-      'Please review my writing below.',
-      '1. Give me a corrected version that sounds natural. Keep my original meaning and tone.',
-      '2. List each correction with a short explanation in Korean (원래 표현 → 수정 표현: 이유).',
-      '3. Suggest 3 useful expressions related to this topic, with example sentences.',
-      '',
-      'My writing:',
-      '"""',
-      original.trim(),
-      '"""',
-    ].join('\n');
+    const text = original.trim();
+    return `당신은 한국인 직장인을 가르치는 꼼꼼하고 친절한 영어 글쓰기 선생님입니다.
+아래는 제가 주제에 맞춰 직접 쓴 영어 글입니다. 문장 하나하나 빠짐없이 검수해 주세요.
+
+[주제] ${topic.title}${topic.description ? `\n[주제 설명] ${topic.description}` : ''}
+[분량] ${wordCount(text)} words
+
+[검수 원칙]
+- 제 원래 의미, 말투, 내용은 최대한 유지하고 새로운 내용은 추가하지 마세요.
+- 틀린 부분뿐 아니라, 문법적으로는 맞지만 원어민이 어색하게 느낄 표현도 모두 고쳐 주세요.
+- 문법, 시제, 관사(a/the), 전치사, 단수·복수, 주어-동사 일치, 어순, 단어 선택(콜로케이션), 철자, 대소문자, 문장부호를 문장마다 하나씩 확인해 주세요.
+- 너무 격식 있거나 어려운 표현으로 바꾸지 말고, 직장인이 실제로 말하고 쓸 수 있는 자연스러운 수준으로 고쳐 주세요.
+- 고칠 곳이 없는 문장은 억지로 바꾸지 마세요.
+
+[답변 형식] 아래 순서와 제목을 그대로 지켜 주세요.
+
+1. 수정본
+- 원문의 문단·줄바꿈 구조를 그대로 유지한 채, 고친 글 전체를 코드 블록 하나에 넣어 주세요.
+- 코드 블록 안에는 설명이나 표시(굵게, 괄호, 취소선 등) 없이 수정된 영어 글만 넣어 주세요. (원문과 자동으로 비교할 예정입니다)
+
+2. 수정 내역
+- 고친 곳마다 아래 형식으로 빠짐없이 적어 주세요. 한 문장에 여러 군데가 있으면 각각 따로 적어 주세요.
+  번호. [원래 표현] → [수정 표현]
+     - 종류: 문법 / 시제 / 관사 / 전치사 / 단어 선택 / 어순 / 철자 / 문장부호 / 자연스러운 표현 중 하나
+     - 이유: 왜 틀렸거나 어색한지 한국어로 쉽게 설명 (한국인이 자주 하는 실수라면 그 점도 알려주세요)
+
+3. 더 자연스러운 버전
+- 원어민이라면 이렇게 쓸 것 같은 한 단계 더 자연스러운 버전을 보여 주고, 수정본과 다른 점 2~3가지를 한 줄씩 설명해 주세요.
+
+4. 나의 실수 패턴
+- 이번 글에서 반복되는 실수나 약점 1~3가지와, 다음 글에서 주의할 점을 알려주세요.
+
+5. 오늘의 표현
+- 이 주제에서 바로 써먹을 수 있는 유용한 영어 표현 5개를 아래 형식으로 알려주세요.
+  표현 — 한국어 뜻 — 예문 1개 (한국어 해석 포함)
+
+6. 평가
+- 문법 / 어휘 / 자연스러움 / 내용 전달을 각각 5점 만점으로 매기고, 대략적인 수준(CEFR A2~C1)을 알려주세요.
+- 잘한 점 1가지를 꼭 칭찬해 주세요.
+
+[제가 쓴 글]
+"""
+${text}
+"""`;
   }
 
   // ================================================================ chrome
@@ -498,7 +524,6 @@
     const tw = document.getElementById('thisWeek');
     if (tw) tw.onclick = () => { homeWeekOffset = 0; render(); };
     $app.querySelectorAll('[data-new-topic]').forEach((b) => { b.onclick = () => openTopicModal({ date: b.dataset.newTopic }); });
-    bindVideoPlayers(videos);
   }
 
   // ================================================================ writing list
@@ -642,17 +667,17 @@
 
         <div class="card step">
           <div class="step-head"><span class="step-no">2</span><h3>AI 검수</h3></div>
-          <p class="muted small">아래 버튼으로 검수 요청 문구를 복사해서 ChatGPT · Claude · Gemini 등에 붙여넣으세요.
-            받은 수정본과 피드백을 아래에 입력하면 원문과 비교해서 보여줘요.</p>
+          <p class="muted small">아래 버튼으로 검수 요청문을 복사해서 ChatGPT · Claude · Gemini 등에 붙여넣으세요.<br>
+            AI 답변의 <b>1. 수정본</b>(코드 블록)은 수정본 칸에, <b>2~6번</b>(수정 내역·실수 패턴·오늘의 표현 등)은 메모 칸에 붙여넣으면 돼요.</p>
           <div class="row-gap wrap">
             <button type="button" class="btn" id="btnPrompt">AI 검수 요청문 복사</button>
             <button type="button" class="btn" id="btnCopyOrig">원문을 수정본 칸에 복사</button>
           </div>
           <label>AI 검수 후 수정본
-            <textarea name="revised" rows="10" placeholder="AI가 고쳐준 문장을 붙여넣으세요">${esc(post.revised || '')}</textarea>
+            <textarea name="revised" rows="10" placeholder="AI 답변의 1. 수정본(코드 블록 안 영어 글)을 붙여넣으세요">${esc(post.revised || '')}</textarea>
           </label>
           <label>AI 피드백 / 배운 표현 메모 <span class="muted">(선택)</span>
-            <textarea name="notes" rows="5" placeholder="예) go to home → go home : home은 부사라 to가 필요 없음">${esc(post.notes || '')}</textarea>
+            <textarea name="notes" rows="8" placeholder="AI 답변의 2~6번을 붙여넣거나, 기억할 표현을 적어두세요. 예) go to home → go home : home은 부사라 to가 필요 없음">${esc(post.notes || '')}</textarea>
           </label>
         </div>
 
@@ -734,21 +759,9 @@
       ${thumbButton(v)}
       <div class="video-body">
         ${v.category ? `<span class="badge">${esc(v.category)}</span>` : ''}
-        <div class="video-title">${esc(videoTitle(v))}</div>
+        <a class="video-title" href="${esc(v.url)}" target="_blank" rel="noopener">${esc(videoTitle(v))}</a>
       </div>
     </div>`;
-  }
-
-  function bindVideoPlayers(videos) {
-    $app.querySelectorAll('[data-play]').forEach((b) => {
-      const v = videos.find((x) => x.id === b.dataset.play);
-      if (!v) return;
-      b.onclick = () => {
-        modal(`<h2 class="player-title">${esc(videoTitle(v))}</h2>
-          <div class="player"><iframe src="${embedSrc(v)}"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`, { wide: true });
-      };
-    });
   }
 
   async function viewVideos() {
@@ -833,7 +846,6 @@
         render();
       };
     });
-    bindVideoPlayers(videos);
     enrichVideos(videos);
   }
 
