@@ -44,7 +44,7 @@ section { margin-bottom: 40px; }
 .topbar { background: var(--band); position: sticky; top: 0; z-index: 10; border-bottom: 3px solid var(--ink); }
 .topbar-inner { max-width: 1120px; margin: 0 auto; padding: 8px 16px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 4px; text-decoration: none; }
-.brand .mascot { margin: -6px 0 -10px; }
+.brand .mascot { margin: -4px 4px -8px 0; }
 .brand-text {
   font-size: 36px; font-weight: 700; color: #fff; letter-spacing: 1px;
   -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill;
@@ -105,7 +105,7 @@ section { margin-bottom: 40px; }
 @media (max-width: 640px) {
   .hero { padding: 10px 18px; }
   .hero-title { font-size: 36px; }
-  .hero .mascot { width: 90px; height: auto; }
+  .hero .mascot { height: 100px !important; }
 }
 
 /* ---------- 버튼 & 입력 ---------- */
@@ -285,3 +285,4 @@ a.video-title:hover { text-decoration: underline; }
   h2 { font-size: 28px; }
   .stat-grid b { font-size: 30px; }
 }
+.mascot { user-select: none; pointer-events: none; }

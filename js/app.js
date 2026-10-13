@@ -203,7 +203,7 @@
   function viewPickMember() {
     renderChrome('');
     $app.innerHTML = `<div class="center-card card">
-      ${Mascot('think', 110)}
+      ${Mascot('what', 110)}
       <h1>누구인가요?</h1>
       <p class="muted">글을 쓸 멤버를 선택하세요.</p>
       <div class="member-pick">${MEMBERS.map((m) => `<button class="btn btn-lg" data-member="${esc(m)}">${esc(m)}</button>`).join('')}</div>
@@ -216,7 +216,7 @@
   function viewLogin() {
     renderChrome('');
     $app.innerHTML = `<form class="center-card card" id="loginForm">
-      ${Mascot('basic', 110)}
+      ${Mascot('study', 110)}
       <h1>로그인</h1>
       <p class="muted">스터디 멤버 계정으로 로그인하세요.</p>
       <label>이메일<input type="email" name="email" required autocomplete="username"></label>
@@ -331,7 +331,7 @@
           <div class="hero-title">${esc(me)}.. 영어 한 줄</div>
           <div class="hero-sub">${doneThisWeek ? '이번 주 끝. 굿.' : `주 ${dates.length}번. 쓰고, 검수받고, 비교하기.`}</div>
         </div>
-        ${Mascot(doneThisWeek ? 'good' : 'basic', 120)}
+        ${Mascot(doneThisWeek ? 'good' : 'music', 120)}
       </div>
       <section>
         <div class="section-head">
@@ -351,7 +351,7 @@
       </section>
       <section>
         <div class="section-head"><h2>최근 추가된 영상</h2><a class="btn-link" href="#/videos">전체 보기 →</a></div>
-        ${recentVideos ? `<div class="grid grid-4">${recentVideos}</div>` : `<div class="card empty">${Mascot('dots', 80)}<span>아직 영상 없음.</span><a href="#/videos">영상 추가하기</a></div>`}
+        ${recentVideos ? `<div class="grid grid-4">${recentVideos}</div>` : `<div class="card empty">${Mascot('basic', 80)}<span>아직 영상 없음.</span><a href="#/videos">영상 추가하기</a></div>`}
       </section>`;
 
     document.getElementById('prevWeek').onclick = () => { homeWeekOffset--; render(); };
@@ -417,7 +417,7 @@
       const isMe = name === me;
       let body;
       if (st === 'none') {
-        body = `<div class="empty-inline">${Mascot(isMe ? 'think' : 'dots', 80)}${isMe ? '아직 안 씀.' : '아직 작성 전.'}</div>`;
+        body = `<div class="empty-inline">${Mascot(isMe ? 'cmon' : 'dots', 80)}${isMe ? '아직 안 씀.' : '아직 작성 전.'}</div>`;
       } else {
         const hasRev = st === 'reviewed';
         const changes = hasRev ? TextDiff.countChanges(TextDiff.diff(p.original, p.revised)) : 0;
@@ -768,7 +768,7 @@
         try { await view(...m.slice(1)); }
         catch (err) {
           console.error(err);
-          $app.innerHTML = `<div class="card empty">${Mascot('sad', 90)}문제가 생겼어요: ${esc(err.message)}</div>`;
+          $app.innerHTML = `<div class="card empty">${Mascot('sweat', 90)}문제가 생겼어요: ${esc(err.message)}</div>`;
         }
         if (scrollTop === true) window.scrollTo(0, 0);
         return;
