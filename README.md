@@ -1,6 +1,6 @@
 # English Study Club 📚
 
-직장 동료와 둘이서 하는 영어 공부 사이트입니다. 흰 바탕에 투박한 검은 선, 회색 띠, 펜 손글씨(Nanum Pen Script), 대충 그린 무표정 강아지 마스코트로 꾸몄어요. 빌드 과정 없이 HTML/CSS/JS로만 만들어서 `index.html`을 더블클릭하면 바로 열립니다.
+직장 동료와 둘이서 하는 영어 공부 사이트입니다. 흰 바탕에 투박한 검은 선, 회색 띠, 펜 손글씨(Nanum Pen Script)와 가나디 스티커로 꾸몄어요. 빌드 과정 없이 HTML/CSS/JS로만 만들어서 `index.html`을 더블클릭하면 바로 열립니다.
 
 ## 주요 기능
 
@@ -25,7 +25,8 @@ index.html          # 페이지 뼈대
 css/style.css       # 디자인
 js/config.js        # ⭐ 설정 (멤버 이름, 글쓰기 요일, 영상 카테고리, Supabase 키)
 js/store.js         # 데이터 저장 (로컬 / Supabase)
-js/mascot.js        # 무표정 강아지 마스코트 (SVG)
+js/mascot.js        # 가나디 스티커 표시
+images/ganadi/      # 가나디 스티커 이미지 (배경 투명 PNG)
 js/diff.js          # 원문·수정본 비교
 js/app.js           # 화면과 기능
 supabase/schema.sql # Supabase 테이블 생성 SQL
@@ -81,3 +82,7 @@ SUPABASE_ANON_KEY: 'eyJhbGciOi...',
 3. `📋 AI 검수 요청문 복사` → AI에게 검수 받기
 4. 받은 수정본 / 피드백을 `검수본 입력`에 붙여넣기 → 저장
 5. 주제 페이지에서 서로의 원문·수정본·비교를 보며 같이 복습 💪
+
+## 이미지 출처
+
+`images/ganadi/` 의 캐릭터 이미지는 카카오톡 이모티콘 **가나디**의 스티커입니다. 저작권은 원작자에게 있으며, 이 사이트에서는 두 사람의 비상업적 스터디 용도로만 사용합니다.

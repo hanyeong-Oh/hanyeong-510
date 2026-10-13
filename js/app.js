@@ -295,7 +295,7 @@
         body = `<div class="session-empty"><div>
             <p class="muted">${canManageTopics() ? '아직 주제 없음.' : `${esc(TOPIC_MANAGER)}님이 정할 예정.`}</p>
             ${canManageTopics() ? `<button class="btn btn-sm" data-new-topic="${ymd}">+ 주제 정하기</button>` : ''}
-          </div>${Mascot('think', 64)}</div>`;
+          </div>${Mascot('think', 84)}</div>`;
       }
       return `<div class="card session ${isToday ? 'session-today' : ''} ${past && !t ? 'session-missed' : ''}">
         <div class="session-date">${fmtDate(ymd)}${isToday ? '<span class="today-badge">오늘</span>' : ''}</div>
