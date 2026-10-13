@@ -253,7 +253,7 @@ a.video-title:hover { text-decoration: underline; }
 .watch { border: 2px dashed #aaa; background: #fff; border-radius: var(--wobble); padding: 0 9px; font-family: var(--hand); font-size: 20px; font-weight: 700; color: var(--muted); cursor: pointer; }
 .watch.on { border: 2px solid var(--ink); background: var(--blue-soft); color: var(--ink); }
 .watch:disabled { cursor: default; }
-.video-preview img { width: 100%; border: 2px solid var(--ink); border-radius: 10px; margin-top: 10px; }
+.video-preview img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 2px solid var(--ink); border-radius: 10px; margin-top: 10px; }
 
 /* ---------- 모달 & 토스트 ---------- */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(255, 255, 255, .75); backdrop-filter: blur(2px); display: grid; place-items: center; padding: 16px; z-index: 100; }
@@ -324,3 +324,15 @@ a.video-title:hover { text-decoration: underline; }
   .anim-dance, .anim-hop, .anim-pop, .loader-text .dots { animation: none; }
   .loader-text .dots { width: auto; }
 }
+
+/* 재생목록 */
+.pl-badge {
+  position: absolute; right: 8px; bottom: 8px;
+  background: var(--ink); color: #fff; font-family: var(--hand); font-size: 18px; font-weight: 700;
+  padding: 0 9px; border-radius: var(--wobble);
+}
+.thumb-empty { display: grid; place-items: center; background: #fff; }
+.thumb-empty .mascot { opacity: .9; }
+.video-preview { position: relative; }
+.video-preview .pl-badge { position: static; display: inline-block; margin-top: 8px; }
+.video-preview img + .pl-badge { position: absolute; right: 8px; bottom: 8px; margin: 0; }

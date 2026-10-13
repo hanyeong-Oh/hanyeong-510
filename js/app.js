@@ -105,7 +105,12 @@
     wrap.innerHTML = `<div class="modal ${wide ? 'modal-wide' : ''}" role="dialog"><button class="modal-close" aria-label="닫기">&times;</button>${html}</div>`;
     const close = () => { wrap.remove(); document.removeEventListener('keydown', onKey); };
     const onKey = (e) => { if (e.key === 'Escape') close(); };
-    wrap.addEventListener('click', (e) => { if (e.target === wrap || e.target.closest('.modal-close')) close(); });
+    // 바깥(배경)을 눌렀다 뗐을 때만 닫힘 — 안에서 드래그하다 밖에서 떼도 닫히지 않게
+    let downOnBackdrop = false;
+    wrap.addEventListener('mousedown', (e) => { downOnBackdrop = e.target === wrap; });
+    wrap.addEventListener('click', (e) => {
+      if ((e.target === wrap && downOnBackdrop) || e.target.closest('.modal-close')) close();
+    });
     document.addEventListener('keydown', onKey);
     document.body.appendChild(wrap);
     return { el: wrap, close };
@@ -132,24 +137,46 @@
   }
 
   // ================================================================ YouTube
-  function youtubeId(url) {
+  // 유튜브 링크 → { video, playlist }. 영상 링크면 video, 재생목록 링크면 playlist
+  function parseYoutube(url) {
     const s = (url || '').trim();
-    if (/^[\w-]{11}$/.test(s)) return s;
+    if (/^[\w-]{11}$/.test(s)) return { video: s, playlist: null };
     try {
       const u = new URL(s);
-      const host = u.hostname.replace(/^www\.|^m\./, '');
-      if (host === 'youtu.be') return u.pathname.slice(1, 12) || null;
+      const host = u.hostname.replace(/^(www|m|music)\./, '');
+      if (host === 'youtu.be') {
+        const id = u.pathname.slice(1, 12);
+        return id ? { video: id, playlist: null } : null;
+      }
       if (host.endsWith('youtube.com') || host === 'youtube-nocookie.com') {
-        if (u.searchParams.get('v')) return u.searchParams.get('v').slice(0, 11);
+        if (u.searchParams.get('v')) return { video: u.searchParams.get('v').slice(0, 11), playlist: null };
         const m = u.pathname.match(/^\/(?:shorts|embed|live|v)\/([\w-]{11})/);
-        if (m) return m[1];
+        if (m) return { video: m[1], playlist: null };
+        const list = u.searchParams.get('list');
+        if (list && /^[\w-]{10,}$/.test(list)) return { video: null, playlist: list };
       }
     } catch (e) { /* not a URL */ }
     return null;
   }
-  const thumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
-  async function fetchYoutubeTitle(url) {
+  // 공유 링크의 추적용 파라미터(si 등)를 빼고 깔끔한 주소로
+  function cleanYoutubeUrl(yt) {
+    return yt.video
+      ? `https://www.youtube.com/watch?v=${yt.video}`
+      : `https://www.youtube.com/playlist?list=${yt.playlist}`;
+  }
+
+  const thumbOf = (v) => (v.youtube_id ? `https://i.ytimg.com/vi/${v.youtube_id}/hqdefault.jpg` : v.thumb_url || '');
+  const videoTitle = (v) => v.title || (v.playlist_id ? '재생목록' : '(제목 없음)');
+
+  function embedSrc(v) {
+    return v.playlist_id
+      ? `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(v.playlist_id)}&autoplay=1&rel=0`
+      : `https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.youtube_id)}?autoplay=1&rel=0`;
+  }
+
+  // 제목·썸네일 가져오기 (재생목록은 첫 영상 썸네일)
+  async function fetchYoutubeInfo(url) {
     const endpoints = [
       `https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url)}`,
       `https://noembed.com/embed?url=${encodeURIComponent(url)}`,
@@ -159,10 +186,61 @@
         const res = await fetch(ep);
         if (!res.ok) continue;
         const data = await res.json();
-        if (data.title) return data.title;
+        if (data.title) return { title: data.title, thumbnail: data.thumbnail_url || '' };
       } catch (e) { /* try next */ }
     }
-    return '';
+    return { title: '', thumbnail: '' };
+  }
+
+  // 제목/썸네일이 비어 있는 영상은 열 때 한 번씩 채워 넣음
+  const enriched = new Set();
+  async function enrichVideos(videos) {
+    const todo = videos.filter((v) => !enriched.has(v.id) && (!v.title || (v.playlist_id && !v.thumb_url)));
+    if (!todo.length) return;
+    let changed = false;
+    for (const v of todo) {
+      enriched.add(v.id);
+      const info = await fetchYoutubeInfo(v.url);
+      const patch = { id: v.id };
+      if (!v.title && info.title) patch.title = info.title;
+      if (v.playlist_id && !v.thumb_url && info.thumbnail) patch.thumb_url = info.thumbnail;
+      if (Object.keys(patch).length > 1) {
+        try { await Store.saveVideo(patch); changed = true; } catch (e) { /* 다음에 다시 */ }
+      }
+    }
+    if (changed && location.hash === '#/videos') render();
+  }
+
+  // config.js 의 DEFAULT_VIDEOS 를 처음 한 번만 추가 (로컬 모드)
+  async function seedDefaultVideos() {
+    const KEY = 'english-study:seeded-videos:v1';
+    if (Store.mode !== 'local' || localStorage.getItem(KEY)) return;
+    const existing = await Store.listVideos();
+    const base = Date.now();
+    for (const [i, item] of (cfg.DEFAULT_VIDEOS || []).entries()) {
+      const yt = parseYoutube(item.url);
+      if (!yt || existing.some((v) => (yt.playlist && v.playlist_id === yt.playlist) || (yt.video && v.youtube_id === yt.video))) continue;
+      await Store.saveVideo({
+        youtube_id: yt.video,
+        playlist_id: yt.playlist,
+        url: cleanYoutubeUrl(yt),
+        title: item.title || '',
+        category: item.category || '기타',
+        memo: item.memo || '',
+        added_by: TOPIC_MANAGER || MEMBERS[0],
+        created_at: new Date(base - i * 1000).toISOString(), // 적어둔 순서대로 위에서부터 보이게
+      });
+    }
+    localStorage.setItem(KEY, '1');
+  }
+
+  function thumbButton(v) {
+    const src = thumbOf(v);
+    return `<button class="thumb ${src ? '' : 'thumb-empty'}" data-play="${v.id}">
+        ${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : Mascot('study', 70)}
+        ${v.playlist_id ? '<span class="pl-badge">재생목록</span>' : ''}
+        <span class="play">▶</span>
+      </button>`;
   }
 
   // ================================================================ AI prompt
@@ -390,7 +468,7 @@
     const tw = document.getElementById('thisWeek');
     if (tw) tw.onclick = () => { homeWeekOffset = 0; render(); };
     $app.querySelectorAll('[data-new-topic]').forEach((b) => { b.onclick = () => openTopicModal({ date: b.dataset.newTopic }); });
-    bindVideoPlayers();
+    bindVideoPlayers(videos);
   }
 
   // ================================================================ writing list
@@ -623,21 +701,21 @@
   // ================================================================ videos
   function videoCardMini(v) {
     return `<div class="card video-mini">
-      <button class="thumb" data-play="${esc(v.youtube_id)}" data-title="${esc(v.title || '')}">
-        <img src="${thumb(v.youtube_id)}" alt="" loading="lazy"><span class="play">▶</span>
-      </button>
+      ${thumbButton(v)}
       <div class="video-body">
         ${v.category ? `<span class="badge">${esc(v.category)}</span>` : ''}
-        <div class="video-title">${esc(v.title || '(제목 없음)')}</div>
+        <div class="video-title">${esc(videoTitle(v))}</div>
       </div>
     </div>`;
   }
 
-  function bindVideoPlayers() {
+  function bindVideoPlayers(videos) {
     $app.querySelectorAll('[data-play]').forEach((b) => {
+      const v = videos.find((x) => x.id === b.dataset.play);
+      if (!v) return;
       b.onclick = () => {
-        modal(`<h2 class="player-title">${esc(b.dataset.title || '')}</h2>
-          <div class="player"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(b.dataset.play)}?autoplay=1&rel=0"
+        modal(`<h2 class="player-title">${esc(videoTitle(v))}</h2>
+          <div class="player"><iframe src="${embedSrc(v)}"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`, { wide: true });
       };
     });
@@ -661,9 +739,7 @@
         return `<button class="watch ${on ? 'on' : ''}" ${n === me ? `data-watch="${v.id}"` : 'disabled'} title="${n === me ? '시청 완료 표시' : ''}">${on ? '✓' : '○'} ${esc(n)}</button>`;
       }).join('');
       return `<div class="card video">
-        <button class="thumb" data-play="${esc(v.youtube_id)}" data-title="${esc(v.title || '')}">
-          <img src="${thumb(v.youtube_id)}" alt="" loading="lazy"><span class="play">▶</span>
-        </button>
+        ${thumbButton(v)}
         <div class="video-body">
           <div class="row-between">
             ${v.category ? `<span class="badge">${esc(v.category)}</span>` : '<span></span>'}
@@ -672,7 +748,7 @@
               <button class="icon-btn" data-del-video="${v.id}" title="삭제">🗑</button>
             </span>
           </div>
-          <a class="video-title" href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.title || '(제목 없음)')}</a>
+          <a class="video-title" href="${esc(v.url)}" target="_blank" rel="noopener">${esc(videoTitle(v))}</a>
           ${v.memo ? `<p class="memo">${nl2br(v.memo)}</p>` : ''}
           <div class="row-between video-foot">
             <span class="muted small">${esc(v.added_by || '')} · ${new Date(v.created_at).toLocaleDateString('ko-KR')}</span>
@@ -727,14 +803,15 @@
         render();
       };
     });
-    bindVideoPlayers();
+    bindVideoPlayers(videos);
+    enrichVideos(videos);
   }
 
   function openVideoModal(video) {
     const v = video || { url: '', title: '', category: cfg.VIDEO_CATEGORIES[0], memo: '' };
     const m = modal(`<form id="videoForm">
       <h2>${video ? '영상 수정' : '영상 추가'}</h2>
-      <label>유튜브 링크<input type="url" name="url" value="${esc(v.url)}" placeholder="https://www.youtube.com/watch?v=..." required></label>
+      <label>유튜브 링크<input type="url" name="url" value="${esc(v.url)}" placeholder="영상 또는 재생목록 링크" required></label>
       <div class="video-preview" id="videoPreview"></div>
       <label>제목<input type="text" name="title" value="${esc(v.title || '')}" placeholder="링크를 넣으면 자동으로 채워져요"></label>
       <label>카테고리<select name="category">${cfg.VIDEO_CATEGORIES.map((c) => `<option ${c === v.category ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></label>
@@ -747,14 +824,21 @@
     let titleTouched = !!v.title;
     f.title.addEventListener('input', () => { titleTouched = true; });
 
+    let info = { title: '', thumbnail: '' };
+    let lastKey = null;
     const onUrl = async () => {
-      const id = youtubeId(f.url.value);
-      preview.innerHTML = id ? `<img src="${thumb(id)}" alt="">` : '';
-      m.el.querySelector('#videoError').textContent = f.url.value && !id ? '유튜브 링크를 인식하지 못했어요.' : '';
-      if (id && !titleTouched) {
-        const title = await fetchYoutubeTitle(f.url.value.trim());
-        if (title && !titleTouched) f.title.value = title;
-      }
+      const yt = parseYoutube(f.url.value);
+      m.el.querySelector('#videoError').textContent = f.url.value && !yt ? '유튜브 링크를 인식하지 못했어요.' : '';
+      // 같은 링크면 다시 그리지 않음 (저장 버튼 누르는 순간 화면이 밀리지 않게)
+      const key = yt ? `${yt.video}|${yt.playlist}` : '';
+      if (key === lastKey) return;
+      lastKey = key;
+      if (!yt) { preview.innerHTML = ''; return; }
+      const label = yt.playlist ? '<span class="pl-badge">재생목록</span>' : '';
+      preview.innerHTML = yt.video ? `<img src="${thumbOf({ youtube_id: yt.video })}" alt="">${label}` : label;
+      info = await fetchYoutubeInfo(cleanYoutubeUrl(yt));
+      if (yt.playlist && info.thumbnail) preview.innerHTML = `<img src="${esc(info.thumbnail)}" alt="">${label}`;
+      if (info.title && !titleTouched) f.title.value = info.title;
     };
     f.url.addEventListener('change', onUrl);
     f.url.addEventListener('paste', () => setTimeout(onUrl, 0));
@@ -762,11 +846,13 @@
 
     f.onsubmit = async (e) => {
       e.preventDefault();
-      const id = youtubeId(f.url.value);
-      if (!id) { m.el.querySelector('#videoError').textContent = '유튜브 링크를 확인해 주세요.'; return; }
+      const yt = parseYoutube(f.url.value);
+      if (!yt) { m.el.querySelector('#videoError').textContent = '유튜브 링크를 확인해 주세요.'; return; }
       const payload = {
-        youtube_id: id,
-        url: f.url.value.trim(),
+        youtube_id: yt.video,
+        playlist_id: yt.playlist,
+        thumb_url: yt.playlist ? info.thumbnail || (video && video.thumb_url) || '' : '',
+        url: cleanYoutubeUrl(yt),
         title: f.title.value.trim(),
         category: f.category.value,
         memo: f.memo.value.trim(),
@@ -823,6 +909,7 @@
     try { await Store.init(); } catch (e) { console.error(e); }
     me = await Store.member();
     if (me && Store.mode === 'local' && !MEMBERS.includes(me)) me = null;
+    try { await seedDefaultVideos(); } catch (e) { console.error(e); }
     await render();
     await sleep(Math.max(0, 1000 - (Date.now() - t0)));
     hideLoader();

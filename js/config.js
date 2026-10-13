@@ -20,6 +20,16 @@ window.APP_CONFIG = {
   // 영어공부 영상 카테고리
   VIDEO_CATEGORIES: ['리스닝', '스피킹', '문법', '어휘·표현', '발음', '비즈니스 영어', '기타'],
 
+  // 처음 열었을 때 영상 목록에 기본으로 넣어둘 유튜브 영상/재생목록
+  // (제목과 썸네일은 사이트를 열면 자동으로 채워집니다)
+  DEFAULT_VIDEOS: [
+    { url: 'https://www.youtube.com/playlist?list=PLxoOU8azGw9Wnc1o0bdvfbBJBwa1Q-v9F', category: '기타' },
+    { url: 'https://www.youtube.com/playlist?list=PLxoOU8azGw9UQ1XEK0SmGje0lZnycvNc1', category: '기타' },
+    { url: 'https://www.youtube.com/playlist?list=PLxoOU8azGw9X3mcBKRRjcIeD_xoFAcv3Q', category: '기타' },
+    { url: 'https://www.youtube.com/playlist?list=PLxoOU8azGw9V7iNiPIlJsiBF39GL3GWna', category: '기타' },
+    { url: 'https://www.youtube.com/playlist?list=PLXF8cvSejlGkqCgLA793Tyuyvjo5NBKDV', category: '기타' },
+  ],
+
   // Supabase 연결 정보 (README 참고). 비워두면 "로컬 모드"로 동작하며
   // 데이터가 이 브라우저에만 저장됩니다.
   SUPABASE_URL: '',

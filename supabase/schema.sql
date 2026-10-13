@@ -24,7 +24,9 @@ create table if not exists public.posts (
 
 create table if not exists public.videos (
   id          uuid primary key default gen_random_uuid(),
-  youtube_id  text not null,
+  youtube_id  text,                              -- 단일 영상 ID
+  playlist_id text,                              -- 재생목록 ID
+  thumb_url   text,                              -- 재생목록 썸네일
   url         text not null,
   title       text,
   category    text,
@@ -33,6 +35,11 @@ create table if not exists public.videos (
   watched_by  text[] not null default '{}',
   created_at  timestamptz not null default now()
 );
+
+-- 예전 스키마로 이미 테이블을 만든 경우를 위한 보정
+alter table public.videos alter column youtube_id drop not null;
+alter table public.videos add column if not exists playlist_id text;
+alter table public.videos add column if not exists thumb_url text;
 
 -- 로그인한 멤버만 읽기/쓰기 가능 (익명 접근 차단)
 alter table public.topics enable row level security;
@@ -46,3 +53,15 @@ drop policy if exists "members only" on public.videos;
 create policy "members only" on public.topics for all to authenticated using (true) with check (true);
 create policy "members only" on public.posts  for all to authenticated using (true) with check (true);
 create policy "members only" on public.videos for all to authenticated using (true) with check (true);
+
+-- 기본 영어공부 재생목록 (제목·썸네일은 사이트를 열면 자동으로 채워짐)
+insert into public.videos (url, playlist_id, category, added_by, created_at)
+select v.url, v.playlist_id, '기타', '한영', now() - make_interval(secs => v.ord)
+from (values
+  ('https://www.youtube.com/playlist?list=PLxoOU8azGw9Wnc1o0bdvfbBJBwa1Q-v9F', 'PLxoOU8azGw9Wnc1o0bdvfbBJBwa1Q-v9F', 0),
+  ('https://www.youtube.com/playlist?list=PLxoOU8azGw9UQ1XEK0SmGje0lZnycvNc1', 'PLxoOU8azGw9UQ1XEK0SmGje0lZnycvNc1', 1),
+  ('https://www.youtube.com/playlist?list=PLxoOU8azGw9X3mcBKRRjcIeD_xoFAcv3Q', 'PLxoOU8azGw9X3mcBKRRjcIeD_xoFAcv3Q', 2),
+  ('https://www.youtube.com/playlist?list=PLxoOU8azGw9V7iNiPIlJsiBF39GL3GWna', 'PLxoOU8azGw9V7iNiPIlJsiBF39GL3GWna', 3),
+  ('https://www.youtube.com/playlist?list=PLXF8cvSejlGkqCgLA793Tyuyvjo5NBKDV', 'PLXF8cvSejlGkqCgLA793Tyuyvjo5NBKDV', 4)
+) as v(url, playlist_id, ord)
+where not exists (select 1 from public.videos x where x.playlist_id = v.playlist_id);
