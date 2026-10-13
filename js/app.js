@@ -1183,6 +1183,188 @@ ${text}
     };
   }
 
+  // ================================================================ 내 노트 (나만 보는 메모장)
+  const NOTE_KINDS = {
+    word: { label: '단어', en: '영단어 · 표현', enPh: 'e.g. procrastinate', ko: '뜻', koPh: '미루다, 질질 끌다', memoPh: '예문, 비슷한 말, 발음 팁…', speak: true },
+    sentence: { label: '문장', en: '영어 문장', enPh: "e.g. I'm swamped with work today.", ko: '해석', koPh: '오늘 일이 너무 많아.', memoPh: '어디서 봤는지, 언제 쓰는지…', speak: true },
+    grammar: { label: '문법', en: '문법 포인트', enPh: 'e.g. used to + 동사원형 vs be used to + -ing', ko: '설명', koPh: '~하곤 했다 / ~에 익숙하다', memoPh: '예문, 헷갈렸던 점…' },
+    etc: { label: '기타', en: '내용', enPh: '무엇이든', ko: '설명', koPh: '', memoPh: '' },
+  };
+  let noteFilter = { kind: 'all', q: '', hide: false };
+  let noteKind = 'word';   // 입력 칸에서 마지막으로 고른 종류·날짜는 다음 입력 때도 유지
+  let noteDate = null;     // null = 오늘
+
+  // 입력 칸 (새 노트 / 수정 모달 공용)
+  function noteFields(n) {
+    const k = NOTE_KINDS[n.kind] || NOTE_KINDS.word;
+    return `<div class="note-kinds" role="radiogroup">${Object.entries(NOTE_KINDS).map(([key, v]) => `<label class="cat ${key === n.kind ? 'active' : ''}"><input type="radio" name="kind" value="${key}" ${key === n.kind ? 'checked' : ''} hidden>${v.label}</label>`).join('')}
+        <input type="date" name="date" value="${esc(n.date)}" required aria-label="날짜"></div>
+      <label><span data-l="en">${k.en}</span><textarea name="en" rows="${n.kind === 'word' ? 1 : 2}" lang="en" spellcheck="true" required placeholder="${esc(k.enPh)}">${esc(n.en || '')}</textarea></label>
+      <label><span data-l="ko">${k.ko}</span> <span class="muted">(선택)</span><textarea name="ko" rows="1" placeholder="${esc(k.koPh)}">${esc(n.ko || '')}</textarea></label>
+      <label>메모 <span class="muted">(선택)</span><textarea name="memo" rows="2" placeholder="${esc(k.memoPh)}">${esc(n.memo || '')}</textarea></label>`;
+  }
+  // 종류를 바꾸면 칸 이름·예시만 바꿈 (써둔 내용은 그대로)
+  function bindNoteForm(f, onSubmit) {
+    const apply = () => {
+      const kind = f.querySelector('input[name=kind]:checked').value;
+      const k = NOTE_KINDS[kind];
+      f.querySelectorAll('.note-kinds .cat').forEach((c) => c.classList.toggle('active', c.querySelector('input').checked));
+      f.querySelector('[data-l=en]').textContent = k.en;
+      f.querySelector('[data-l=ko]').textContent = k.ko;
+      f.en.placeholder = k.enPh; f.ko.placeholder = k.koPh; f.memo.placeholder = k.memoPh;
+      f.en.rows = kind === 'word' ? 1 : 2;
+      return kind;
+    };
+    f.querySelectorAll('input[name=kind]').forEach((r) => { r.onchange = () => { apply(); f.en.focus(); }; });
+    // Ctrl/⌘ + Enter 로 저장. 단어는 한 줄이라 Enter 만 눌러도 저장
+    f.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || e.isComposing) return;
+      const kind = f.querySelector('input[name=kind]:checked').value;
+      if (e.metaKey || e.ctrlKey || (kind === 'word' && e.target === f.en)) { e.preventDefault(); f.requestSubmit(); }
+    });
+    f.onsubmit = (e) => {
+      e.preventDefault();
+      const en = f.en.value.trim();
+      if (!en) { f.en.focus(); return; }
+      onSubmit({ kind: f.querySelector('input[name=kind]:checked').value, date: f.date.value || todayYMD(), en, ko: f.ko.value.trim() || null, memo: f.memo.value.trim() || null });
+    };
+    return apply;
+  }
+
+  async function viewNotes() {
+    renderChrome('notes');
+    let notes = await Store.listNotes(me);
+    const today = todayYMD();
+
+    $app.innerHTML = `
+      <div class="section-head"><h2>내 노트</h2><span class="muted" id="noteCount"></span></div>
+      <p class="muted">나만 보는 메모장. 영단어 · 영어 문장 · 문법을 그날그날 적어 두세요. 동료에게는 안 보여요.</p>
+      <form class="card note-form" id="noteForm">
+        ${noteFields({ kind: noteKind, date: noteDate || today })}
+        <div class="row-between">
+          <span class="muted small">${navigator.platform && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'} + Enter 로 저장</span>
+          <button type="submit" class="btn btn-primary">메모하기</button>
+        </div>
+      </form>
+      <div class="filters">
+        <div class="cat-chips" id="noteTabs"></div>
+        <div class="row-gap">
+          <input type="search" id="noteSearch" placeholder="노트 검색" value="${esc(noteFilter.q)}">
+        </div>
+      </div>
+      <div id="noteList"></div>`;
+
+    const KIND_CLASS = { word: 'k-word', sentence: 'k-sentence', grammar: 'k-gram', etc: 'k-etc' };
+    const row = (n) => {
+      const k = NOTE_KINDS[n.kind] || NOTE_KINDS.etc;
+      const hasAns = !!(n.ko || n.memo);
+      const q = noteFilter.hide && hasAns;
+      return `<li class="note ${KIND_CLASS[n.kind] || ''}${q ? ' q-item' : ''}" data-id="${esc(n.id)}">
+        <span class="kind-tag">${k.label}</span>
+        <div class="note-main">
+          <div class="note-en">${nl2br(n.en)}${k.speak ? speakBtn(n.en) : ''}</div>
+          ${q ? '<span class="q-blank">뜻은? 탭해서 확인</span>' : ''}
+          ${n.ko ? `<div class="note-ko q-ans">${nl2br(n.ko)}</div>` : ''}
+          ${n.memo ? `<div class="note-memo q-ans">${nl2br(n.memo)}</div>` : ''}
+        </div>
+        <div class="note-actions">
+          <button type="button" class="icon-btn" data-edit title="수정" aria-label="수정">✎</button>
+          <button type="button" class="icon-btn" data-del title="삭제" aria-label="삭제">✕</button>
+        </div>
+      </li>`;
+    };
+
+    function drawList() {
+      const counts = { all: notes.length, word: 0, sentence: 0, grammar: 0, etc: 0 };
+      notes.forEach((n) => { counts[n.kind] = (counts[n.kind] || 0) + 1; });
+      const todayN = notes.filter((n) => n.date === today).length;
+      document.getElementById('noteCount').textContent = notes.length ? `전체 ${notes.length} · 오늘 ${todayN}` : '';
+      const tab = (k, label) => `<button type="button" class="cat ${noteFilter.kind === k ? 'active' : ''}" data-nkind="${k}">${label} ${counts[k]}</button>`;
+      document.getElementById('noteTabs').innerHTML = tab('all', '전체') + Object.entries(NOTE_KINDS).map(([k, v]) => tab(k, v.label)).join('')
+        + `<button type="button" class="cat cat-quiz ${noteFilter.hide ? 'active' : ''}" id="btnNoteHide" aria-pressed="${noteFilter.hide}">${noteFilter.hide ? '가리기 끄기' : '뜻 가리기'}</button>`;
+
+      const q = noteFilter.q.trim().toLowerCase();
+      const list = notes.filter((n) => (noteFilter.kind === 'all' || n.kind === noteFilter.kind)
+        && (!q || `${n.en} ${n.ko || ''} ${n.memo || ''}`.toLowerCase().includes(q)));
+      const days = [];
+      list.forEach((n) => {
+        let d = days[days.length - 1];
+        if (!d || d.date !== n.date) { d = { date: n.date, items: [] }; days.push(d); }
+        d.items.push(n);
+      });
+      document.getElementById('noteList').innerHTML = days.length
+        ? days.map((d) => `<section class="note-day">
+            <div class="note-day-head"><b>${fmtDate(d.date)}</b>${d.date === today ? '<span class="today-badge">오늘</span>' : ''}<span class="muted">${d.items.length}개</span></div>
+            <ul class="card note-list${noteFilter.hide ? ' quiz' : ''}">${d.items.map(row).join('')}</ul>
+          </section>`).join('')
+        : `<div class="card empty">${Mascot(notes.length ? 'dots' : 'study', 90)}${notes.length ? '조건에 맞는 메모 없음.' : '아직 메모 없음. 오늘 본 단어 하나부터.'}</div>`;
+    }
+    drawList();
+
+    // 새 메모
+    const f = document.getElementById('noteForm');
+    bindNoteForm(f, async (data) => {
+      const btn = f.querySelector('button[type=submit]');
+      btn.disabled = true;
+      try {
+        const saved = await Store.saveNote(Object.assign({ author: me }, data));
+        notes = [saved, ...notes].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (a.created_at < b.created_at ? 1 : -1)));
+        noteKind = data.kind;
+        noteDate = data.date === today ? null : data.date;
+        f.en.value = ''; f.ko.value = ''; f.memo.value = '';
+        drawList();
+        toast('메모함.');
+      } catch (err) { alert(err.message); }
+      btn.disabled = false;
+      f.en.focus();
+    });
+
+    // 필터 · 검색 · 가리기
+    document.getElementById('noteTabs').onclick = (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      if (b.id === 'btnNoteHide') noteFilter.hide = !noteFilter.hide;
+      else noteFilter.kind = b.dataset.nkind;
+      drawList();
+    };
+    const search = document.getElementById('noteSearch');
+    search.oninput = () => { noteFilter.q = search.value; drawList(); };
+
+    // 수정 · 삭제 · 가린 뜻 보기
+    document.getElementById('noteList').onclick = async (e) => {
+      const li = e.target.closest('.note');
+      if (!li) return;
+      const n = notes.find((x) => x.id === li.dataset.id);
+      if (!n) return;
+      if (e.target.closest('[data-del]')) {
+        if (!confirm(`"${n.en.slice(0, 40)}" 메모를 삭제할까요?`)) return;
+        try { await Store.deleteNote(n.id); } catch (err) { alert(err.message); return; }
+        notes = notes.filter((x) => x.id !== n.id);
+        drawList();
+        toast('삭제함.');
+        return;
+      }
+      if (e.target.closest('[data-edit]')) {
+        const m = modal(`<form id="noteEdit"><h2>메모 수정</h2>${noteFields(n)}
+          <div class="row-between"><span></span><button type="submit" class="btn btn-primary">저장</button></div></form>`);
+        const ef = m.el.querySelector('#noteEdit');
+        bindNoteForm(ef, async (data) => {
+          try {
+            const saved = await Store.saveNote(Object.assign({ id: n.id }, data));
+            notes = notes.map((x) => (x.id === n.id ? Object.assign({}, x, saved) : x))
+              .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (a.created_at < b.created_at ? 1 : -1)));
+            m.close();
+            drawList();
+            toast('수정함.');
+          } catch (err) { alert(err.message); }
+        });
+        ef.en.focus();
+        return;
+      }
+      if (li.classList.contains('q-item') && !e.target.closest('a, button')) li.classList.toggle('revealed');
+    };
+  }
+
   // ================================================================ 문법 개념 (js/grammar.js)
   // **굵게** 만 지원하는 간단한 서식
   const fmt = (t) => glue(esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'));
@@ -1250,6 +1432,7 @@ ${text}
     [/^#\/videos$/, viewVideos],
     [/^#\/expressions$/, viewExpressions],
     [/^#\/grammar(?:\/([\w-]+))?$/, viewGrammar],
+    [/^#\/notes$/, viewNotes],
   ];
 
   async function render(scrollTop) {
