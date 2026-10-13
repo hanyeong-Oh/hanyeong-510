@@ -1016,6 +1016,59 @@ ${text}
     };
   }
 
+  // ================================================================ 문법 개념 (js/grammar.js)
+  // **굵게** 만 지원하는 간단한 서식
+  const fmt = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+
+  function viewGrammar(id) {
+    renderChrome('grammar');
+    const cats = window.GRAMMAR || [];
+    const cat = cats.find((c) => c.id === id) || cats[0];
+    const idx = cats.indexOf(cat);
+    const prev = cats[idx - 1];
+    const next = cats[idx + 1];
+    const examples = (list) => (list && list.length ? `<ul class="g-examples">${list.map(([en, ko, note]) => `<li>
+        <div class="g-en">${fmt(en)}</div>
+        <div class="g-ko">${fmt(ko)}${note ? ` <span class="g-note">· ${fmt(note)}</span>` : ''}</div>
+      </li>`).join('')}</ul>` : '');
+    const sections = (cat.sections || []).map((sec) => `<div class="g-section">
+        <h3>${fmt(sec.title)}</h3>
+        ${sec.points ? `<ul class="g-points">${sec.points.map((pt) => `<li>${fmt(pt)}</li>`).join('')}</ul>` : ''}
+        ${examples(sec.examples)}
+      </div>`).join('');
+
+    $app.innerHTML = `
+      <div class="section-head"><h2>문법 개념</h2></div>
+      <div class="cat-chips g-tabs">${cats.map((c, i) => `<a class="cat ${c === cat ? 'active' : ''}" href="#/grammar/${c.id}">${i + 1}. ${esc(c.title)}</a>`).join('')}</div>
+
+      <article class="card g-card">
+        <header class="g-head">
+          <div>
+            <div class="muted">${idx + 1} / ${cats.length} · ${esc(cat.sub || '')}</div>
+            <h1>${esc(cat.title)}</h1>
+            <p class="g-summary">${fmt(cat.summary)}</p>
+          </div>
+          ${Mascot('study', 90)}
+        </header>
+
+        <div class="g-basics">
+          <div class="g-label">기초 개념</div>
+          <ul>${cat.basics.map((b) => `<li>${fmt(b)}</li>`).join('')}</ul>
+        </div>
+
+        ${sections}
+
+        ${cat.native && cat.native.length ? `<div class="corr corr-native"><div class="corr-title">원어민 감각</div><ul>${cat.native.map((n) => `<li>${fmt(n)}</li>`).join('')}</ul></div>` : ''}
+
+        ${cat.mistakes && cat.mistakes.length ? `<div class="corr corr-grammar"><div class="corr-title">자주 하는 실수 <span class="corr-count">${cat.mistakes.length}</span></div><ul>${cat.mistakes.map(([wrong, right, why]) => `<li><span class="c-from">${esc(wrong)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(right)}</span>${why ? `<div class="c-note">${fmt(why)}</div>` : ''}</li>`).join('')}</ul></div>` : ''}
+
+        <nav class="g-nav">
+          ${prev ? `<a class="btn" href="#/grammar/${prev.id}">‹ ${esc(prev.title)}</a>` : '<span></span>'}
+          ${next ? `<a class="btn btn-primary" href="#/grammar/${next.id}">${esc(next.title)} ›</a>` : '<span></span>'}
+        </nav>
+      </article>`;
+  }
+
   // ================================================================ router
   const routes = [
     [/^#?\/?$/, viewHome],
@@ -1024,6 +1077,7 @@ ${text}
     [/^#\/write\/([^/]+)\/(.+)$/, viewEditor],
     [/^#\/videos$/, viewVideos],
     [/^#\/expressions$/, viewExpressions],
+    [/^#\/grammar(?:\/([\w-]+))?$/, viewGrammar],
   ];
 
   async function render(scrollTop) {

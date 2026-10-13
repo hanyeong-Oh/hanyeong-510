@@ -371,3 +371,26 @@ a.video-title:hover { text-decoration: underline; }
   .brand-text { font-size: 30px; }
   .nav a { font-size: 22px; padding: 2px 8px; }
 }
+
+/* ---------- 문법 개념 ---------- */
+.g-tabs { margin-bottom: 16px; }
+.g-tabs .cat { text-decoration: none; }
+.g-card { display: flex; flex-direction: column; gap: 18px; }
+.g-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.g-head h1 { margin: 2px 0; }
+.g-summary { font-size: 22px; margin: 0; }
+.g-basics { background: var(--band); border: 2.5px solid var(--ink); border-radius: var(--wobble); padding: 12px 18px; }
+.g-label { font-weight: 700; font-size: 22px; margin-bottom: 4px; }
+.g-basics ul, .g-points { margin: 0; padding-left: 20px; font-family: var(--text); font-size: 15.5px; line-height: 1.8; }
+.g-section h3 { border-bottom: 2px dashed var(--ink); padding-bottom: 2px; margin-bottom: 8px; }
+.g-examples { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.g-examples li { border-left: 3px solid var(--ink); padding: 2px 0 2px 12px; font-family: var(--text); }
+.g-en { font-weight: 700; font-size: 16px; }
+.g-ko { font-size: 14.5px; color: #444; }
+.g-note { color: var(--muted); }
+.corr li b, .g-points b, .g-basics b { font-weight: 800; }
+.g-nav { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 640px) {
+  .g-head .mascot { display: none; }
+  .g-summary { font-size: 20px; }
+}
