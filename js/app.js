@@ -19,6 +19,8 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
+  // 한글 줄바꿈(keep-all)에서 ")는", "~에게" 처럼 기호 뒤 조사가 다음 줄로 떨어지지 않게 붙여 줌 (U+2060 단어 결합자)
+  const glue = (html) => html.replace(/([)\]~]|&quot;|&#39;)((?:<\/?b>)?)(?=[가-힣])/g, '$1\u2060$2');
   const pad = (n) => String(n).padStart(2, '0');
   function toYMD(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
   function parseYMD(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
@@ -327,8 +329,8 @@ ${text}
   }
 
   function renderCorrections(c, { compact } = {}) {
-    const item = (x) => `<li><span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>${x.note ? `<div class="c-note">${esc(x.note)}</div>` : ''}</li>`;
-    const expr = (x) => `<li><span class="c-phrase">${esc(x.phrase)}</span>${x.note ? `<div class="c-note">${esc(x.note)}</div>` : ''}</li>`;
+    const item = (x) => `<li><span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
+    const expr = (x) => `<li><span class="c-phrase">${esc(x.phrase)}</span>${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
     const block = (title, cls, list, fn) => (list.length ? `<div class="corr ${cls}"><div class="corr-title">${title} <span class="corr-count">${list.length}</span></div><ul>${list.map(fn).join('')}</ul></div>` : '');
     const html = block('문법적으로 틀린 것', 'corr-grammar', c.grammar, item)
       + block('원어민은 이렇게 써요', 'corr-native', c.native, item)
@@ -986,7 +988,7 @@ ${text}
         <span class="kind-tag">${KIND[x.kind][0]}</span>
         <div class="expr-main">
           ${x.kind === 'expr' ? `<span class="c-phrase">${esc(x.phrase)}</span>` : `<span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>`}
-          ${x.note ? `<div class="c-note">${esc(x.note)}</div>` : ''}
+          ${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}
           <a class="expr-src" href="#/topic/${x.topic.id}">${fmtDate(x.topic.date)} · ${esc(x.topic.title)} · ${esc(x.author)}</a>
         </div>
       </li>`).join('');
@@ -1019,7 +1021,7 @@ ${text}
 
   // ================================================================ 문법 개념 (js/grammar.js)
   // **굵게** 만 지원하는 간단한 서식
-  const fmt = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  const fmt = (t) => glue(esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'));
 
   function viewGrammar(id) {
     renderChrome('grammar');
@@ -1030,7 +1032,7 @@ ${text}
     const next = cats[idx + 1];
     const examples = (list) => (list && list.length ? `<ul class="g-examples">${list.map(([en, ko, note]) => `<li>
         <div class="g-en">${fmt(en)}</div>
-        <div class="g-ko">${fmt(ko)}${note ? ` <span class="g-note">· ${fmt(note)}</span>` : ''}</div>
+        <div class="g-ko">${fmt(ko)}${note ? ` <span class="g-note">·\u00a0${fmt(note)}</span>` : ''}</div>
       </li>`).join('')}</ul>` : '');
     const sections = (cat.sections || []).map((sec) => `<div class="g-section">
         <h3>${fmt(sec.title)}</h3>
@@ -1046,7 +1048,7 @@ ${text}
       <article class="card g-card">
         <header class="g-head">
           <div>
-            <div class="muted">${idx + 1} / ${cats.length} · ${esc(cat.sub || '')}</div>
+            <div class="muted g-sub">${idx + 1} / ${cats.length} · ${esc(cat.sub || '')}</div>
             <h1>${esc(cat.title)}</h1>
             <p class="g-summary">${fmt(cat.summary)}</p>
           </div>

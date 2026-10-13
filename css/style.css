@@ -27,7 +27,13 @@ body {
   font-family: var(--hand);
   font-size: 23px;
   line-height: 1.5;
+  /* 한글은 어절(띄어쓰기) 단위로 줄바꿈, 긴 영어 단어·URL만 강제로 끊기 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
+/* 제목은 줄 길이를 고르게, 본문은 마지막 줄에 한 글자만 남지 않게 */
+h1, h2, h3, .hero-title, .session-title, .topic-title, .g-summary { text-wrap: balance; }
+p, li, .g-ko, .c-note, .memo { text-wrap: pretty; }
 a { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
 h1, h2, h3 { margin: 0; line-height: 1.25; font-weight: 700; }
 h1 { font-size: 38px; }
@@ -378,6 +384,7 @@ a.video-title:hover { text-decoration: underline; }
 .g-card { display: flex; flex-direction: column; gap: 18px; }
 .g-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .g-head h1 { margin: 2px 0; }
+.g-sub { line-height: 1.3; margin-bottom: 4px; }
 .g-summary { font-size: 22px; margin: 0; }
 .g-basics { background: var(--band); border: 2.5px solid var(--ink); border-radius: var(--wobble); padding: 12px 18px; }
 .g-label { font-weight: 700; font-size: 22px; margin-bottom: 4px; }
