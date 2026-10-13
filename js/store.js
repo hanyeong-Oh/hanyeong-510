@@ -24,8 +24,23 @@ window.Store = (function () {
     function save(d) { localStorage.setItem(KEY, JSON.stringify(d)); }
     const now = () => new Date().toISOString();
 
+    // 멤버 이름이 바뀌었으면 저장된 데이터의 이름도 바꿔줌
+    function applyRenames() {
+      const map = cfg.MEMBER_RENAMES || {};
+      const rn = (n) => (Object.prototype.hasOwnProperty.call(map, n) ? map[n] : n);
+      if (!Object.keys(map).length) return;
+      const d = load();
+      const before = JSON.stringify(d);
+      d.topics.forEach((t) => { t.created_by = rn(t.created_by); });
+      d.posts.forEach((p) => { p.author = rn(p.author); });
+      d.videos.forEach((v) => { v.added_by = rn(v.added_by); v.watched_by = (v.watched_by || []).map(rn); });
+      if (JSON.stringify(d) !== before) save(d);
+      const me = localStorage.getItem(ME_KEY);
+      if (me && rn(me) !== me) localStorage.setItem(ME_KEY, rn(me));
+    }
+
     return {
-      async init() {},
+      async init() { applyRenames(); },
       async member() { return localStorage.getItem(ME_KEY); },
       setMember(name) { localStorage.setItem(ME_KEY, name); },
       async signIn() {},

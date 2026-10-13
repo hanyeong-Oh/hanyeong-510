@@ -56,7 +56,7 @@ create policy "members only" on public.videos for all to authenticated using (tr
 
 -- 기본 영어공부 재생목록 (제목·썸네일은 사이트를 열면 자동으로 채워짐)
 insert into public.videos (url, playlist_id, category, added_by, created_at)
-select v.url, v.playlist_id, '기타', '한영', now() - make_interval(secs => v.ord)
+select v.url, v.playlist_id, '기타', '오한영', now() - make_interval(secs => v.ord)
 from (values
   ('https://www.youtube.com/playlist?list=PLxoOU8azGw9Wnc1o0bdvfbBJBwa1Q-v9F', 'PLxoOU8azGw9Wnc1o0bdvfbBJBwa1Q-v9F', 0),
   ('https://www.youtube.com/playlist?list=PLxoOU8azGw9UQ1XEK0SmGje0lZnycvNc1', 'PLxoOU8azGw9UQ1XEK0SmGje0lZnycvNc1', 1),
@@ -68,7 +68,7 @@ where not exists (select 1 from public.videos x where x.playlist_id = v.playlist
 
 -- 기본 영어공부 영상
 insert into public.videos (url, youtube_id, category, added_by, created_at)
-select v.url, v.youtube_id, '기타', '한영', now() + make_interval(secs => 10 - v.ord)
+select v.url, v.youtube_id, '기타', '오한영', now() + make_interval(secs => 10 - v.ord)
 from (values
   ('https://www.youtube.com/watch?v=GzzaEedWRXQ', 'GzzaEedWRXQ', 0),
   ('https://www.youtube.com/watch?v=yv8aBYXPOZ8', 'yv8aBYXPOZ8', 1),

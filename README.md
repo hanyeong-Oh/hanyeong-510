@@ -5,7 +5,7 @@
 ## 주요 기능
 
 ### 1. ✍️ 영어 글쓰기 (주 3회)
-- **주제 정하기**: 월·수·금(설정 가능)마다 주제를 정합니다. 주제는 `TOPIC_MANAGER`로 지정한 멤버(기본: 한영)만 추가·수정·삭제할 수 있고, 다른 멤버에게는 "주제를 정할 예정이에요"라고 보입니다.
+- **주제 정하기**: 월·수·금(설정 가능)마다 주제를 정합니다. 주제는 `TOPIC_MANAGER`로 지정한 멤버(기본: 오한영)만 추가·수정·삭제할 수 있고, 다른 멤버에게는 "주제를 정할 예정이에요"라고 보입니다.
 - **직접 쓰기**: 각자 주제에 맞춰 영어로 글을 씁니다. 단어 수가 표시됩니다.
 - **AI 검수**: `📋 AI 검수 요청문 복사` 버튼을 누르면 내 글이 들어간 검수 요청문이 복사됩니다. ChatGPT, Claude, Gemini 등에 붙여넣으세요.
 - **수정본 입력**: AI가 고쳐준 수정본과 피드백(배운 표현)을 사이트에 따로 입력합니다.
@@ -41,10 +41,10 @@ supabase/schema.sql # Supabase 테이블 생성 SQL
 
 ```js
 MEMBERS: [
-  { name: '한영', email: '' },
-  { name: '정민', email: '' },
+  { name: '오한영', email: '' },
+  { name: '박정민', email: '' },
 ],
-TOPIC_MANAGER: '한영',   // 주제를 정하는 사람
+TOPIC_MANAGER: '오한영',   // 주제를 정하는 사람
 WRITING_DAYS: [1, 3, 5], // 월·수·금
 ```
 
@@ -63,8 +63,8 @@ WRITING_DAYS: [1, 3, 5], // 월·수·금
 
 ```js
 MEMBERS: [
-  { name: '한영', email: 'me@company.com' },     // 3번에서 만든 이메일
-  { name: '정민', email: 'coworker@company.com' },
+  { name: '오한영', email: 'me@company.com' },     // 3번에서 만든 이메일
+  { name: '박정민', email: 'coworker@company.com' },
 ],
 SUPABASE_URL: 'https://xxxx.supabase.co',
 SUPABASE_ANON_KEY: 'eyJhbGciOi...',
@@ -79,7 +79,7 @@ SUPABASE_ANON_KEY: 'eyJhbGciOi...',
 
 ## 사용 흐름
 
-1. 주제 담당(한영)이 홈에서 `+ 주제 정하기` → 주제 입력
+1. 주제 담당(오한영)이 홈에서 `+ 주제 정하기` → 주제 입력
 2. 각자 `쓰러 가기 →` 눌러 영어로 글쓰기 → 저장
 3. `📋 AI 검수 요청문 복사` → AI에게 검수 받기
 4. 받은 수정본 / 피드백을 `검수본 입력`에 붙여넣기 → 저장
