@@ -174,6 +174,7 @@ where not exists (
 insert into public.videos (url, youtube_id, category, added_by, created_at)
 select v.url, v.youtube_id, '기타', '오한영', now() + make_interval(secs => 30 - v.ord)
 from (values
+  ('https://www.youtube.com/watch?v=beQNlMfPqbw', 'beQNlMfPqbw', -1),
   ('https://www.youtube.com/watch?v=TIx-yVScq9g', 'TIx-yVScq9g', 0),
   ('https://www.youtube.com/watch?v=H6XNM8x3Bt4', 'H6XNM8x3Bt4', 1),
   ('https://www.youtube.com/watch?v=Gaw7MoofW8s', 'Gaw7MoofW8s', 2)
