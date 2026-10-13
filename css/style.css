@@ -373,11 +373,7 @@ a.video-title:hover { text-decoration: underline; }
 }
 
 /* ---------- 문법 개념 ---------- */
-.g-tabs { margin-bottom: 4px; }
-.g-group { margin-bottom: 12px; }
-.g-group-label { font-weight: 700; font-size: 18px; color: var(--muted); margin: 0 2px 4px; }
-.g-src { display: inline-block; margin-left: 6px; font-size: 15px; font-weight: 700; color: var(--ink); border: 2px solid var(--ink); border-radius: var(--wobble); padding: 0 8px; background: var(--blue-soft); }
-.g-src-claude { background: #fff; border-style: dashed; color: var(--muted); }
+.g-tabs { margin-bottom: 16px; }
 .g-tabs .cat { text-decoration: none; }
 .g-card { display: flex; flex-direction: column; gap: 18px; }
 .g-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }

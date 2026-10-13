@@ -1040,16 +1040,13 @@ ${text}
 
     $app.innerHTML = `
       <div class="section-head"><h2>문법 개념</h2></div>
-      ${[['notes', '내 노트 기반'], ['claude', '기본 문법 · Claude 작성']].map(([src, label]) => {
-        const list = cats.filter((c) => (c.source || 'notes') === src);
-        return list.length ? `<div class="g-group"><div class="g-group-label">${label}</div>
-          <div class="cat-chips g-tabs">${list.map((c) => `<a class="cat ${c === cat ? 'active' : ''}" href="#/grammar/${c.id}">${cats.indexOf(c) + 1}. ${esc(c.title)}</a>`).join('')}</div></div>` : '';
-      }).join('')}
+      <p class="muted">초보자에게 필요한 것부터 순서대로. 1번부터 차근차근.</p>
+      <div class="cat-chips g-tabs">${cats.map((c, i) => `<a class="cat ${c === cat ? 'active' : ''}" href="#/grammar/${c.id}">${i + 1}. ${esc(c.title)}</a>`).join('')}</div>
 
       <article class="card g-card">
         <header class="g-head">
           <div>
-            <div class="muted">${idx + 1} / ${cats.length} · ${esc(cat.sub || '')} <span class="g-src ${cat.source === 'claude' ? 'g-src-claude' : ''}">${cat.source === 'claude' ? 'Claude 작성' : '내 노트 기반'}</span></div>
+            <div class="muted">${idx + 1} / ${cats.length} · ${esc(cat.sub || '')}</div>
             <h1>${esc(cat.title)}</h1>
             <p class="g-summary">${fmt(cat.summary)}</p>
           </div>
