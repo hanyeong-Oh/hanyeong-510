@@ -35,6 +35,21 @@ window.GRAMMAR = [
           'run, eat, study 처럼 동사 자체가 서술어 역할을 하는 동사가 **본동사**예요. 이때는 보어가 필요 없어요.',
         ],
       },
+      {
+        title: '긴 문장은 거품 빼기',
+        points: [
+          '긴 문장은 **수식어(거품)를 괄호로 묶어 걷어내고** 뼈대(주어 + 동사)부터 찾아요.',
+          '거품 ① **전치사구**: (in N), (about N), (with N)',
+          '거품 ② **관계대명사절**: N (who / which / that + 불완전한 문장) → 앞 명사를 꾸며요.',
+          '거품 ③ **형용사적 to부정사**: N (to R) → "~할"',
+          '단, **명사절은 거품이 아니에요.** what + 불완전 / that + 완전 은 주어·목적어·보어 자리라서 걷어내면 문장이 무너져요.',
+        ],
+        examples: [
+          ['The girl (who is standing over there) (with a red bag) is my sister.', '저기 서 있는 빨간 가방 든 여자애가 내 동생이야.', '뼈대: The girl is my sister.'],
+          ['I need a pen (to write with).', '쓸 펜이 필요해.', '뼈대: I need a pen.'],
+          ['I know that he is honest.', '나는 그가 정직하다는 걸 안다.', 'that절은 know의 목적어 → 걷어내지 않음'],
+        ],
+      },
     ],
     native: [
       '연결동사는 뜻이 약해서 대화에선 자주 빠져요. "You okay?", "Game over.", "Me too."',
@@ -162,6 +177,30 @@ window.GRAMMAR = [
         examples: [
           ['He might be of help.', '그는 도움이 될지도 몰라.', 'of help = helpful, 주어의 성질 → 보어'],
           ['He might be in the room.', '그는 방에 있을지도 몰라.', 'in the room은 장소(부사구) → 주어의 성질이 아니라 보어 아님'],
+        ],
+      },
+      {
+        title: '형용사는 주어에, 부사는 동사에',
+        points: [
+          '**형용사**는 주어(Subject)에 더하는 말이에요. 동사 바로 뒤에 형용사가 오면 동사의 원래 뜻이 약해지고 "~이다 / ~가 되다"로 읽혀요.',
+          '**부사**는 동사(Verb)에 더하는 말이에요. 동사가 원래 뜻 그대로 살아 있어요.',
+        ],
+        examples: [
+          ['Tom went mad.', '톰은 미쳐 버렸다.', 'go가 "가다"가 아니라 "~가 되다" (형용사 보어)'],
+          ['Tom ran madly.', '톰은 미친 듯이 달렸다.', 'run은 "달리다" 그대로, madly가 동사를 꾸밈'],
+        ],
+      },
+      {
+        title: '명사 보어 vs 형용사 보어',
+        points: [
+          '**명사 보어**는 주어(또는 목적어)와 **같은 것**이에요. 그래서 명사가 보어가 되려면 **주어 = 명사**가 성립해야 해요.',
+          '**형용사 보어**는 주어(또는 목적어)를 **설명**만 해요. 같은 것이 아니에요.',
+        ],
+        examples: [
+          ['Jane is a teacher.', '제인은 교사이다.', 'Jane = a teacher → 명사 보어'],
+          ['We call this flower a rose.', '우리는 이 꽃을 장미라고 부른다.', 'this flower = a rose → 목적어의 명사 보어'],
+          ['John is honest.', '존은 정직하다.', 'John ≠ honest, 설명 → 형용사 보어'],
+          ['We believe John honest.', '우리는 존이 정직하다고 믿는다.', '목적어 John을 설명 → 형용사 보어 (대화에선 We believe John is honest. 가 더 흔해요)'],
         ],
       },
     ],
@@ -334,10 +373,25 @@ window.GRAMMAR = [
         ],
       },
       {
+        title: '자동사 + 전치사 = 하나의 타동사구',
+        points: [
+          '자동사 뒤의 전치사는 뒤 명사와 묶기보다 **앞 동사에 붙여서 한 덩어리 타동사**로 보는 게 편해요.',
+          'ask for(요청하다) · look at(보다) · listen to(듣다) · wait for(기다리다) · depend on(의존하다) · deal with(처리하다)',
+          '같은 동사라도 전치사가 붙으면 뜻이 바뀌어요: ask(묻다) / ask for(요청하다). 이런 건 **단어처럼 통째로** 외우세요.',
+          'ask가 "묻다"일 땐 물어본 내용이 같이 와야 자연스러워요: I asked him the way. (그에게 길을 물었다)',
+        ],
+        examples: [
+          ['I asked for the money.', '나는 그 돈을 요청했다.', 'ask for = 요청하다 (뒤에 주로 사물)'],
+          ['I asked him the way.', '나는 그에게 길을 물어봤다.', 'ask = 묻다 (사람 + 물은 내용)'],
+          ['Can you wait for me?', '나 좀 기다려 줄래?', 'wait for = 기다리다'],
+        ],
+      },
+      {
         title: '수동태가 안 되는 자동사',
         points: [
           '자동사는 목적어가 없으니 수동태로 못 바꿔요.',
-          '**happen, occur, take place, appear, disappear, exist, arrive, consist of, belong to, result in/from**',
+          '**happen, occur, take place, appear, disappear, exist, arrive, rise, function, proceed, consist of, belong to, result in/from**',
+          '자동사: 동사의 힘이 주어에서 끝나요. / 타동사: 동사의 힘이 주어 → 목적어로 옮겨 가요. (I grow plants. → plants가 목적어)',
         ],
       },
     ],
@@ -396,8 +450,8 @@ window.GRAMMAR = [
 
   {
     id: 'preposition',
-    title: '전치사 in / on / at',
-    sub: '시간 · 장소 · 기간',
+    title: '전치사',
+    sub: 'in / on / at · 시점 · 기간 · 위치 · 방향 · 이유',
     summary: 'at은 점, on은 면(표면·날짜), in은 공간(안·긴 기간)이에요.',
     basics: [
       '**at** = 콕 찍은 한 점: at 3 p.m., at the station, at the door',
@@ -415,11 +469,72 @@ window.GRAMMAR = [
         ],
       },
       {
-        title: '헷갈리는 짝',
+        title: '장소: in vs at',
         points: [
-          '**for vs during**: for + 시간 길이 (for 2 hours) / during + 일·행사 (during the meeting)',
-          '**by vs until**: by = 그때까지 한 번 끝내기 (Send it by Friday) / until = 그때까지 계속 (I\'ll wait until 6)',
-          '**in time vs on time**: in time = 늦지 않게 (여유 있게) / on time = 정각에',
+          '**in** = 큰 공간 **안** (in Seoul, in the building) / **at** = 한 **지점**, 번지 (at the bus stop, at 123 Main Street)',
+          '같은 장소라도 그 **안**을 말하면 in, **장소 자체**(거기서 볼일)를 말하면 at: in the office / at the office',
+        ],
+      },
+      {
+        title: '시점: since · from · until · by · before',
+        points: [
+          '**since** ~이래로 (지금까지) / **from** ~부터 / **until** ~까지 / **before, prior to** ~전에 + 시점',
+          '**until** = 그때까지 상황·상태가 **계속** / **by** = 그때까지 행동을 한 번 **끝내기** (과제 마감을 떠올리세요: 그 시점까지 늦지 않게 내기만 하면 돼요)',
+          '**in time** = 늦지 않게 (여유 있게) / **on time** = 정각에',
+        ],
+        examples: [
+          ["I'll wait until 6.", '6시까지 기다릴게.', '계속 → until'],
+          ['Please send it by Friday.', '금요일까지 보내 주세요.', '마감 → by'],
+        ],
+      },
+      {
+        title: '기간: for · during · over · within · in',
+        points: [
+          '**for** + 숫자 기간 → "얼마나 오래" (for two hours)',
+          '**during** + 명사 → "언제" (during summer, during the meeting). during the + 숫자 기간은 OK (during the last three years)',
+          '**over / through / throughout** ~동안, ~내내 · **within** ~이내에',
+          '**in** + 기간 → 보통 "~후에" (in two days = 이틀 후에)',
+        ],
+        examples: [
+          ['The reporter interviewed Mr. Kim for nearly two hours.', '그 기자는 거의 두 시간 동안 김 씨를 인터뷰했다.', '얼마나 오래 → for'],
+          ['Most resorts in the area are busiest during summer.', '그 지역 리조트 대부분은 여름 동안 가장 바쁘다.', '언제 → during'],
+          ['Your request will be approved in two days.', '신청은 이틀 후에 승인될 겁니다.', 'in + 기간 = ~후에'],
+        ],
+      },
+      {
+        title: '위치 · 방향',
+        points: [
+          '위치: **over / above** ~위에(~이상) · **under / below** ~아래에(~이하) · **beside / next to** ~옆에 · **behind** ~뒤에 · **between**(둘) / **among**(셋 이상) ~사이에 · **near** 가까이 · **around** 주위에 · **past** ~을 지나 · **opposite** ~맞은편에 · **outside** ~밖에',
+          '방향: **from** ~에서 · **to** ~로 · **across** ~을 가로질러 · **through** ~을 통과하여 · **along** ~을 따라 · **for** ~을 향해 · **toward(s)** ~쪽으로 · **into** ~안으로 · **out of** ~밖으로',
+          '**along with** ~와 함께',
+        ],
+      },
+      {
+        title: '이유 · 양보 · 목적',
+        points: [
+          '~때문에: **because of / due to / owing to / on account of** + 명사',
+          '~에도 불구하고: **despite / in spite of / notwithstanding** + 명사',
+          '~을 위해서: **for** + 명사',
+          '뒤에 **문장**(주어 + 동사)이 오면 전치사가 아니라 접속사(because, although)를 써요.',
+        ],
+        examples: [
+          ['The flight was delayed due to bad weather.', '악천후 때문에 비행기가 지연됐다.'],
+          ['Despite the rain, we went out.', '비가 오는데도 우리는 나갔다.', 'despite + 명사'],
+        ],
+      },
+      {
+        title: '통째로 외우는 전치사 표현',
+        points: [
+          '**under** + 상태: under construction(공사 중) · under review(검토 중) · under discussion(논의 중) · under consideration(고려 중) · under investigation(조사 중) · under pressure(압박받는) · under control(통제되는) · under way(진행 중)',
+          '**under** + 관리: under new management(새 경영진하에서) · under the new policy(새 정책하에서) · under close supervision(엄격한 감독하에) · under the current contract(현 계약하에서)',
+          '**above** one\'s expectations(기대 이상인) · have an edge / advantage **over** ~(~보다 유리하다)',
+          'a difference / gap **between** A and B (A와 B의 차이) · **within** walking distance of ~(~에서 걸어갈 수 있는) · **within** the limit(범위 내에서)',
+          '**around** the world(전 세계에) · **around** the corner(모퉁이 돌아서 / 곧, 임박한)',
+        ],
+        examples: [
+          ['The new office is still under construction.', '새 사무실은 아직 공사 중이에요.'],
+          ['The hotel is within walking distance of the station.', '호텔은 역에서 걸어갈 수 있는 거리예요.'],
+          ['The results were above our expectations.', '결과가 기대 이상이었어요.'],
         ],
       },
     ],
@@ -431,13 +546,15 @@ window.GRAMMAR = [
       ['See you in Monday.', 'See you on Monday.', '요일은 on'],
       ['Please send it until Friday.', 'Please send it by Friday.', '마감은 by'],
       ['I studied during 3 hours.', 'I studied for 3 hours.', '시간 길이는 for'],
+      ['Despite it rained, we went out.', 'Despite the rain, we went out. / Although it rained, ...', 'despite 뒤엔 명사, 문장이면 although'],
+      ['The project is on construction.', 'The project is under construction.', '공사 중 = under construction'],
     ],
   },
 
   {
     id: 'time-conj',
-    title: '시간 표현 · 양보 접속사',
-    sub: 'after · later · in · since · before · ago / even if · even though · although · though',
+    title: '접속사 · 시간 표현',
+    sub: 'and · but · or · so / after · later · in · since · ago / even if · even though · although',
     summary: '"언제부터 세느냐"(기준점)와 "진짜 일어난 일이냐"만 구별하면 돼요.',
     basics: [
       '시간 표현은 **기준점**이 다 달라요. 지금 기준인지, 어떤 일·시점 기준인지 먼저 보세요.',
@@ -477,6 +594,21 @@ window.GRAMMAR = [
           ['It was a good movie. A bit long, though.', '좋은 영화였어. 좀 길긴 했지만.', '문장 끝 though'],
         ],
       },
+      {
+        title: '등위접속사 — 같은 급끼리 잇기',
+        points: [
+          '**and** 그리고 · **or** 또는 · **but / yet** 그러나 · **so** 그래서 · **for** 왜냐하면',
+          '**so, for**는 문장(절)끼리만 이어요. 단어·구는 못 이어요.',
+          '**and so**(그래서) · **and yet**(그런데도) · **and then**(그러고 나서)처럼 붙이면 뜻이 더 분명해져요.',
+          '주어를 **and**로 이으면 → **복수 동사** / **or**로 이으면 → **마지막 주어**에 수 일치',
+        ],
+        examples: [
+          ['Tom and Jane are coming.', '톰과 제인이 온다.', 'and → 복수 are'],
+          ['Either you or he is wrong.', '너 아니면 그가 틀렸다.', 'or → 마지막 he에 맞춰 is'],
+          ['It was late, so I went home.', '늦어서 집에 갔다.', 'so는 문장끼리만'],
+          ["He's rich, and yet he's not happy.", '그는 부자인데도 행복하지 않다.'],
+        ],
+      },
     ],
     native: [
       '말할 땐 although보다 **though**가 훨씬 많이 나와요. 특히 문장 끝에 툭 붙이는 "~, though."',
@@ -488,6 +620,7 @@ window.GRAMMAR = [
       ["I'll be back after 10 minutes.", "I'll be back in 10 minutes.", '지금부터 ~ 뒤 = in'],
       ['I have lived here since 3 years.', "I've lived here for 3 years.", 'since 뒤엔 시점, 기간은 for'],
       ['Even if it was raining, I went out.', 'Even though it was raining, I went out.', '실제로 비가 왔으면 even though'],
+      ['Tom and Jane is coming.', 'Tom and Jane are coming.', 'and로 이은 주어는 복수'],
     ],
   },
 
@@ -539,6 +672,21 @@ window.GRAMMAR = [
           ['Would you mind closing the door?', '문 좀 닫아 주시겠어요?', '대답 "No, not at all." = 괜찮아요(닫아 줄게요)'],
         ],
       },
+      {
+        title: 'can / could — could가 "과거"일 때는 능력뿐',
+        points: [
+          'could가 **과거**로 쓰이면 뜻은 **능력**(~할 수 있었다)뿐이에요.',
+          '허가 · 가능성 · 추측의 could는 과거가 아니라 **can보다 정중하거나 불확실한** 뜻이에요. 과거로 해석하지 마세요.',
+          '**과거 추측**은 조동사 + **have p.p.**: can\'t have p.p.(~했을 리 없다), must have p.p.(~했음이 틀림없다), might have p.p.(~했을지도)',
+        ],
+        examples: [
+          ['I could swim when I was five.', '다섯 살 때 수영할 수 있었어.', '과거 능력'],
+          ['Could I have some coffee?', '커피 좀 마실 수 있을까요?', 'can보다 정중한 요청'],
+          ['8 Things That Could Fall off Your Car Tomorrow', '내일 당신 차에서 떨어질 수도 있는 8가지', 'can보다 불확실한 가능성'],
+          ["Jane could arrive at 6 o'clock.", '제인은 6시에 도착할 수도 있어.', 'can보다 불확실한 추측'],
+          ["She can't have been fired.", '그녀가 해고됐을 리 없어.', "can't be fired의 과거 추측 → can't have been p.p."],
+        ],
+      },
     ],
     native: [
       '회사에서 부탁할 땐 Can you보다 **Could you**가 기본이에요.',
@@ -549,23 +697,61 @@ window.GRAMMAR = [
       ['I must to go now.', 'I have to go now.', '조동사 뒤엔 to 없이 동사원형. 대화에선 have to가 자연스러워요.'],
       ["You mustn't come tomorrow. (안 와도 된다는 뜻으로)", "You don't have to come tomorrow.", 'must not = 금지, don\'t have to = 불필요'],
       ['Can I ask you a favor? (윗사람에게)', 'Could I ask you a favor?', '틀린 건 아니지만 could가 더 공손해요.'],
+      ['He must be at home yesterday.', 'He must have been at home yesterday.', '과거 추측은 조동사 + have p.p.'],
     ],
   },
 
   {
     id: 'to-ing',
     title: 'to부정사 · 동명사',
-    sub: '동사 뒤에 to + 동사? -ing?',
+    sub: 'to부정사 3가지 용법 · 의미상 주어 · to vs -ing · V-ing 세 갈래',
     summary: 'to는 "앞으로 할 일", -ing는 "이미 하고 있거나 해 본 일"의 느낌이에요.',
     basics: [
+      '**to부정사** = to + 동사원형. 품사가 정해져 있지 않아서 문장 속 **역할(명사·형용사·부사)**로 판단해요.',
+      '한 줄 요약: **명사** "~하는 것" / **형용사** 명사 (to R) "~할" / **부사** "~하기 위해서", 결과',
       '동사 뒤에 또 동사가 올 땐 **to + 동사원형** 또는 **-ing** 모양으로 바꿔요.',
       '어떤 동사는 to만, 어떤 동사는 -ing만 받아요. 외울 땐 **느낌**으로 묶으면 쉬워요.',
       '**to**: 앞으로 향하는 느낌 (원하다, 계획하다, 결정하다) / **-ing**: 이미 있는 일 (즐기다, 끝내다, 피하다)',
     ],
     sections: [
       {
+        title: 'to부정사의 세 가지 용법',
+        points: [
+          '**명사적** — 주어 "~것은, ~기는" / 목적어 "~것을, ~기를" / 보어 "~것이다, ~기이다"',
+          '**형용사적** — 명사 수식 "~하는, ~할" / be to 용법(예정·의무·가능·운명·의도)',
+          '**부사적 ★** — 목적 "~하기 위해서" / 형용사 수식 "~하기에" / 감정의 원인 "~해서" / 판단의 근거 "~하다니" / 결과 "그래서 ~가 되었다"',
+          '부사는 주로 원인·이유·목적·결과를 나타내요. 그래서 to부정사의 부사적 용법도 원인, 목적, 결과의 뜻이 돼요.',
+        ],
+        examples: [
+          ['To be honest is important to be a teacher.', '교사가 되려면 정직한 것이 중요하다.', "To be honest = 주어(명사적) / to be a teacher = 목적(부사적). 대화에선 It's important to be honest if you want to be a teacher."],
+          ['She is kind to help the old man.', '할아버지를 돕다니 그녀는 친절하다.', '판단의 근거 "~하다니" (부사적)'],
+          ['They need a house to live in.', '그들은 살 집이 필요하다.', 'a house를 뒤에서 꾸밈 "~할" (형용사적)'],
+          ['This book is easy to read.', '이 책은 읽기 쉽다.', '형용사 easy를 꾸밈 "~하기에" (부사적)'],
+          ['I was happy to see you.', '널 봐서 기뻤어.', '감정의 원인 "~해서" (부사적)'],
+          ['He grew up to be a doctor.', '그는 자라서 의사가 되었다.', '결과 (부사적)'],
+        ],
+      },
+      {
+        title: '목적 "~하기 위해서" · 의미상 주어',
+        points: [
+          '목적을 분명히 할 땐 to 대신 **in order to / so as to**를 써도 돼요.',
+          '사람이 하는 행동의 목적엔 **for + -ing ✗** → to부정사만 써요.',
+          'to부정사의 주어(행동하는 사람)가 따로 있으면 to 앞에 **for + 목적격**을 붙여요.',
+          '단, **kind, nice, sweet, smart, rude**처럼 사람의 성품을 말하는 형용사 뒤엔 **of + 목적격**',
+        ],
+        examples: [
+          ['He studied hard in order to pass the exam.', '그는 시험에 붙으려고 열심히 공부했다.'],
+          ['For us to increase sales, we must make new advertisements.', '매출을 올리려면 우리는 새 광고를 만들어야 한다.', 'for us = 늘리는 주체'],
+          ["It's hard for me to wake up early.", '나는 일찍 일어나기가 힘들어.'],
+          ["It's kind of you to help me.", '도와주시다니 친절하시네요.', '성품 형용사 → of'],
+        ],
+      },
+      {
         title: 'to만 받는 동사 — 미래·의지',
-        points: ['want, hope, plan, decide, need, expect, promise, agree, refuse, would like'],
+        points: [
+          '★ "원하다" 계열은 to부정사: **want, need, wish, hope, desire, expect, would like**',
+          'plan, decide, promise, agree, refuse도 to만 받아요.',
+        ],
         examples: [
           ['I decided to quit my job.', '회사를 그만두기로 했어.'],
           ["I'd like to book a table.", '자리 예약하고 싶어요.'],
@@ -580,16 +766,44 @@ window.GRAMMAR = [
         ],
       },
       {
+        title: '동명사 vs to부정사 — 언제 일어난 일이냐',
+        points: [
+          '**동명사(-ing)**: 동사보다 **먼저** 일어났거나 **동시에** 일어나는 일, **실제로** 일어난 일',
+          '**to부정사**: 동사보다 **나중에(미래)** 일어날 일, **추상적이거나 가정적인** 일',
+        ],
+        examples: [
+          ['I miss talking with my grandmother.', '할머니랑 이야기하던 게 그리워.', '그리워하기 전에 이미 한 일 → -ing'],
+          ['Mr. and Mrs. Johnson have decided to have a baby.', '존슨 부부는 아이를 갖기로 했다.', '결정한 뒤에 할 일 → to'],
+          ['The entrepreneur seems to have money to burn.', '그 사업가는 돈이 남아도는 것 같다.', '추상적인 일 → to'],
+        ],
+      },
+      {
         title: '둘 다 되는데 뜻이 달라지는 동사',
         points: [
           '**stop**: stop smoking (담배를 끊다) / stop to smoke (담배 피우려고 멈추다)',
-          '**remember / forget**: + to (할 일을) / + -ing (한 일을)',
+          '**remember / forget**: + to (앞으로 할 일, 또는 잊어서 실제로 안 한 일) / + -ing (과거에 실제로 한 일)',
+          '**regret**: + -ing (~한 것을 후회하다) / + to (~하게 되어 유감이다)',
           '**try**: try to (애써 해 보다) / try -ing (시험 삼아 해 보다)',
         ],
         examples: [
           ['Remember to lock the door.', '문 잠그는 거 잊지 마.', '앞으로 할 일'],
           ['I remember locking the door.', '문 잠근 거 기억나.', '이미 한 일'],
           ['Try restarting your computer.', '컴퓨터 재부팅 한번 해 봐.'],
+          ['I regret telling him the secret.', '그에게 비밀을 말한 걸 후회해.', '이미 한 일 → -ing'],
+          ['We regret to inform you that the event has been canceled.', '행사가 취소되었음을 알려 드리게 되어 유감입니다.', '공지·메일 단골 표현 → to'],
+        ],
+      },
+      {
+        title: 'V-ing 세 갈래: 동명사 · 현재분사 · 분사구문',
+        points: [
+          '**동명사** = 명사 "~것, ~기" → 주어·목적어·보어 자리',
+          '**현재분사** = 형용사 "~하는" → 명사를 꾸미거나 보어',
+          '**분사구문** = 부사 "~하면서, ~해서" → 문장 전체를 꾸밈 (분사 · 분사구문에서 자세히)',
+        ],
+        examples: [
+          ['Swimming is good exercise.', '수영은 좋은 운동이다.', '동명사 (주어)'],
+          ['Look at the boy swimming in the pool.', '수영장에서 수영하는 소년을 봐.', '현재분사 (boy를 꾸밈)'],
+          ['Walking home, I met Tom.', '집에 걸어가다가 톰을 만났다.', '분사구문 (~하면서)'],
         ],
       },
     ],
@@ -601,6 +815,168 @@ window.GRAMMAR = [
       ['I enjoy to watch movies.', 'I enjoy watching movies.', 'enjoy는 -ing만'],
       ['I look forward to see you.', 'I look forward to seeing you.', '여기 to는 전치사 → -ing'],
       ['I want going home.', 'I want to go home.', 'want는 to만'],
+      ['I went to the store for buying milk.', 'I went to the store to buy milk.', '행동의 목적엔 for -ing ✗ → to부정사'],
+      ["It's kind for you to help me.", "It's kind of you to help me.", '성품 형용사 뒤 의미상 주어는 of'],
+      ['I regret to tell him the secret. (말한 걸 후회)', 'I regret telling him the secret.', '이미 한 일을 후회하면 -ing'],
+    ],
+  },
+
+  {
+    id: 'participle',
+    title: '분사 · 분사구문',
+    sub: '-ing / p.p. 형용사 · 접속사 빼고 줄이기',
+    summary: '분사는 형용사(명사 꾸미기), 분사구문은 부사절을 짧게 줄인 거예요.',
+    basics: [
+      '**분사 = 형용사** 역할. 명사를 꾸미거나 보어가 돼요.',
+      '**현재분사(V-ing)** = 능동 "~하는" / **과거분사(p.p.)** = 수동·완료 "~된, ~해진"',
+      '**분사구문** = 부사절에서 **접속사와 주어를 빼고** 동사를 -ing로 바꾼 것. -ing로 바꿨다는 건 절을 구로 줄였다는 표시예요.',
+    ],
+    sections: [
+      {
+        title: '현재분사 vs 과거분사',
+        points: [
+          '꾸미는 명사가 **직접 하면** -ing, **당하거나 이미 된 상태면** p.p.',
+          'a rising sun (떠오르는 해) / fallen leaves (떨어진 낙엽) → 둘 다 명사를 꾸미는 형용사',
+          '분사에 다른 말이 붙어 길어지면 명사 **뒤에서** 꾸며요: the boy crying in the park',
+        ],
+        examples: [
+          ['I saw the boy crying in the park.', '공원에서 울고 있는 소년을 봤다.', '소년이 직접 운다(능동) → crying'],
+          ["The car parked here is my father's.", '여기 주차된 차는 우리 아빠 차야.', '차는 주차되는 쪽(수동) → parked'],
+          ['The movie was boring, so I was bored.', '영화가 지루해서 나는 지루했다.', '감정을 주면 -ing, 느끼면 p.p.'],
+        ],
+      },
+      {
+        title: '분사구문 만들기',
+        points: [
+          '① 부사절의 **접속사** 빼기 → ② 주절과 같은 **주어** 빼기 → ③ 동사를 **-ing**로',
+          '[접속사 + S + V], S + V → **V-ing ~, S + V**',
+          'be동사는 Being이 되고, **Being은 생략**할 수 있어요. 그래서 수동은 (being) p.p. → p.p.만 남아요.',
+        ],
+        examples: [
+          ['When I walked home, I met Tom. → Walking home, I met Tom.', '집에 걸어가다가 톰을 만났다.'],
+          ['As she was left alone, she began to cry. → (Being) Left alone, she began to cry.', '혼자 남겨지자 그녀는 울기 시작했다.', 'was left → being left → being 생략 → left'],
+        ],
+      },
+      {
+        title: '형태로 보는 시제와 태',
+        points: [
+          '**-ing** — 주절과 같은 시제, 능동',
+          '**having p.p.** — 주절보다 앞선 일, 능동',
+          '**(being) p.p.** — 주절과 같은 시제, 수동',
+          '**having been p.p.** — 주절보다 앞선 일, 수동',
+        ],
+        examples: [
+          ['Having finished the report, I went home.', '보고서를 다 끝내고 나서 집에 갔다.', '끝낸 게 먼저 → having p.p.'],
+        ],
+      },
+      {
+        title: '주어가 다르면 주어를 남겨요',
+        points: ['부사절과 주절의 주어가 다르면, 분사구문 앞에 그 주어를 그대로 둬요.'],
+        examples: [
+          ['Because the weather was nice, I went on a picnic. → The weather being nice, I went on a picnic.', '날씨가 좋아서 소풍을 갔다.'],
+        ],
+      },
+      {
+        title: '분사구문 해석 — 4가지',
+        points: [
+          '**시간**: ~할 때, ~하면서 (when, while, after)',
+          '**원인**: ~해서, ~여서 (as, since, because)',
+          '**조건**: ~라면, ~한다면 (if)',
+          '**양보**: ~이긴 하지만 (although, though)',
+          '문맥에 맞는 접속사를 하나씩 넣어 보며 읽으면 돼요.',
+        ],
+      },
+      {
+        title: '문제 유형: To be vs Being',
+        points: [
+          '빈칸 뒤에 콤마 + 완전한 문장(주절)이 오면, 빈칸은 주절을 꾸미는 **분사구문(Being)** 자리예요.',
+          '**To be**는 "~하기 위해서"(목적)라서 뜻이 안 맞으면 오답이에요.',
+        ],
+        examples: [
+          ["Being the head chef at Marlena's, Roy Salazar has complete control over the menus.", '말레나 식당의 수석 셰프라서 로이 살라자르는 메뉴를 전부 책임진다.', 'To be(~하기 위해서) ✗ / Being(~이므로) ✓'],
+        ],
+      },
+    ],
+    native: [
+      '분사구문은 글(보고서, 기사, 소설)에서 많이 써요. 대화에선 접속사를 살려 말하는 게 더 자연스러워요: "When I was walking home, I met Tom."',
+      '"Generally speaking", "Judging from ~", "Considering ~" 같은 덩어리 분사구문은 회화에서도 자주 써요.',
+    ],
+    mistakes: [
+      ['The news was very shocked.', 'The news was very shocking.', '뉴스가 충격을 줌 → -ing'],
+      ['The car parking here is mine.', 'The car parked here is mine.', '차는 주차되는 쪽 → p.p.'],
+      ['Walking home, the rain started.', 'Walking home, I got caught in the rain.', '분사구문의 주어 = 주절의 주어. 비가 걸어간 게 아니에요.'],
+    ],
+  },
+
+  {
+    id: 'form5',
+    title: '5형식: 목적어 + 목적격보어',
+    sub: '일·사·지 · 가목적어 it',
+    summary: '"주어는 동사한다, 목적어가 목적보어 하도록 / 상태이도록." 이 틀 하나로 해석해요.',
+    basics: [
+      '5형식은 **주어 + 동사 + 목적어 + 목적격보어(O.C)**. 목적격보어는 목적어의 **동작**이나 **상태**를 말해요.',
+      '해석 틀: 주어는 **동사한다**, 목적어가 **목적보어 하도록 / 상태이도록**.',
+      '목적격보어 모양은 동사가 정해요: **명사·형용사**(상태) · **to부정사**(동작) · **동사원형**(사역·지각) · **-ing / p.p.**(능동 / 수동)',
+    ],
+    sections: [
+      {
+        title: '목적격보어 암기: 일 · 사 · 지',
+        points: [
+          '**일**반동사(want, tell, ask, expect, allow …) + 목적어 + **to V**',
+          '**사**역동사(make, have, let) + 목적어 + **동사원형**',
+          '**지**각동사(see, watch, hear, feel) + 목적어 + **동사원형 / -ing**',
+          '**help** + 목적어 + **동사원형 / to V** (둘 다 OK) · **get** + 목적어 + **to V** (get, help는 "준사역동사")',
+          '목적어가 동작을 **당하는** 쪽이면 **p.p.** → She had a house built.',
+        ],
+        examples: [
+          ['She wanted me to build a house.', '그녀는 내가 집을 짓기를 원했다.', '일반동사 → to V'],
+          ['She had me build a house.', '그녀는 나에게 집을 짓게 했다.', '사역동사 → 동사원형'],
+          ['She saw me building a house.', '그녀는 내가 집을 짓고 있는 걸 봤다.', '지각동사 → -ing (하고 있는 중)'],
+          ['She helped me (to) build a house.', '그녀는 내가 집 짓는 걸 도왔다.', 'help → 동사원형 / to V'],
+          ['She got me to build a house.', '그녀는 나에게 집을 짓게 했다.', 'get → to V'],
+          ['She had a house built.', '그녀는 집을 짓게 했다.', '집은 지어지는 쪽 → p.p.'],
+        ],
+      },
+      {
+        title: '명사 · 형용사 보어 — 목적어의 상태',
+        points: [
+          '**keep · find · consider · call · make · leave · think · believe** + 목적어 + 명사/형용사',
+          '명사가 보어면 **목적어 = 보어 명사**여야 해요.',
+          'think / consider 뒤의 (to be)는 자주 생략해요: She thought me (to be) happy.',
+          '**hold + 목적어 + accountable / responsible for** = (목적어에게) ~의 책임을 묻다',
+        ],
+        examples: [
+          ['Please keep the file confidential.', '그 파일은 기밀로 유지해 주세요.', 'keep + 목적어 + 형용사'],
+          ['Mr. Jason considers the project a success.', '제이슨 씨는 그 프로젝트를 성공이라고 여긴다.', 'the project = a success'],
+          ['I found the book interesting.', '그 책 재밌더라.', 'find + 목적어 + 형용사 = ~라고 알게 되다'],
+          ['They hold him responsible for the mistake.', '그들은 그 실수의 책임을 그에게 묻는다.'],
+        ],
+      },
+      {
+        title: '가목적어 it — 목적어가 길 때',
+        points: [
+          '5형식 목적어 자리에는 **that절 · to부정사구 · what절** 같은 긴 명사 덩어리를 바로 못 써요.',
+          '그 자리에 **it(가목적어)**을 두고, 진짜 목적어(진목적어)는 **맨 뒤로** 보내요.',
+          '모양: **S + 동사(believe, make, consider, find, think) + it + 목적격보어 + 진목적어**',
+          'that절은 **3형식** 목적어로는 바로 써도 돼요 (I think that ~). 5형식 목적어, 4형식 간접목적어 자리는 ✗',
+        ],
+        examples: [
+          ['I find it hard to wake up early.', '일찍 일어나는 게 힘들어.', 'it = to wake up early'],
+          ['She made it clear that she was not interested.', '그녀는 관심 없다는 걸 분명히 했다.', 'it = that절'],
+          ['I think it important to be honest.', '나는 정직한 게 중요하다고 생각해.', "대화에선 I think it's important to be honest. 가 더 흔해요"],
+        ],
+      },
+    ],
+    native: [
+      '"make it clear that ~", "find it hard to ~", "make it easy to ~"는 회의·메일에서 정말 자주 쓰는 가목적어 패턴이에요.',
+      '"Let me know.", "Let me check.", "Have him call me."처럼 사역동사 + 동사원형은 회사 대화의 기본이에요.',
+      '"I\'ll get it done by Friday." (금요일까지 끝낼게요)처럼 get + 목적어 + p.p.도 많이 써요.',
+    ],
+    mistakes: [
+      ['She made me to clean the room.', 'She made me clean the room.', '사역동사 make 뒤엔 to 없이 동사원형'],
+      ['I want you come.', 'I want you to come.', 'want는 목적어 + to V'],
+      ['I find to wake up early hard.', 'I find it hard to wake up early.', '긴 목적어는 가목적어 it으로'],
+      ['I had my car repair.', 'I had my car repaired.', '차는 수리되는 쪽 → p.p.'],
     ],
   },
 
@@ -650,6 +1026,15 @@ window.GRAMMAR = [
     ],
     sections: [
       {
+        title: '시제별 수동태 모양',
+        points: [
+          '**단순**: be + p.p. (is / was / will be + p.p.)',
+          '**진행**: be being p.p. → The road is being repaired. (수리 중이다)',
+          '**완료**: have been p.p. → The report has been sent. (보내졌다)',
+          '능동태: 주어가 행위의 **주체** / 수동태: 주어가 행위의 **대상**',
+        ],
+      },
+      {
         title: '수동태를 쓰는 때',
         points: [
           '행위자를 모를 때: My bike was stolen.',
@@ -695,6 +1080,33 @@ window.GRAMMAR = [
         ],
       },
       {
+        title: '4형식 수동태 — 목적어가 두 개',
+        points: [
+          '**간접목적어(사람)**를 주어로 → 직접목적어가 그대로 남아요. (목적어가 있는 수동태)',
+          '**직접목적어(사물)**를 주어로 → 사람 앞에 **to**를 붙여요.',
+          '이렇게 쓰는 4형식 동사: give · grant(주다) · offer(제공하다) · send(보내다) · assign(할당하다) · award(수여하다)',
+        ],
+        examples: [
+          ['Jason gave Joan a book. → Joan was given a book.', '조앤은 (제이슨에게) 책을 받았다.', '사람이 주어 → a book이 남음'],
+          ['→ A book was given to Joan.', '책이 조앤에게 주어졌다.', '사물이 주어 → to Joan'],
+          ['I was offered the job.', '그 일자리를 제안받았어.', '회화에서 자주 써요'],
+        ],
+      },
+      {
+        title: '5형식 수동태 — 보어는 그대로',
+        points: [
+          '목적어가 주어가 되고, 목적격보어는 **주격보어**로 그대로 남아요. (5형식 → 2형식) 모양: be p.p. + 보어',
+          '**keep · find · consider · call · make · leave** + 목적어 + 명사/형용사 → be kept / found / considered ... + 보어',
+          '목적격보어가 **동사원형**(사역·지각)이면 수동태에서 **to부정사**로 바뀌어요.',
+        ],
+        examples: [
+          ['Mr. Jason considers the project a success. → The project is considered a success.', '그 프로젝트는 성공으로 여겨진다.'],
+          ['The company should keep the file confidential. → The file should be kept confidential.', '그 파일은 기밀로 유지돼야 한다.'],
+          ['I saw Tom run away. → Tom was seen to run away.', '톰이 도망가는 게 보였다.', '동사원형 → to부정사'],
+          ['They made him wait. → He was made to wait.', '그는 기다려야 했다.'],
+        ],
+      },
+      {
         title: '수동태로 못 바꾸는 타동사',
         points: [
           '움직임 없이 **소유·어울림·상태**를 말하는 동사: have, resemble, fit, suit, lack, equal, cost',
@@ -712,6 +1124,8 @@ window.GRAMMAR = [
       ["I'm boring.", "I'm bored.", "I'm boring은 '나는 지루한 사람이야'라는 뜻이 돼요."],
       ['This dress is fitted by me.', 'This dress fits me.', 'fit은 수동태 불가'],
       ['It can be done by nobody.', 'Nobody can do it.', 'by nobody ✗. 능동으로 말하는 게 자연스러워요.'],
+      ['He was made wait.', 'He was made to wait.', '사역·지각동사의 동사원형 보어는 수동태에서 to부정사'],
+      ['A book was given Joan.', 'A book was given to Joan.', '사물이 주어면 사람 앞에 to'],
     ],
   },
 
@@ -721,7 +1135,7 @@ window.GRAMMAR = [
     sub: 'who · which · that · whose · what',
     summary: '명사 뒤에 문장을 붙여서 "어떤 명사인지" 설명하는 연결고리예요.',
     basics: [
-      '두 문장을 하나로 잇는 방법: I have a friend. + She lives in London. → I have a friend **who** lives in London.',
+      '관계대명사 = **접속사 + 대명사**. 두 문장을 붙이는 본드예요: I have a friend. + She lives in London. → I have a friend **who** lives in London.',
       '**선행사(명사) + 관계대명사 + 불완전한 문장** = 앞 명사를 꾸미는 **형용사절**이에요.',
       '"불완전한 문장" = 주어나 목적어가 하나 빠진 문장. 빠진 자리를 관계대명사가 대신해요.',
       '사람 → **who**, 사물 → **which**, 둘 다 → **that** (대화에선 that이 제일 흔해요), 소유 → **whose**',
@@ -744,10 +1158,13 @@ window.GRAMMAR = [
         title: '생략할 수 있을 때',
         points: [
           '**목적격** 관계사는 생략 가능 → 원어민은 대부분 생략해요.',
-          'This is the book (that) I bought yesterday.',
+          '**주격 관계사 + be** 뒤에 -ing / p.p.가 오면 (주격 관계사 + be)를 **함께** 생략할 수 있어요.',
+          'This is the book (that) I bought yesterday. / Everything (that) she told you is true.',
         ],
         examples: [
           ['The guy I met yesterday was really nice.', '어제 만난 그 남자 진짜 괜찮았어.', 'guy (who) I met → 생략'],
+          ['The girl (who is) standing over there is my sister.', '저기 서 있는 여자애가 내 동생이야.', '주격 + be 함께 생략'],
+          ["The car (which is) parked here is my father's.", '여기 주차된 차는 아빠 차야.', '주격 + be 함께 생략'],
           ["That's not what I meant.", '내 말은 그게 아니야.', 'what = 내가 의미한 것'],
         ],
       },
@@ -763,7 +1180,24 @@ window.GRAMMAR = [
         title: '콤마(,) 있는 관계사 = 덧붙이는 설명',
         points: [
           'My brother, who lives in Busan, is a doctor. (형이 한 명뿐, 부산 산다는 건 추가 정보)',
+          '콤마 뒤 관계사절은 **추가 정보**라서 빼도 문장의 뜻이 안 바뀌어요.',
           'which는 앞 문장 **전체**를 받을 수도 있어요: He was late again, which made me angry.',
+        ],
+        examples: [
+          ['He has two sons, who became doctors.', '그는 아들이 둘 있는데, (둘 다) 의사가 되었다.', '아들은 딱 두 명'],
+          ['He has two sons who became doctors.', '그는 의사가 된 아들이 둘 있다.', '다른 아들이 더 있을 수도 있음'],
+        ],
+      },
+      {
+        title: '관계형용사 — what / which / whose + 명사',
+        points: [
+          '**whose + 명사**: 누구의 ~ (I saw a man whose hair was red.)',
+          '**what + 명사**: ~하는 모든 (얼마 안 되지만 있는 것 전부)',
+          '**which + 명사**: 주로 콤마 뒤 계속적 용법에서 → in which case(그런 경우에는)',
+        ],
+        examples: [
+          ['I gave him what money I had.', '나는 가진 돈을 전부 그에게 줬다.', 'what + 명사 = ~하는 모든'],
+          ["He may be late, in which case we'll start without him.", '그가 늦을 수도 있는데, 그러면 그 없이 시작할게요.', 'in which case = 그런 경우에는'],
         ],
       },
       {
@@ -779,6 +1213,34 @@ window.GRAMMAR = [
           ["That's how I learned English.", '그렇게 영어를 배웠어.', 'the way how ✗'],
         ],
       },
+      {
+        title: '관계부사 vs 의문부사 — 해석으로 구분',
+        points: [
+          '둘 다 **접속사 역할을 하는 부사**예요 (when, where, why, how).',
+          '**관계부사**: "~할 때, ~하는 장소, ~하는 이유, ~하는 방법" → 앞 명사를 꾸미는 형용사절 (또는 부사절)',
+          '**의문부사**: "언제, 어디서, 왜, 어떻게" → 간접의문문으로 항상 **명사절**',
+          '모양이 같아서 문장만 보면 헷갈려요. **우리말 해석**이 자연스러운 쪽으로 구분해요.',
+        ],
+        examples: [
+          ["I don't know when we'll get together.", '우리가 언제 모일지 모르겠어.', '의문부사 "언제" (명사절)'],
+          ["Tell me the time when we'll get together.", '우리가 모일 시간을 알려 줘.', '관계부사 "~할 때" (the time을 꾸밈)'],
+          ["I don't know why he left.", '그가 왜 떠났는지 모르겠어.', '의문부사 "왜"'],
+        ],
+      },
+      {
+        title: '헷갈리는 짝: that · what',
+        points: [
+          '**that 관계대명사**: 뒤가 불완전(주어나 목적어 없음), 앞 명사를 꾸밈',
+          '**that 접속사**: 뒤가 완전(주어·목적어·보어 다 있음), 문장을 이어 주기만 함',
+          '**what 관계대명사**: 뒤가 불완전, "~것" (= the thing which)',
+          '**what 의문사**: 뒤가 불완전, "무엇" → ask, wonder, don\'t know 뒤라면 대개 의문사',
+        ],
+        examples: [
+          ['This is what I needed.', '이게 내가 필요했던 거야.', '= the thing which I needed'],
+          ["I don't like what he is doing.", '그가 하는 짓이 마음에 안 들어.', '"~것" → 관계대명사'],
+          ['I will ask him what he is doing.', '그에게 뭘 하고 있는지 물어볼게.', 'ask 뒤 "무엇" → 의문사'],
+        ],
+      },
     ],
     native: [
       '말할 땐 which보다 **that**, 목적격 관계사는 **생략**이 기본이에요: "the movie I saw", "the guy I told you about".',
@@ -790,6 +1252,7 @@ window.GRAMMAR = [
       ['This is the thing what I wanted.', 'This is what I wanted. / the thing (that) I wanted', 'what 앞엔 명사 안 씀'],
       ['My mom, that lives in Daegu, called me.', 'My mom, who lives in Daegu, called me.', '콤마 뒤 that ✗'],
       ['This is the house in that I live.', 'This is the house in which I live. / the house (that) I live in', '전치사 바로 뒤 that ✗'],
+      ['The girl standing over there she is my sister.', 'The girl standing over there is my sister.', '관계사절(거품)을 빼면 뼈대는 The girl is ~. 주어를 또 쓰지 않아요.'],
     ],
   },
 
@@ -863,6 +1326,7 @@ window.GRAMMAR = [
           '**의문사 + to 동사원형** = 의문사 + 주어 + should + 동사원형 → I don\'t know what to do. = what I should do',
           '의문사 자리에 **whether**도 쓸 수 있어요: whether to go or not (갈지 말지)',
           '**의문대명사 what** = "무엇" (뒤가 불완전) / **의문형용사 what + 명사** = "어떤 ~" → what color, what time',
+          '**what vs which**: what은 범위가 정해지지 않은 "무엇", which는 정해진 범위 안에서 "어느 것" → Which do you prefer, tea or coffee?',
         ],
         examples: [
           ['Do you know where he lives?', '그가 어디 사는지 알아?', 'where does he live ✗'],
@@ -876,6 +1340,8 @@ window.GRAMMAR = [
         points: [
           '**whoever, whatever, whichever** + 불완전한 문장 → **명사절**(~하는 누구든/무엇이든) 또는 **부사절**(누가/무엇을 ~하더라도)',
           '**whenever, wherever, however** + 완전한 문장 → **부사절**(언제/어디서/아무리 ~하더라도)',
+          '정리 팁: 관계사절 = **형용사** / 복합관계대명사절 = **명사, 부사** / 복합관계부사절 = **부사**',
+          '복합관계사 = 관계사 + ever, "의문사 + 든지"(누구든지, 무엇이든지, 언제든지…). 앞의 선행사를 이미 품고 있어요.',
         ],
         examples: [
           ['You can invite whoever you want.', '네가 원하는 누구든 초대해도 돼.', '명사절 (목적어)'],
