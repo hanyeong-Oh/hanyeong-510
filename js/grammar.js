@@ -545,15 +545,106 @@ window.GRAMMAR = [
   {
     id: 'article',
     title: '관사 a / the',
-    sub: '처음 말하는 것 vs 서로 아는 것',
-    summary: 'a는 "여럿 중 하나 (처음 등장)", the는 "우리 둘 다 아는 그것"이에요.',
+    sub: 'a = 존재를 만든다 · the = 하나로 만든다',
+    summary: 'a는 단어를 꺼내 "**있다**"고 존재를 만들어 주고, the는 있는 것을 "**하나**"로 묶어 콕 집어 줘요.',
+    videos: [
+      ['EUaunQxIW_g', '관사 a, 이렇게 설명하면 누구나 쉽게 이해합니다'],
+      ['cPlzJy17-6E', '지구상에서 가장 명쾌한 관사 the의 설명 (왜 악기를 연주할 때는 항상 the를 붙이는거야?)'],
+    ],
     basics: [
+      '관사(article)는 **단어의 세상**에 있는 개념을 **실물의 세상**으로 꺼내 보여 주는 말이에요.',
+      '**a/an**: 여럿 중 하나, 듣는 사람이 아직 모르는 것. 그리고 없거나 안 보이는 것에도 "**있다**"는 존재감을 만들어 줘요.',
+      '**the**: 듣는 사람도 "어떤 건지" 아는 것 (앞에서 말했거나, 상황상 하나뿐이거나). 결국 대상을 **하나로 만드는** 말이에요.',
       '셀 수 있는 명사가 하나면 **a/an** 이나 **the**, 또는 my/this 같은 말이 꼭 앞에 붙어야 해요. 그냥 "I have car" ✗',
-      '**a/an**: 듣는 사람이 아직 모르는, 여럿 중 아무거나 하나',
-      '**the**: 듣는 사람도 "어떤 건지" 아는 것 (앞에서 말했거나, 상황상 하나뿐이거나)',
       '셀 수 없는 명사(water, information, advice)나 복수명사를 **일반적으로** 말할 땐 관사 없이.',
     ],
     sections: [
+      {
+        title: '관사(Article)란? — 단어를 실물로 꺼내기',
+        points: [
+          '"관사"라는 이름은 뜻을 이해하는 데 별 도움이 안 돼요. 영어 이름 **article**을 보면 훨씬 쉬워요.',
+          'article은 보통 **기사, 논문, 물건**이라는 뜻으로 많이 써요. 원래 뜻은 "**뭔가를 알려 주거나 보여 주려고 꺼내는 것**"이에요.',
+          '신문·잡지 기사나 논문도 정보를 **꺼내서 보여 주려고** 쓰는 글이죠. "물건"이라는 뜻일 때도 **보여 주려고 꺼내 놓은 물건**(목록에 있는 전시 물품 같은)을 말해요.',
+          '영어식 사고는 **단어의 세상**과 **실물의 세상(존재하는 세상)**을 나눠서 다뤄요. 우리말에는 이런 구분이 없지만 영어에는 크게 있어요.',
+          'article(관사)이 바로 이 두 세상을 **이어 주는 다리**예요. 단어의 세상에 있는 것을 보여 주고 알게 하려고 **꺼내는 행동**이에요.',
+          '그래서 커피(coffee), 물(water)처럼 **정해진 모양이 없는 것**에는 관사를 붙이지 않아요. 꺼내 보여 줄 "하나"의 모양이 없으니까요.',
+        ],
+        images: [
+          ['images/grammar/article/a-00.jpg', '관사 a의 힘: 언어의 세계에 있는 **cup**(추상적인 기호)을 **관사 a**가 현실의 세계로 꺼내서 실제 컵(구체적인 개체)으로 만들어요.'],
+        ],
+        examples: [
+          ['I read an article about AI.', 'AI에 관한 기사를 읽었어.', 'article = 꺼내 보여 주는 글'],
+          ['I like coffee.', '나 커피 좋아해.', '모양 없는 것 → 관사 없음'],
+        ],
+      },
+      {
+        title: 'a — 존재를 만들어 준다',
+        points: [
+          '단어의 세상에 있는 **cup**은 그냥 개념이에요. 아직 존재하지 않아요.',
+          '**a**를 붙여 **a cup**이라고 해야 비로소 "**컵이 있다(존재한다)**"는 뜻이 돼요.',
+          '관사가 헷갈리는 이유 중 하나는 be동사와 만나 "이게 있다"로 넓어질 때예요. There is **a** cup. → 컵이 **있다**',
+          '**눈에 안 보이는 것**에도 a를 붙여 존재감을 만들어요. question(질문)은 안 보이지만 **a question**이라고 하면 "질문이 **있다**"는 느낌이 돼요.',
+          'headache(두통)도 안 보이지만 **have a headache** → 두통이 있다. 예전엔 문법적으로 이상하다고 볼 수도 있었지만, 지금은 이런 식으로 굳어졌어요.',
+          'humming sound(흥얼거리는 소리)도 안 보이지만 **a**를 붙여 "그런 소리가 **있었다**"고 말해요.',
+          '물론 a의 기본 뜻은 "**여러 개 중 하나**"예요.',
+        ],
+        examples: [
+          ['There is a cup on the table.', '탁자 위에 컵이 있어.', 'a cup = 컵이 존재'],
+          ['I have a question.', '질문이 있어요.', '안 보이는 질문에 존재감'],
+          ['I have a headache.', '머리가 아파.', '두통이 있다'],
+          ['I heard a humming sound.', '흥얼거리는 소리를 들었어.', '그런 소리가 있었다'],
+        ],
+      },
+      {
+        title: 'few vs a few, little vs a little — 핵심은 "있다 / 없다"',
+        points: [
+          '학교에선 few = "거의 없는", a few = "조금 있는"으로 배워요.',
+          '더 쉽게: a가 **없으면 "없다"**, a가 **있으면 "있다"**예요. people 같은 단어 뜻과 상관없이, **관사가 있느냐 없느냐**가 존재감을 정해요.',
+          'Few people like me. → 나를 좋아하는 사람이 **없다** / A few people like me. → 나를 좋아하는 사람이 **있다**',
+          '친구가 "영어 배우러 가자!" 할 때 → I have **little** money. 돈이 **없어**(못 가) / I have **a little** money. 돈 **있어**(갈 수 있어)',
+          'a little money는 단어 뜻만 보면 "돈이 조금 있다"지만, 문맥상 "(갈 만큼) 있다"는 뜻으로 들려요.',
+          'money 앞에는 원래 관사를 안 붙여요. 여기서 a는 **little 앞**에 붙어서 존재감을 나타내는 거예요.',
+        ],
+        examples: [
+          ['Few people like me.', '나를 좋아하는 사람이 (거의) 없어.', '관사 없음 → 없다'],
+          ['A few people like me.', '나를 좋아하는 사람이 (몇 명) 있어.', '관사 있음 → 있다'],
+          ['I have little money.', '나 돈 (거의) 없어.', '그래서 못 가'],
+          ['I have a little money.', '나 돈 좀 있어.', '그래서 갈 수 있어'],
+        ],
+      },
+      {
+        title: "I'm Korean vs I'm a Korean",
+        points: [
+          '둘 다 맞는 말이에요. 다만 관사가 있느냐에 따라 느낌이 조금 달라요.',
+          "**I'm a Korean.** → 여러 사람 중 **한국인 한 명**이라는 느낌 (눈에 보이는 한 사람)",
+          "**I'm Korean.** → \"한국 사람\"이라는 **개념적·정신적 정체성**",
+          '일본 제품 불매 운동을 말할 때 "일본 제품"은 하나하나의 물건이 아니라 **일반적인 개념**이라서 관사 없이 써요.',
+          '"한국 사람이에요?"가 겉모습이 아니라 **정체성**을 묻는 거라면 관사 없이 Korean이 더 자연스러워요.',
+        ],
+        examples: [
+          ["I'm Korean.", '저는 한국 사람이에요.', '정체성 → 관사 없이'],
+          ["I'm a Korean living in Seoul.", '저는 서울에 사는 한국인이에요.', '여러 사람 중 한 명'],
+          ['People are boycotting Japanese products.', '사람들이 일본 제품을 불매하고 있어.', '일반적인 개념 → 관사 없이'],
+        ],
+      },
+      {
+        title: 'a 감각 훈련 — 보자마자 a 붙이기',
+        points: [
+          '아는 것과 **입에 붙은 것**은 달라요. 영어식 감각을 만드는 연습이 필요해요. 발음은 신경 쓰지 말고 **자신 있게 소리 내** 보세요.',
+          '그림을 보고 바로 말해 보기: 식물 그림 → 눈에 보이는 실물이니까 **a plant** / 계좌 그림 → **an account** / 산업 그림 → **an industry**',
+          '문장 읽기: I have ___ spoon. → 읽을 때 자연스럽게 **a**가 튀어나오면 영어식 사고가 생긴 거예요.',
+          'a가 붙어야 할 자리에 a가 있는 게 **너무 당연하게 느껴지는 것**이 핵심이에요. 원어민도 그렇게 써요.',
+          '관사가 있고 없고에 따라 뜻이 달라지니까, 관사가 있을 땐 **조금 더 힘줘서** 말해도 돼요: **a** cup, **a** flight, **a** little money',
+          '어렵게 생각하지 말고 "이건 뭐니?" 하고 그림부터 떠올리면 관사를 쉽게 시작할 수 있어요.',
+        ],
+        examples: [
+          ['a plant', '식물 (하나)'],
+          ['an account', '계좌 (하나)', '모음 소리 앞 → an'],
+          ['an industry', '산업 (하나)'],
+          ['I have a spoon.', '나 숟가락 있어.'],
+          ['I booked a flight.', '비행기 표 끊었어.'],
+        ],
+      },
       {
         title: 'a → the 흐름',
         examples: [
@@ -563,22 +654,180 @@ window.GRAMMAR = [
         ],
       },
       {
+        title: 'the ① — 특정한 것, 서로 아는 것을 "하나"로',
+        points: [
+          '**a**는 여러 개 중 하나, 상대가 뭔지 모르거나 처음 보는 것에 써요.',
+          '**the**는 이미 말했거나 상대도 아는 **특정한 것**을 다시 말할 때 써요. "어제 만난 **그** 아이"처럼 콕 집어 하나로 가리켜요.',
+          'the의 본질은 "**하나로 만드는 힘**"이에요. 이 "하나"만 계속 떠올리면 the가 쉬워져요.',
+          'the는 "이, 그, 저"의 뜻을 품고 있어요. 지금 올라가는 꼭대기가 하나고 듣는 사람도 거기가 어딘지 알면 **the top**',
+          '보스가 누군지 듣는 사람도 알면 **the boss**. 영화 끝에 나오는 **The End**도 그 영화의 끝은 하나뿐이라서예요.',
+          '세상에 집은 많지만 미국 대통령이 사는 곳은 **The White House** → 특별한 하나라는 뜻을 더해요. "그 아름다운 금빛 해변"처럼 특정한 대상, 호주의 **the Gold Coast** 같은 특정한 곳도 the.',
+          '회사 이름처럼 평범한 이름에도 the를 붙이곤 해요: **The Atlas**. 페이스북도 처음엔 **The Facebook**이었다가 나중에 the가 떨어졌어요.',
+          '반대로 이미 하나로 정해진 **고유명사**에는 관사 없이 **대문자**로 써요. 엄마를 부를 땐 **Mom**',
+        ],
+        images: [
+          ['images/grammar/article/the-01.jpg', '관사 **the**'],
+          ['images/grammar/article/the-02.jpg', '**the cup**: 컵을 콕 집어 **하나化**(하나로 만들기)'],
+          ['images/grammar/article/the-10.jpg', '**특정한 것으로** 하나化 → the'],
+        ],
+        examples: [
+          ['Do you remember the kid we met yesterday?', '어제 만난 그 아이 기억나?', '서로 아는 특정한 하나'],
+          ["We're almost at the top.", '꼭대기 거의 다 왔어.', '지금 가는 그 꼭대기'],
+          ['The boss wants to see you.', '사장님이 너 보재.', '누군지 서로 앎'],
+          ['The End', '끝', '그 영화의 끝은 하나뿐'],
+          ['The White House', '백악관', '집은 많아도 특별한 하나'],
+          ["Mom, I'm home!", '엄마, 나 왔어!', '고유명사처럼 → 관사 없이 대문자'],
+        ],
+      },
+      {
+        title: 'the ② — 여러 개를 묶어서 "하나"로',
+        points: [
+          '원래 하나가 아닌 **여러 개를 하나로 묶어** 부를 때도 the를 써요.',
+          '미국은 California, Florida 같은 여러 주가 모여 한 나라가 된 거라 **the United States**. 영국도 여러 지역이 모인 나라라 **the UK**.',
+          '필리핀은 여러 섬이 모인 나라(왕의 이름에서 온 이름이기도 해요)라서 **the Philippines**. 이렇게 여러 이유가 겹쳐 the가 붙기도 해요.',
+          '석촌호수처럼 한눈에 보이는 호수 하나는 관사 없이 불러요. 하지만 미국과 캐나다에 걸친 여러 호수를 **한데 묶어** 부를 땐 the를 붙여 새 이름을 만들어요: **the Great Lakes**',
+          '섬도 하나면 관사 없이, 여러 섬을 묶어 부르면 the: 하와이처럼 여러 섬이 모여 하나를 이루면 **the Hawaiian Islands**',
+        ],
+        images: [
+          ['images/grammar/article/the-03.jpg', '여러 개를 **묶어서** 하나化 → the'],
+        ],
+        examples: [
+          ['the United States', '미국', '여러 주가 모여 하나'],
+          ['the UK', '영국', '여러 지역이 모여 하나'],
+          ['the Philippines', '필리핀', '여러 섬이 모여 하나'],
+          ['the Great Lakes', '오대호', '여러 호수를 묶어서'],
+          ['the Hawaiian Islands', '하와이 제도', '여러 섬을 묶어서'],
+        ],
+      },
+      {
+        title: 'the ③ — 있긴 있는데 한눈에 안 들어오는 것을 "억지로" 하나로',
+        points: [
+          '"억지로"란, **분명 있긴 있는데 한눈에 안 들어오는 것**에 the를 붙여 **강제로 하나처럼** 느끼게 만든다는 뜻이에요. 그래서 관사가 더 어렵게 느껴져요.',
+          '**강**: 모양이 복잡하고 여러 나라를 지나 흘러서 한눈에 보기 어려워요 → 강 이름 앞엔 보통 the: **the Han River, the Nile**',
+          '**산맥**: 여러 산이 모인 산맥엔 the: **the Alps**. 반대로 몽블랑(**Mont Blanc**) 같은 최고봉이나 한라산(**Hallasan**)처럼 산 **하나**는 한눈에 알아보니 관사 없이.',
+          '**대륙**: 아시아(**Asia**), 유럽(**Europe**)처럼 경계가 분명히 나뉜 곳은 관사 없이.',
+          '**바다**: 태평양은 하나처럼 보이지만 북극해·대서양과의 **경계가 분명하지 않아요**. 그래서 억지로 하나처럼 느끼게 the: **the Pacific Ocean**',
+        ],
+        images: [
+          ['images/grammar/article/the-04.jpg', '여러 개를 하나化 → the'],
+          ['images/grammar/article/the-05.jpg', '있긴 있는데… (존재) 한눈에 안 들어오는 것을 **억지로** the로 하나化'],
+          ['images/grammar/article/the-06.jpg', '**the Pacific Ocean**: 경계가 모호한 바다를 하나로 묶기'],
+        ],
+        examples: [
+          ['the Han River', '한강', '강 → the'],
+          ['the Alps', '알프스산맥', '여러 산이 모인 산맥 → the'],
+          ['Mont Blanc / Hallasan', '몽블랑 / 한라산', '산 하나 → 관사 없이'],
+          ['Asia / Europe', '아시아 / 유럽', '경계가 분명한 대륙 → 관사 없이'],
+          ['the Pacific Ocean', '태평양', '경계가 모호한 바다 → the'],
+        ],
+      },
+      {
+        title: 'the ④ — 세상 · 지구 · 태양',
+        points: [
+          '우리가 사는 **세상(the world)**은 한눈에 다 이해하기 힘들어서 the를 붙여요. **지구(the Earth)**도 마찬가지예요.',
+          '지구를 그림처럼 한눈에 보면서 말할 땐 the 없이 **Earth**라고 하기도 해요. 화성(**Mars**)처럼 한눈에 보이는 행성엔 관사를 안 붙여요.',
+          '**태양(the Sun)**엔 the를 붙여요. 햇빛이 모든 곳에 닿으니까 그 빛을 **하나로 아울러야** 하거든요.',
+          '태양계 안에서 태양과 지구를 말할 땐 the: the Sun, the Earth',
+          '**태양계(the Solar System)**도 경계선이 분명하지 않고, 있긴 하지만 하나로 알아보기 어려워서 억지로 the를 붙여 하나로 만들어요.',
+        ],
+        images: [
+          ['images/grammar/article/the-07.jpg', '**Solar System**: 태양(the Sun)과 지구(the Earth)'],
+        ],
+        examples: [
+          ['Travel around the world.', '세계를 여행해.', '한눈에 안 들어오는 세상'],
+          ['The Earth goes around the Sun.', '지구는 태양 주위를 돌아.'],
+          ['Mars is called the Red Planet.', '화성은 붉은 행성이라고 불려.', 'Mars는 관사 없이'],
+          ['the Solar System', '태양계'],
+        ],
+      },
+      {
+        title: 'the ⑤ — 소리: listen to the radio, play the piano',
+        points: [
+          '라디오 **기계 자체**를 말할 땐 a radio / the radio 둘 다 돼요. 하지만 라디오를 **들을 땐** 항상 the: I listen to **the** radio.',
+          '영어식으로는 기계를 듣는 게 아니라 라디오에서 나오는 **소리**를 듣는 거예요. 소리는 **경계가 모호**하니까 하나로 묶어 the를 붙여요.',
+          '**악기 연주**에 the가 붙는 것도 같은 이유예요. 악기 자체를 치는 게 아니라 악기로 **소리를 만들어 내는 것**이라서, 그 소리를 하나로 묶어 the: play **the** piano, play **the** guitar',
+        ],
+        images: [
+          ['images/grammar/article/the-08.jpg', 'playing **the** piano: 퍼져 나가는 소리를 하나로 묶기'],
+        ],
+        examples: [
+          ['I listen to the radio every morning.', '나는 매일 아침 라디오를 들어.', '라디오 소리 → the'],
+          ['She plays the piano.', '그녀는 피아노를 쳐.', '악기 소리 → the'],
+          ['Can you play the guitar?', '기타 칠 줄 알아?'],
+        ],
+      },
+      {
+        title: 'the ⑥ — the + 형용사 = ~한 사람들',
+        points: [
+          '**rich**는 "부유한"이라는 형용사라서 눈에 보이는 명사가 아니에요.',
+          '여기에 the를 붙이면 **the rich** = "부자들"이라는 집단을 하나로 묶어 부르는 명사가 돼요.',
+          'the가 **눈에 안 보이는 것을 보이게 하고, 하나로 묶어 부르는** 역할을 한다는 걸 보여 줘요. (the poor 가난한 사람들, the young 젊은이들도 같아요)',
+        ],
+        images: [
+          ['images/grammar/article/the-09.jpg', '**the rich**: 부유한 사람들을 하나로 묶어서'],
+        ],
+        examples: [
+          ['The rich are getting richer.', '부자들은 점점 더 부자가 되고 있어.', 'the rich = 부자들 (복수 취급)'],
+          ['We should help the poor.', '우리는 가난한 사람들을 도와야 해.'],
+        ],
+      },
+      {
+        title: 'the ⑦ — The 비교급, the 비교급',
+        points: [
+          '**The more ~, the better ~** = ~할수록 더 ~하다',
+          '여기서 **the more**는 "네가 더 ~하는 **그 한 상황**"을 콕 집어요. the가 눈에 보이게 **딱 하나의 상황**을 강조하는 거예요.',
+          '**콤마(,)**도 그냥 붙은 게 아니에요. 앞 상황이 **다음 상황으로 이어진다**는 표시예요.',
+        ],
+        examples: [
+          ['The more you practice, the better your English skills will be.', '연습을 많이 할수록 영어 실력이 더 좋아질 거야.'],
+          ['The sooner, the better.', '빠를수록 좋아.'],
+        ],
+      },
+      {
+        title: 'a vs the 최종 정리',
+        points: [
+          '**a**: ① 여러 개 중 하나 ② **없거나 안 보이는 것**을 억지로 "**있다**"고 우기거나, 존재를 만들어 줄 때',
+          '**the**: ① **특정한 것**으로 하나를 만들 때 ② **여러 개를 묶어서** 하나로 만들 때 ③ **억지로** 하나로 만들 때 — 이걸 다 포함해요.',
+          '원래 하나인 걸 하나로 부르는 건 어렵지 않아요. the의 진짜 역할은 **있긴 있는데 한눈에 안 들어오는 것**을 하나처럼 느끼게 만드는 거예요.',
+          '예: **한국 정부**는 government라는 단어로 존재하지만 조직이 너무 복잡해서 한눈에 알아보기 힘들어요. 이렇게 한눈에 안 들어오는 걸 하나로 묶어 부를 땐 → **the government**',
+          '관사를 어려워했던 이유는, **없는 것·안 보이는 것**에 억지로 "있다"는 느낌을 주려고 a를 붙이는 게 헷갈렸기 때문이에요.',
+        ],
+        images: [
+          ['images/grammar/article/the-11.jpg', '**a**: 없는 것, 안 보이는 것을 억지로 "있다" / **the**: 있긴 있는데 한눈에 안 들어올 때 하나로'],
+          ['images/grammar/article/the-12.jpg', 'a vs the 정리 (한국 정부 → the government)'],
+        ],
+        examples: [
+          ['The government announced a new policy.', '정부가 새 정책을 발표했어.', '복잡한 조직을 하나로 → the / 처음 나온 정책 → a'],
+        ],
+      },
+      {
         title: '관사 없이 쓰는 경우',
         points: [
           '일반적인 얘기: I like coffee. / Dogs are loyal.',
           '셀 수 없는 명사: information, advice, news, furniture, equipment (an advice ✗)',
+          '모양이 정해지지 않은 것: coffee, water',
+          '고유명사(이미 하나로 정해진 이름): Mom, Mars, Asia, Mont Blanc, Hallasan',
           '습관적 장소·식사: go to work, go to bed, have lunch, at home',
         ],
       },
     ],
     native: [
       '관사는 원어민도 "느낌"으로 써서 100% 규칙은 없어요. 많이 읽고 덩어리로 익히는 게 제일 빨라요: in the morning, at night, on the weekend, go to work.',
+      'a는 "**있다**", the는 "**그거 하나**"예요. 말하기 전에 "듣는 사람 머릿속에 딱 하나가 떠오를까?"만 생각해도 대부분 맞아요.',
+      'a가 있고 없고로 뜻이 갈리니까(few / a few), 원어민은 관사를 말할 때 살짝 힘을 주기도 해요.',
+      '미국 대화에선 "I play piano"처럼 악기 앞 the를 빼기도 해요. 그래도 기본은 play the piano예요.',
       '틀려도 뜻은 통하지만, 관사가 빠지면 원어민 귀에는 바로 어색하게 들려요. 글쓰기 검수 때 관사 수정은 꼭 체크하세요.',
     ],
     mistakes: [
       ['I have car.', 'I have a car.', '셀 수 있는 명사 하나엔 a/the/my 등이 필요'],
+      ['I have headache.', 'I have a headache.', '안 보이는 두통도 a로 "있다"를 만들어요.'],
+      ['I have little money, so I can go.', 'I have a little money, so I can go.', 'little = 없다, a little = 있다'],
       ['Can you give me an advice?', 'Can you give me some advice?', 'advice는 셀 수 없음'],
       ['I go to the work at 9.', 'I go to work at 9.', 'go to work, go to school은 관용적으로 관사 없이'],
+      ['I listen to radio.', 'I listen to the radio.', '라디오 소리를 하나로 → the'],
+      ['Pacific Ocean is huge.', 'The Pacific Ocean is huge.', '경계가 모호한 바다 → the'],
+      ['The Mars is red.', 'Mars is red.', '한눈에 보이는 행성 이름 → 관사 없이'],
+      ['Rich are getting richer.', 'The rich are getting richer.', 'the + 형용사 = ~한 사람들'],
     ],
   },
 
