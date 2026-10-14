@@ -530,3 +530,15 @@ a.video-title:hover { text-decoration: underline; }
 .grid-1 { grid-template-columns: minmax(0, 820px); }
 .save-hint { margin: 4px 2px 8px; }
 .session .member-status { margin: 6px 0 0; border-top: 0; padding-top: 0; }
+
+/* ---------- 내 노트: 날짜별 보기 ---------- */
+.note-days { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 8px; margin: 4px 0 2px; scrollbar-width: thin; }
+.note-days .cat { flex-shrink: 0; white-space: nowrap; }
+.note-days .cat small { font-size: 16px; opacity: .75; margin-left: 2px; }
+.note-day-link { display: flex; background: none; border: 0; padding: 0; margin: 0 4px 6px; font-family: var(--hand); color: var(--ink); cursor: pointer; text-align: left; }
+.note-day-link:hover b { text-decoration: underline; text-decoration-thickness: 2px; }
+.note-day-one .note-day-head { flex-wrap: wrap; }
+.note-day-nav { margin-left: auto; display: flex; gap: 6px; }
+.note-kind-group { margin-bottom: 14px; }
+.note-kind-head { font-weight: 700; font-size: 21px; margin: 4px 6px 4px; }
+.note-kind-head .muted { font-size: 18px; }
