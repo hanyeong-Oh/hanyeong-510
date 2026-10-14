@@ -2,14 +2,14 @@
   const cfg = window.APP_CONFIG;
   const MEMBERS = cfg.MEMBERS.map((m) => m.name);
   const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
-  const STATUS_LABEL = { none: '미작성', written: '작성완료', reviewed: '검수완료' };
+  const STATUS_LABEL = { none: '미작성', writing: '작성중', written: '작성완료', reviewed: '검수완료' };
   const $app = document.getElementById('app');
 
   let me = null;
   let homeWeekOffset = 0;
   let videoFilter = { category: '전체', q: '' };
 
-  // 주제는 TOPIC_MANAGER 로 지정된 멤버만 정할 수 있음 (비워두면 모두 가능)
+  // 주제는 사람마다 각자 정함. TOPIC_MANAGER 는 예전 방식의 공통 주제(owner 없음)를 고칠 수 있는 멤버
   const TOPIC_MANAGER = cfg.TOPIC_MANAGER || '';
   const canManageTopics = () => !TOPIC_MANAGER || me === TOPIC_MANAGER;
 
@@ -70,10 +70,20 @@
   const todayYMD = () => toYMD(new Date());
   const nl2br = (s) => esc(s).replace(/\n/g, '<br>');
 
+  // 미작성 → 작성중(status: writing, 나만 내용이 보임) → 작성완료 → 검수완료(수정본 있음)
   function postStatus(p) {
     if (!p || !(p.original || '').trim()) return 'none';
+    if (p.status === 'writing') return 'writing';
     return (p.revised || '').trim() ? 'reviewed' : 'written';
   }
+  const isDone = (st) => st === 'written' || st === 'reviewed';
+
+  // 주제는 사람마다 따로 (owner). owner 가 없는 주제는 예전 방식의 공통 주제(둘 다 씀)
+  const writersOf = (t) => (t.owner ? [t.owner] : MEMBERS);
+  function topicFor(topics, date, name) {
+    return topics.find((t) => t.date === date && t.owner === name) || topics.find((t) => t.date === date && !t.owner) || null;
+  }
+  const canEditTopic = (t) => (t.owner ? t.owner === me : canManageTopics());
   function chip(status) { return `<span class="chip chip-${status}">${STATUS_LABEL[status]}</span>`; }
 
   function writingDatesOfWeek(monday) {
@@ -524,9 +534,11 @@ ${text}
   // ================================================================ topic modal
   async function openTopicModal({ date, topic } = {}) {
     const topics = await Store.listTopics();
-    const t = topic || { date: date || nextWritingDate(topics.map((x) => x.date)), title: '', description: '' };
+    const myDates = topics.filter((x) => writersOf(x).includes(me)).map((x) => x.date);
+    const t = topic || { date: date || nextWritingDate(myDates), title: '', description: '' };
     const m = modal(`<form id="topicForm">
-      <h2>${topic ? '주제 수정' : '새 주제'}</h2>
+      <h2>${topic ? '주제 수정' : '내 주제 정하기'}</h2>
+      ${topic ? '' : '<p class="muted small">이 날 내가 쓸 주제예요. 동료는 자기 주제를 따로 정해요.</p>'}
       <label>날짜<input type="date" name="date" value="${esc(t.date)}" required></label>
       <label>주제 (영어)<input type="text" name="title" value="${esc(t.title)}" placeholder="e.g. My morning routine" required></label>
       <label>설명 / 가이드 <span class="muted">(선택)</span><textarea name="description" rows="3" placeholder="어떤 내용을 쓰면 좋을지, 분량 등">${esc(t.description || '')}</textarea></label>
@@ -539,7 +551,7 @@ ${text}
     f.onsubmit = async (e) => {
       e.preventDefault();
       const payload = { date: f.date.value, title: f.title.value.trim(), description: f.description.value.trim() };
-      if (topic) payload.id = topic.id; else payload.created_by = me;
+      if (topic) payload.id = topic.id; else { payload.created_by = me; payload.owner = me; }
       try {
         const saved = await withUpload(() => Store.saveTopic(payload), '주제 등록. 굿.');
         m.close();
@@ -553,47 +565,45 @@ ${text}
   async function viewHome() {
     renderChrome('home');
     const [topics, posts, videos] = await Promise.all([Store.listTopics(), Store.listPosts(), Store.listVideos()]);
-    const byDate = Object.fromEntries(topics.map((t) => [t.date, t]));
     const pbt = groupPosts(posts);
     const monday = addDays(startOfWeek(new Date()), homeWeekOffset * 7);
     const dates = writingDatesOfWeek(monday);
     const today = todayYMD();
 
+    const NEXT_STEP = { none: '쓰러 가기 →', writing: '이어 쓰기 →', written: '검수본 입력 →' };
     const sessions = dates.map((ymd) => {
-      const t = byDate[ymd];
       const past = ymd < today;
       const isToday = ymd === today;
-      let body;
-      if (t) {
-        const rows = MEMBERS.map((name) => {
-          const st = postStatus((pbt[t.id] || {})[name]);
-          const action = name === me && st !== 'reviewed'
-            ? `<a class="btn-link" href="#/write/${t.id}/${encodeURIComponent(name)}">${st === 'none' ? '쓰러 가기 →' : '검수본 입력 →'}</a>` : '';
-          return `<li><span>${esc(name)}</span><span class="row-gap">${chip(st)}${action}</span></li>`;
-        }).join('');
-        body = `<a class="session-title" href="#/topic/${t.id}">${esc(t.title)}</a>
-          ${t.description ? `<p class="muted small">${esc(t.description)}</p>` : ''}
-          <ul class="member-status">${rows}</ul>`;
-      } else {
-        body = `<div class="session-empty"><div>
-            <p class="muted">${canManageTopics() ? '아직 주제 없음.' : `${esc(TOPIC_MANAGER)}님이 정할 예정.`}</p>
-            ${canManageTopics() ? `<button class="btn btn-sm" data-new-topic="${ymd}">+ 주제 정하기</button>` : ''}
-          </div>${Mascot('think', 84)}</div>`;
-      }
-      return `<div class="card session ${isToday ? 'session-today' : ''} ${past && !t ? 'session-missed' : ''}">
+      const anyTopic = topics.some((t) => t.date === ymd);
+      // 사람마다 한 줄: 그 사람 주제 + 상태
+      const rows = MEMBERS.map((name) => {
+        const t = topicFor(topics, ymd, name);
+        const isMe = name === me;
+        const who = `<span class="avatar">${esc(name.slice(0, 1))}</span>`;
+        if (!t) {
+          return `<li class="ms-row"><div class="ms-who">${who}<span class="muted">${isMe ? '내 주제 아직' : '주제 아직'}</span></div>
+            ${isMe ? `<button class="btn btn-sm" data-new-topic="${ymd}">+ 내 주제</button>` : ''}</li>`;
+        }
+        const st = postStatus((pbt[t.id] || {})[name]);
+        const action = isMe && st !== 'reviewed' ? `<a class="btn-link" href="#/write/${t.id}/${encodeURIComponent(name)}">${NEXT_STEP[st]}</a>` : '';
+        return `<li class="ms-row"><div class="ms-who">${who}<a class="ms-topic" href="#/topic/${t.id}" title="${esc(t.title)}">${esc(t.title)}</a></div>
+          <span class="ms-state">${chip(st)}${action}</span></li>`;
+      }).join('');
+      return `<div class="card session ${isToday ? 'session-today' : ''} ${past && !anyTopic ? 'session-missed' : ''}">
         <div class="session-date">${fmtDate(ymd)}${isToday ? '<span class="today-badge">오늘</span>' : ''}</div>
-        ${body}
+        <ul class="member-status">${rows}</ul>
       </div>`;
     }).join('');
 
     // 통계
-    const weekTopicIds = new Set(dates.map((d) => byDate[d]).filter(Boolean).map((t) => t.id));
+    // 작성중인 글은 빼고 '작성 완료'한 글만 셈
     const stats = MEMBERS.map((name) => {
-      const mine = posts.filter((p) => p.author === name);
-      const written = mine.filter((p) => postStatus(p) !== 'none').length;
-      const reviewed = mine.filter((p) => postStatus(p) === 'reviewed').length;
-      const week = mine.filter((p) => weekTopicIds.has(p.topic_id) && postStatus(p) !== 'none').length;
-      const words = mine.reduce((s, p) => s + wordCount(p.original), 0);
+      const done = posts.filter((p) => p.author === name && isDone(postStatus(p)));
+      const weekTopicIds = new Set(dates.map((d) => topicFor(topics, d, name)).filter(Boolean).map((t) => t.id));
+      const written = done.length;
+      const reviewed = done.filter((p) => postStatus(p) === 'reviewed').length;
+      const week = done.filter((p) => weekTopicIds.has(p.topic_id)).length;
+      const words = done.reduce((s, p) => s + wordCount(p.original), 0);
       return `<div class="card stat">
         <div class="stat-name"><span class="avatar">${esc(name.slice(0, 1))}</span>${esc(name)}</div>
         <div class="stat-grid">
@@ -607,18 +617,24 @@ ${text}
 
     const recentVideos = videos.slice(0, 4).map(videoCardMini).join('');
 
-    const doneThisWeek = dates.every((d) => byDate[d] && postStatus((pbt[byDate[d].id] || {})[me]) === 'reviewed');
+    const doneThisWeek = dates.every((d) => { const t = topicFor(topics, d, me); return t && postStatus((pbt[t.id] || {})[me]) === 'reviewed'; });
 
     // 오늘 할 일: 오늘 주제 → 이번 주 밀린 글 → 다음 주제 → 다음 글쓰기 날 (주제 없음)
     const myStatus = (t) => postStatus((pbt[t.id] || {})[me]);
-    const sortedTopics = topics.slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    const myTopics = topics.filter((t) => writersOf(t).includes(me)).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
     const weekStart = toYMD(startOfWeek(new Date()));
-    const todayTopic = byDate[today];
-    const overdue = sortedTopics.filter((t) => t.date < today && t.date >= weekStart && myStatus(t) !== 'reviewed').pop();
-    const upcoming = sortedTopics.find((t) => t.date > today);
+    const todayTopic = topicFor(topics, today, me);
+    const todayIsWritingDay = cfg.WRITING_DAYS.includes(new Date().getDay());
+    const overdue = myTopics.filter((t) => t.date < today && t.date >= weekStart && myStatus(t) !== 'reviewed').pop();
+    const upcoming = myTopics.find((t) => t.date > today);
     let nextDay = null;
     for (let i = 1; i <= 14 && !nextDay; i++) { const d = addDays(new Date(), i); if (cfg.WRITING_DAYS.includes(d.getDay())) nextDay = toYMD(d); }
-    const ACTION = { none: '쓰러 가기 →', written: '검수본 입력 →', reviewed: '결과 보기 →' };
+    const ACTION = { none: '쓰러 가기 →', writing: '이어 쓰기 →', written: '검수본 입력 →', reviewed: '결과 보기 →' };
+    const newTopicTask = (ymd, label) => `<div class="hero-task">
+          <div class="hero-label">${label} · ${fmtDate(ymd)}</div>
+          <div class="hero-sub">아직 내 주제 없음.</div>
+          <button class="btn btn-primary" data-new-topic="${ymd}">+ 내 주제 정하기</button>
+        </div>`;
     const taskFor = (t, label) => {
       const st = myStatus(t);
       const href = st === 'reviewed' ? `#/topic/${t.id}` : `#/write/${t.id}/${encodeURIComponent(me)}`;
@@ -629,16 +645,11 @@ ${text}
         </div>`;
     };
     let task = '';
-    if (todayTopic) task = taskFor(todayTopic, '오늘의 주제');
+    if (todayTopic) task = taskFor(todayTopic, '오늘 내 주제');
+    else if (todayIsWritingDay) task = newTopicTask(today, '오늘 글쓰기');
     else if (overdue) task = taskFor(overdue, `밀린 글 · ${fmtDate(overdue.date)}`);
-    else if (upcoming) task = taskFor(upcoming, `다음 주제 · ${fmtDate(upcoming.date)}`);
-    else if (nextDay) {
-      task = `<div class="hero-task">
-          <div class="hero-label">다음 글쓰기 · ${fmtDate(nextDay)}</div>
-          ${canManageTopics() ? `<div class="hero-sub">아직 주제 없음.</div><button class="btn btn-primary" data-new-topic="${nextDay}">+ 주제 정하기</button>`
-            : `<div class="hero-sub">${esc(TOPIC_MANAGER)}님이 주제를 정할 예정.</div>`}
-        </div>`;
-    }
+    else if (upcoming) task = taskFor(upcoming, `다음 내 주제 · ${fmtDate(upcoming.date)}`);
+    else if (nextDay) task = newTopicTask(nextDay, '다음 글쓰기');
 
     $app.innerHTML = `
       <div class="hero">
@@ -693,10 +704,10 @@ ${text}
     const html = groups.map((g) => {
       const mon = parseYMD(g.week);
       const rows = g.items.map((t) => {
-        const st = MEMBERS.map((n) => `<span class="member-chip">${esc(n)} ${chip(postStatus((pbt[t.id] || {})[n]))}</span>`).join('');
+        const st = writersOf(t).map((n) => `<span class="member-chip">${t.owner ? '' : esc(n)} ${chip(postStatus((pbt[t.id] || {})[n]))}</span>`).join('');
         return `<a class="topic-row" href="#/topic/${t.id}">
           <span class="topic-date">${fmtDate(t.date)}</span>
-          <span class="topic-title">${esc(t.title)}</span>
+          <span class="topic-title"><span class="topic-owner">${t.owner ? esc(t.owner) : '같이'}</span>${esc(t.title)}</span>
           <span class="topic-status">${st}</span>
         </a>`;
       }).join('');
@@ -709,10 +720,10 @@ ${text}
     $app.innerHTML = `
       <div class="section-head">
         <h2>영어 글쓰기</h2>
-        ${canManageTopics() ? '<button class="btn btn-primary" id="btnNewTopic">+ 새 주제</button>' : ''}
+        <button class="btn btn-primary" id="btnNewTopic">+ 내 주제</button>
       </div>
-      <p class="muted">주 ${cfg.WRITING_DAYS.length}회 (${cfg.WRITING_DAYS.map((d) => WEEKDAYS[d]).join('·')}) 주제에 맞춰 글을 쓰고, AI로 검수한 수정본을 함께 기록해요.</p>
-      ${html || `<div class="card empty">${Mascot('dots', 90)}아직 주제 없음. ${canManageTopics() ? '첫 주제를 정해주세요.' : `${esc(TOPIC_MANAGER)}님이 정할 예정.`}</div>`}`;
+      <p class="muted">주 ${cfg.WRITING_DAYS.length}회 (${cfg.WRITING_DAYS.map((d) => WEEKDAYS[d]).join('·')}) 각자 자기 주제를 정해서 글을 쓰고, AI로 검수한 수정본을 함께 기록해요.</p>
+      ${html || `<div class="card empty">${Mascot('dots', 90)}아직 주제 없음. 내 주제부터 정해 보세요.</div>`}`;
     const btnNew = document.getElementById('btnNewTopic');
     if (btnNew) btnNew.onclick = () => openTopicModal();
   }
@@ -730,13 +741,14 @@ ${text}
     const [topic, posts, myNotes] = await Promise.all([Store.getTopic(id), Store.listPosts(id), MEMBERS.includes(me) ? Store.listNotes(me).catch((e) => { console.error(e); return []; }) : []]);
     if (!topic) { $app.innerHTML = `<div class="card empty">${Mascot('sad', 90)}주제를 찾을 수 없어요... <a href="#/writing">목록으로</a></div>`; return; }
     const byAuthor = Object.fromEntries(posts.map((p) => [p.author, p]));
-    const iHaveWritten = postStatus(byAuthor[me]) !== 'none';
+    const iHaveWritten = isDone(postStatus(byAuthor[me]));
+    const writers = writersOf(topic);
     // 이 글에서 내 노트로 챙긴 것 (나만 보임)
     let topicNotes = myNotes.filter((n) => n.topic_id === topic.id);
     const savedKeys = new Set(topicNotes.map((n) => noteKey(n.en)));
     const myCorr = byAuthor[me] ? parseCorrections(byAuthor[me].corrections) : null;
 
-    const cards = MEMBERS.map((name) => {
+    const cards = writers.map((name) => {
       const p = byAuthor[name];
       const st = postStatus(p);
       const href = `#/write/${topic.id}/${encodeURIComponent(name)}`;
@@ -744,7 +756,9 @@ ${text}
       let body;
       if (st === 'none') {
         body = `<div class="empty-inline">${Mascot(isMe ? 'cmon' : 'dots', 80)}${isMe ? '아직 안 씀.' : '아직 작성 전.'}</div>`;
-      } else if (!isMe && !iHaveWritten && MEMBERS.includes(me) && !revealedTopics.has(topic.id)) {
+      } else if (!isMe && st === 'writing') {
+        body = `<div class="empty-inline">${Mascot('study', 80)}작성 중이에요. 다 쓰면 보여요.</div>`;
+      } else if (!isMe && !iHaveWritten && writers.includes(me) && MEMBERS.includes(me) && !revealedTopics.has(topic.id)) {
         body = `<div class="spoiler">${Mascot('what', 76)}
             <p><b>내 글 먼저 쓰고 보기.</b><br><span class="muted small">먼저 보면 나도 모르게 따라 쓰게 돼요.</span></p>
             <div class="row-gap wrap">
@@ -753,7 +767,7 @@ ${text}
             </div>
           </div>`;
       } else {
-        const hasRev = st === 'reviewed';
+        const hasRev = !!(p.revised || '').trim(); // 작성중이어도 내 글은 비교까지 보여줌
         const changes = hasRev ? TextDiff.countChanges(TextDiff.diff(p.original, p.revised)) : 0;
         body = `<div class="tabs" data-tabs>
             <button data-tab="orig" class="${hasRev ? '' : 'active'}">원문</button>
@@ -768,8 +782,8 @@ ${text}
           ${p.notes ? `<div class="notes"><div class="notes-title">실수 패턴 · 메모.</div>${nl2br(p.notes)}</div>` : ''}
           ${isMe && MEMBERS.includes(me) ? '<div class="remember" id="rememberBox"></div>' : ''}`;
       }
-      const btnLabel = isMe ? (st === 'none' ? '글쓰기' : st === 'written' ? '검수본 입력' : '수정하기') : '편집';
-      const showBtn = isMe || st !== 'none';
+      const btnLabel = isMe ? { none: '글쓰기', writing: '이어 쓰기', written: '검수본 입력', reviewed: '수정하기' }[st] : '편집';
+      const showBtn = isMe || isDone(st);
       return `<div class="card post">
         <div class="post-head">
           <div class="row-gap"><span class="avatar">${esc(name.slice(0, 1))}</span><b>${esc(name)}</b>${chip(st)}</div>
@@ -783,16 +797,16 @@ ${text}
       <a href="#/writing" class="back">‹ 글쓰기 목록</a>
       <div class="topic-head card">
         <div>
-          <div class="muted">${fmtDate(topic.date)}</div>
+          <div class="muted">${fmtDate(topic.date)} · ${topic.owner ? `<b>${esc(topic.owner)}</b>의 주제` : '같이 쓰는 주제'}</div>
           <h1>${esc(topic.title)}</h1>
           ${topic.description ? `<p>${nl2br(topic.description)}</p>` : ''}
         </div>
-        ${canManageTopics() ? `<div class="row-gap">
+        ${canEditTopic(topic) ? `<div class="row-gap">
           <button class="btn btn-sm" id="btnEditTopic">주제 수정</button>
           <button class="btn btn-sm btn-danger" id="btnDelTopic">삭제</button>
         </div>` : ''}
       </div>
-      <div class="grid grid-2">${cards}</div>`;
+      <div class="grid ${writers.length > 1 ? 'grid-2' : 'grid-1'}">${cards}</div>`;
 
     $app.querySelectorAll('[data-reveal]').forEach((b) => { b.onclick = () => { revealedTopics.add(topic.id); render(); }; });
     setupRemember();
@@ -805,7 +819,7 @@ ${text}
         };
       });
     });
-    if (!canManageTopics()) return;
+    if (!canEditTopic(topic)) return;
     document.getElementById('btnEditTopic').onclick = () => openTopicModal({ topic });
 
     // ---- 이 글에서 꼭 기억할 것 (내 카드 안) ----
@@ -1026,11 +1040,14 @@ ${text}
           <div class="text-body diff" id="diffPreview"></div>
         </div>
 
+        ${author === me ? '<p class="muted small save-hint"><b>작성중 저장</b>: 아직 쓰는 중 (동료에겐 "작성중"만 보여요) · <b>작성 완료</b>: 다 썼어요 (동료에게 글이 보여요)</p>' : ''}
         <div class="editor-actions">
           ${post.id ? '<button type="button" class="btn btn-danger" id="btnDelPost">글 삭제</button>' : '<span></span>'}
-          <div class="row-gap">
+          <div class="row-gap wrap">
             <a class="btn" href="#/topic/${topic.id}">취소</a>
-            <button type="submit" class="btn btn-primary">저장</button>
+            ${author === me
+              ? '<button type="submit" class="btn" data-status="writing">작성중 저장</button><button type="submit" class="btn btn-primary" data-status="done">작성 완료</button>'
+              : '<button type="submit" class="btn btn-primary">저장</button>'}
           </div>
         </div>
       </form>`;
@@ -1083,7 +1100,7 @@ ${text}
       dirty = true;
       const note = document.getElementById('draftNote');
       const when = new Date(draft.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-      note.innerHTML = `${Mascot('think', 44)}<span><b>업로드 안 한 임시 글을 불러왔어요.</b> <span class="muted">(${esc(when)})</span> 저장을 눌러야 동료에게 보여요.</span>
+      note.innerHTML = `${Mascot('think', 44)}<span><b>업로드 안 한 임시 글을 불러왔어요.</b> <span class="muted">(${esc(when)})</span> <b>작성 완료</b>를 눌러야 동료에게 보여요.</span>
         <button type="button" class="btn-link" id="btnDiscardDraft">버리기</button>`;
       note.hidden = false;
       document.getElementById('btnDiscardDraft').onclick = () => {
@@ -1109,14 +1126,19 @@ ${text}
     window.addEventListener('beforeunload', leaveGuard);
     window.addEventListener('hashchange', () => window.removeEventListener('beforeunload', leaveGuard), { once: true });
 
+    // 어느 버튼으로 저장했는지 (작성중 / 작성 완료). 다른 멤버 글 편집은 원래 상태 유지
+    let submitStatus = null;
+    f.querySelectorAll('button[data-status]').forEach((b) => { b.addEventListener('click', () => { submitStatus = b.dataset.status; }); });
     f.onsubmit = async (e) => {
       e.preventDefault();
       if (!f.original.value.trim()) { alert('원문을 입력해 주세요.'); return; }
+      const status = (e.submitter && e.submitter.dataset.status) || submitStatus || post.status || 'done';
       try {
         await withUpload(async () => {
           await Store.savePost({
             topic_id: topic.id,
             author,
+            status,
             original: f.original.value,
             revised: f.revised.value.trim() ? f.revised.value : null,
             corrections: f.corrections.value.trim() ? f.corrections.value : null,
@@ -1132,7 +1154,7 @@ ${text}
               await Store.saveNote(Object.assign({ author: me, date: topic.date, topic_id: topic.id }, it));
             }
           }
-        }, '글 업로드 완료. 굿.');
+        }, status === 'writing' ? '작성중으로 저장. 이어서 써요.' : '글 업로드 완료. 굿.');
       } catch (err) { alert(err.message); return; }
       clearTimeout(draftTimer);
       clearDraft();
@@ -1319,7 +1341,7 @@ ${text}
     const items = [];
     posts.forEach((p) => {
       const t = topicById[p.topic_id];
-      if (!t) return;
+      if (!t || (p.author !== me && postStatus(p) === 'writing')) return; // 동료의 작성중 글은 아직 안 보임
       const c = parseCorrections(p.corrections);
       ['grammar', 'native', 'expr'].forEach((kind) => c[kind].forEach((x) => items.push(Object.assign({ kind, author: p.author, topic: t }, x))));
     });
