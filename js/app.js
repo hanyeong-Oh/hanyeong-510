@@ -791,11 +791,10 @@ ${text}
 
         <div class="card step">
           <div class="step-head"><span class="step-no">2</span><h3>AI 검수</h3></div>
-          <p class="muted small">아래 버튼으로 검수 요청문을 복사해서 ChatGPT · Claude · Gemini 등에 붙여넣으세요.<br>
+          <p class="muted small">버튼을 누르면 내 글 + 검수 부탁 문장이 복사돼요. ChatGPT · Claude · Gemini 채팅창에 붙여넣으세요.<br>
             AI 답변의 <b>1번</b>은 수정본 칸, <b>2번</b>은 수정 내역 칸, <b>3~4번</b>은 메모 칸에 붙여넣으면 돼요.</p>
           <div class="row-gap wrap">
-            <button type="button" class="btn" id="btnPrompt">AI 검수 요청문 복사</button>
-            <button type="button" class="btn" id="btnCopyOrig">원문을 수정본 칸에 복사</button>
+            <button type="button" class="btn btn-primary" id="btnPrompt">AI에게 보낼 질문 복사</button>
           </div>
           <label>AI 검수 후 수정본
             <textarea name="revised" rows="10" lang="en" spellcheck="true" autocapitalize="sentences" placeholder="AI 답변의 1. 수정본(코드 블록 안 영어 글)을 붙여넣으세요">${esc(post.revised || '')}</textarea>
@@ -886,13 +885,6 @@ ${text}
       if (!f.original.value.trim()) { alert('먼저 원문을 작성해 주세요.'); return; }
       await copyText(buildReviewPrompt(topic, f.original.value));
       toast('복사함. AI 채팅창에 붙여넣기.');
-    };
-    document.getElementById('btnCopyOrig').onclick = () => {
-      if (f.revised.value.trim() && !confirm('수정본 칸의 내용을 원문으로 덮어쓸까요?')) return;
-      f.revised.value = f.original.value;
-      dirty = true;
-      update();
-      writeDraft();
     };
 
     const leaveGuard = (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } };
