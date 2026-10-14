@@ -487,3 +487,31 @@ a.video-title:hover { text-decoration: underline; }
   .note { padding: 10px 10px 10px 14px; gap: 8px; }
   .note-kinds input[type=date] { margin-left: 0; }
 }
+
+/* ---------- 이 글에서 꼭 기억할 것 ---------- */
+.corr-save, .corr-saved {
+  display: inline-block; margin-left: 6px; vertical-align: 1px; padding: 0 7px; line-height: 1.5;
+  font-family: var(--hand); font-weight: 700; font-size: 17px; border-radius: var(--wobble);
+}
+.corr-save { border: 2px dashed var(--ink); background: #fff; color: var(--ink); cursor: pointer; }
+.corr-save:hover { border-style: solid; background: var(--soft); }
+.corr-saved { color: var(--muted); }
+.remember { border: 2.5px solid var(--ink); border-radius: var(--wobble); background: var(--blue-soft); padding: 10px 14px 12px; }
+.remember-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 23px; }
+.remember-head .muted { font-size: 17px; }
+.remember-list { margin: 6px 0 8px; background: #fff; border: 2px solid var(--ink); border-radius: var(--wobble-2); }
+.remember-list .note { padding: 8px 10px 8px 12px; }
+.remember-empty { list-style: none; padding: 8px 12px; font-family: var(--text); font-size: 14px; line-height: 1.6; }
+.remember-add { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.remember-add .note-kinds { flex-basis: 100%; }
+.remember-add .note-kinds .cat { font-size: 19px; padding: 0 10px; }
+.remember-add input[name=en], .remember-add input[name=ko] { flex: 1 1 140px; margin: 0; padding: 6px 10px; font-size: 15px; }
+.remember-paste { margin-top: 8px; font-size: 20px; }
+.remember-paste summary { cursor: pointer; font-weight: 700; }
+.remember-paste textarea { margin: 6px 0 4px; font-size: 14px; }
+.sel-save {
+  position: absolute; z-index: 50; border: 2.5px solid var(--ink); border-radius: var(--wobble); background: var(--ink); color: #fff;
+  font-family: var(--hand); font-weight: 700; font-size: 19px; padding: 1px 10px; cursor: pointer; box-shadow: 3px 3px 0 var(--band);
+}
+.note-src { display: inline-block; margin-top: 2px; font-size: 13px; color: var(--muted); text-decoration: none; }
+.note-src:hover { text-decoration: underline; }
