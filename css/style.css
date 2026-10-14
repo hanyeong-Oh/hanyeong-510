@@ -551,3 +551,10 @@ a.video-title:hover { text-decoration: underline; }
 .g-vthumb-list { display: grid; place-items: center; align-content: center; font-size: 22px; line-height: 1; color: var(--ink); }
 .g-vthumb-list small { font-size: 14px; margin-top: 2px; }
 .g-vtitle { font-family: var(--text); font-size: 14px; font-weight: 600; line-height: 1.45; }
+
+/* ---------- 문법 개념: 강의 그림 ---------- */
+.g-figs { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 12px 0 4px; }
+.g-fig { margin: 0; border: 2px solid var(--ink); border-radius: var(--wobble-2); background: #fff; padding: 6px; }
+.g-fig a { display: block; }
+.g-fig img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.g-fig figcaption { font-family: var(--text); font-size: 13.5px; line-height: 1.55; padding: 6px 4px 2px; color: var(--ink); }

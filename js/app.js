@@ -1679,6 +1679,11 @@ ${text}
         <div class="g-en">${fmt(en)}${speakBtn(en)}</div>
         <div class="g-ko">${fmt(ko)}${note ? ` <span class="g-note">·\u00a0${fmt(note)}</span>` : ''}</div>
       </li>`).join('')}</ul>` : '');
+    // 강의 그림: [이미지 경로, 설명] → 누르면 원본 크기로
+    const figures = (list) => (list && list.length ? `<div class="g-figs">${list.map(([src, cap]) => `<figure class="g-fig">
+        <a href="${esc(src)}" target="_blank" rel="noopener"><img src="${esc(src)}" alt="${esc(cap || '')}" loading="lazy"></a>
+        ${cap ? `<figcaption>${fmt(cap)}</figcaption>` : ''}
+      </figure>`).join('')}</div>` : '');
     // 관련 영상: [유튜브 영상 ID 또는 재생목록 ID(PL…), 제목] → 누르면 유튜브로
     const videoLinks = (cat.videos || []).map(([id, title]) => {
       const isList = /^(PL|UU|OL)/.test(id) && id.length > 15;
@@ -1690,6 +1695,7 @@ ${text}
     const sections = (cat.sections || []).map((sec) => `<div class="g-section">
         <h3>${fmt(sec.title)}</h3>
         ${sec.points ? `<ul class="g-points">${sec.points.map((pt) => `<li>${fmt(pt)}</li>`).join('')}</ul>` : ''}
+        ${figures(sec.images)}
         ${examples(sec.examples)}
       </div>`).join('');
 
