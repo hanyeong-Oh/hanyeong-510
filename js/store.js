@@ -55,8 +55,10 @@ window.Store = (function () {
       async getTopic(id) { return load().topics.find((t) => t.id === id) || null; },
       async saveTopic(t) {
         const d = load();
-        if (d.topics.some((x) => x.date === t.date && x.id !== t.id)) {
-          throw new Error('이미 그 날짜에 주제가 있어요.');
+        // 날짜마다 사람당 주제 하나 (owner 없는 예전 공통 주제도 날짜마다 하나)
+        const owner = t.id ? (d.topics.find((x) => x.id === t.id) || {}).owner || null : t.owner || null;
+        if (d.topics.some((x) => x.date === t.date && (x.owner || null) === owner && x.id !== t.id)) {
+          throw new Error('그 날짜에 이미 내 주제가 있어요.');
         }
         if (t.id) {
           const i = d.topics.findIndex((x) => x.id === t.id);
@@ -151,7 +153,7 @@ window.Store = (function () {
 
     function check(res) {
       if (res.error) {
-        if (res.error.code === '23505') throw new Error('이미 그 날짜에 주제가 있어요.');
+        if (res.error.code === '23505') throw new Error('그 날짜에 이미 내 주제가 있어요.');
         throw new Error(res.error.message);
       }
       return res.data;

@@ -9,7 +9,8 @@ create table if not exists public.members (
 
 create table if not exists public.topics (
   id          uuid primary key default gen_random_uuid(),
-  date        date not null unique,              -- 글쓰기 날짜 (하루에 주제 1개)
+  date        date not null,                     -- 글쓰기 날짜
+  owner       text,                              -- 주제 주인 (멤버 이름). 비어 있으면 둘이 같이 쓰는 예전 공통 주제
   title       text not null,
   description text,
   created_by  text,
@@ -23,6 +24,7 @@ create table if not exists public.posts (
   original    text not null default '',          -- 직접 쓴 원문
   revised     text,                              -- AI 검수 후 수정본
   corrections text,                              -- 수정 내역: [문법]/[원어민]/[표현] 줄 목록
+  status      text not null default 'done' check (status in ('writing', 'done')),  -- 작성중 / 작성 완료
   notes       text,                              -- 실수 패턴 · 평가 · 메모
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now(),
@@ -64,6 +66,11 @@ alter table public.videos alter column youtube_id drop not null;
 alter table public.videos add column if not exists playlist_id text;
 alter table public.videos add column if not exists thumb_url text;
 alter table public.posts add column if not exists corrections text;
+-- 사람마다 주제 (날짜 + 주인마다 하나) · 작성중 상태
+alter table public.topics add column if not exists owner text;
+alter table public.topics drop constraint if exists topics_date_key;
+create unique index if not exists topics_date_owner_key on public.topics (date, coalesce(owner, ''));
+alter table public.posts add column if not exists status text not null default 'done';
 alter table public.notes add column if not exists topic_id uuid references public.topics(id) on delete set null;
 
 -- 로그인한 사람이 members 테이블에 있는지 확인
