@@ -2,6 +2,7 @@
 // 카테고리마다: 기초 개념 → 핵심 정리(예문) → 원어민 감각 → 자주 하는 실수
 // 문장 안의 **굵게** 는 화면에서 굵은 글씨로 보입니다.
 // examples: [영어, 한국어 해석, (선택) 한 줄 설명]   mistakes: [틀린 문장, 맞는 문장, 이유]
+// videos: [유튜브 영상 ID 또는 재생목록 ID(PL…), 제목] → 페이지 위 '관련 영상'에 링크로 나와요
 // 순서를 바꾸려면 아래 블록 위치를 옮기면 돼요.
 window.GRAMMAR = [
   {
@@ -66,6 +67,10 @@ window.GRAMMAR = [
     title: '시제',
     sub: '현재 · 진행 · 현재완료 · 과거 · 미래 · 미래완료',
     summary: '시제는 "언제"보다 "말하는 사람이 그 일을 어떻게 보느냐"예요.',
+    videos: [
+      ['3mWbOzQ6kKg', '현재완료 vs 현재완료진행 — 영어실력이 2단계 상승하는 시제 공부'],
+      ['Gaw7MoofW8s', 'Been은 대체 언제 쓰는 것인가!'],
+    ],
     basics: [
       '**현재형**은 "지금 이 순간"이 아니라 **늘 그런 일**(습관, 사실)이에요. I work in Seoul.',
       '**현재진행형**(be + -ing)은 **지금 하고 있는 일**, 또는 **잠깐 동안 하는 일**이에요. I\'m working from home this week.',
@@ -453,6 +458,10 @@ window.GRAMMAR = [
     title: '전치사',
     sub: 'in / on / at · 시점 · 기간 · 위치 · 방향 · 이유',
     summary: 'at은 점, on은 면(표면·날짜), in은 공간(안·긴 기간)이에요.',
+    videos: [
+      ['PLhpp-vPvggtctjfjJeZePqCbwkJRRduNN', '전치사, 단 하나의 그림으로 설명 (재생목록)'],
+      ['H6XNM8x3Bt4', 'To와 For의 결정적인 차이!'],
+    ],
     basics: [
       '**at** = 콕 찍은 한 점: at 3 p.m., at the station, at the door',
       '**on** = 위에 붙어 있는 면, 특정한 날: on the desk, on Monday, on May 5th',
@@ -629,6 +638,9 @@ window.GRAMMAR = [
     title: '조동사',
     sub: 'can · will · should · must · may',
     summary: '조동사는 동사에 "가능·의지·의무·추측·공손함"이라는 기분을 얹어 줘요.',
+    videos: [
+      ['TIx-yVScq9g', '영어 조동사 총정리 — would · could · should · have to'],
+    ],
     basics: [
       '조동사 뒤에는 항상 **동사원형**. (He can swim ✓ / He can swims ✗)',
       '부정은 조동사 뒤에 not: can\'t, won\'t, shouldn\'t',
@@ -651,11 +663,28 @@ window.GRAMMAR = [
         ],
       },
       {
+        title: '확률 — 얼마나 확실한가',
+        points: [
+          '세기: **will**(거의 100%) > **should / ought to**(높음) > **may**(반반) > **might / could**(낮음)',
+          '**will**: 일기예보가 며칠 전부터 확실하다고 한 수준',
+          '**may**: 원어민 감각으로 50 : 50, 올 수도 안 올 수도',
+          '**might / could**: 아닐 것 같지만 100% 아니라고는 못 할 때',
+        ],
+        examples: [
+          ['It will snow tonight.', '오늘 밤 눈 올 거야.', '거의 확실'],
+          ['It should snow tonight.', '오늘 밤 눈이 올 거야.', 'will보다 약간 약함'],
+          ['It may snow tonight.', '오늘 밤 눈이 올 수도 있고 안 올 수도 있어.', '반반'],
+          ['You might be right.', '네 말이 맞을 수도 있지.', '아닐 것 같지만 완전히 배제는 못 함'],
+        ],
+      },
+      {
         title: '추측: must / might / can\'t',
         points: [
           '확신 정도: **must**(분명 ~일 거야) > **should**(~일 거야) > **may/might/could**(~일지도) > **can\'t**(~일 리 없어)',
         ],
         examples: [
+          ['It must be Jihoo.', '(전화 울릴 때) 틀림없이 지후일 거야.', '가장 강한 추측'],
+          ['It should be Jihoo.', '분명 지후일 거야.'],
           ['You must be tired.', '피곤하겠다.'],
           ['He might be in a meeting.', '회의 중일지도 몰라.'],
           ["That can't be true.", '그럴 리가 없어.'],
@@ -665,11 +694,28 @@ window.GRAMMAR = [
         title: '부탁·제안: 공손함의 단계',
         points: [
           'Can you ~? < Could you ~? < Would you mind -ing? (뒤로 갈수록 공손)',
+          '부탁할 땐 **과거형**(could, would): 심리적 거리가 생겨서 상대가 부담을 덜 느끼고 거절할 여유가 있어요.',
+          '대답할 땐 **현재형**(I can, I will): 확신을 줘요. 대답까지 과거형이면 "그럴 수도 있고…"처럼 빠져나가는 느낌이 나요.',
           '제안: Shall we ~? / Why don\'t we ~? / We could ~',
         ],
         examples: [
           ['Could you send me the file?', '파일 좀 보내 주실 수 있을까요?'],
           ['Would you mind closing the door?', '문 좀 닫아 주시겠어요?', '대답 "No, not at all." = 괜찮아요(닫아 줄게요)'],
+        ],
+      },
+      {
+        title: '조언의 세기 — must부터 might까지',
+        points: [
+          '세기: **must / have to**(거의 명령) > **had better**(안 하면 곤란) > **should**(그게 옳고 이익이야) > **may / might want to**(가벼운 제안)',
+          '**must / have to**는 조언이라기보다 "꼭 해야 한다"는 필수·강제라서 일상 조언엔 잘 안 써요.',
+          '**should**는 그렇게 하는 게 이익이거나 도리상 옳다는 느낌의 조언이에요.',
+          '**would**(I would ~ / I\'d ~)는 더 부드럽고 격식 있는 조언, **might**는 "시간 되면 해 봐" 정도로 가장 약해요.',
+          '**must**는 과거형이 없어요. 과거엔 **had to**(해야 했다) 또는 **should have p.p.**(했어야 했는데)',
+        ],
+        examples: [
+          ['You should help the dog.', '그 개를 도와줘야지.', '그게 옳다는 조언'],
+          ['You may want to read this book.', '이 책 한번 읽어 보는 것도 좋아요.', '가벼운 제안'],
+          ['I had to work late yesterday.', '어제 늦게까지 일해야 했어.', 'must의 과거 → had to'],
         ],
       },
       {
@@ -691,6 +737,7 @@ window.GRAMMAR = [
     native: [
       '회사에서 부탁할 땐 Can you보다 **Could you**가 기본이에요.',
       '"You should ~"는 조언이지만 윗사람에겐 강하게 들릴 수 있어요. "You might want to ~" (~하시는 게 좋을 수도 있어요)가 훨씬 부드러워요.',
+      '"Could you ~?"로 부탁받으면 "Sure, I can." / "Of course, I will."처럼 현재형으로 시원하게 대답하세요.',
       '과거 후회: **should have p.p.** (했어야 했는데) → "I should\'ve checked it."',
     ],
     mistakes: [
@@ -706,6 +753,9 @@ window.GRAMMAR = [
     title: 'to부정사 · 동명사',
     sub: 'to부정사 3가지 용법 · 의미상 주어 · to vs -ing · V-ing 세 갈래',
     summary: 'to는 "앞으로 할 일", -ing는 "이미 하고 있거나 해 본 일"의 느낌이에요.',
+    videos: [
+      ['beQNlMfPqbw', 'To 부정사와 동명사의 비밀!'],
+    ],
     basics: [
       '**to부정사** = to + 동사원형. 품사가 정해져 있지 않아서 문장 속 **역할(명사·형용사·부사)**로 판단해요.',
       '한 줄 요약: **명사** "~하는 것" / **형용사** 명사 (to R) "~할" / **부사** "~하기 위해서", 결과',
@@ -714,6 +764,23 @@ window.GRAMMAR = [
       '**to**: 앞으로 향하는 느낌 (원하다, 계획하다, 결정하다) / **-ing**: 이미 있는 일 (즐기다, 끝내다, 피하다)',
     ],
     sections: [
+      {
+        title: '원어민의 그림: to는 "→ 쪽으로", -ing는 "이미 있는 것"',
+        points: [
+          '"to부정사"의 **부정(不定)**은 "정해지지 않음"이라는 뜻이에요. 부정적이라는 뜻이 아니에요. (영어로 to-infinitive)',
+          '부정사 to와 전치사 to는 뿌리가 같아요. 둘 다 **"어느 방향으로 향함"** → 아직 도착하지 않은, 앞으로의 일',
+          'You need **to move** to the front. → 앞의 to는 move라는 행동 쪽으로, 뒤의 to는 front라는 장소 쪽으로',
+          '원어민은 to 하나로 "~할", "~하는 것", "~하기"를 다 표현해요. 역할이 정해져 있지 않아서 "부정사"예요.',
+          '**-ing**는 **이미 존재하는 것**(지금 하고 있거나 이미 한 일) → 과정 중심, 현재·과거 쪽',
+          '그래서 **to** = 목표·미래 지향 / **-ing** = 과정·현재·과거 지향. 이 차이만 알면 동사 뒤에 뭐가 올지 대부분 풀려요.',
+        ],
+        examples: [
+          ['a box to move', '옮길 상자', 'move 쪽으로 향하는 상자 → "~할"'],
+          ['I want to move a box.', '상자를 옮기고 싶어.', 'move 쪽으로 가기를 원함'],
+          ['Moving a box is hard.', '상자를 옮기는 건 힘들어.', '이미 있는 행동 → -ing'],
+          ['To be or not to be, that is the question.', '앞으로 살 것인가, 죽을 것인가 그것이 문제로다.', '앞으로의 향방 → to'],
+        ],
+      },
       {
         title: 'to부정사의 세 가지 용법',
         points: [
@@ -750,7 +817,9 @@ window.GRAMMAR = [
         title: 'to만 받는 동사 — 미래·의지',
         points: [
           '★ "원하다" 계열은 to부정사: **want, need, wish, hope, desire, expect, would like**',
-          'plan, decide, promise, agree, refuse도 to만 받아요.',
+          '계획·결정·선택: **plan, decide, intend, choose, seek, promise, agree, refuse**',
+          '노력·시도: **strive, struggle, try** → 아직 일어나지 않은 목표를 향해 애쓰는 그림',
+          '모두 "아직 없는 것을 향해 나아가는" 동사라서 to가 자연스러워요.',
         ],
         examples: [
           ['I decided to quit my job.', '회사를 그만두기로 했어.'],
@@ -791,6 +860,10 @@ window.GRAMMAR = [
           ['Try restarting your computer.', '컴퓨터 재부팅 한번 해 봐.'],
           ['I regret telling him the secret.', '그에게 비밀을 말한 걸 후회해.', '이미 한 일 → -ing'],
           ['We regret to inform you that the event has been canceled.', '행사가 취소되었음을 알려 드리게 되어 유감입니다.', '공지·메일 단골 표현 → to'],
+          ['I stopped to see the scenery. / I stopped sightseeing.', '경치를 보려고 멈췄다. / 구경하던 걸 멈췄다.', 'stop to = 목표를 위해 멈춤 / stop -ing = 하던 걸 멈춤'],
+          ['He tried to open the door.', '그는 문을 열려고 애썼다.', 'try to = 문 열기가 목표'],
+          ["I'll try opening the door.", '문 한번 열어 볼게요.', 'try -ing = 카드가 되는지 시험 삼아 (여러 방법 중 하나)'],
+          ["I don't remember calling her.", '그녀에게 전화한 게 기억 안 나.', '이미 한 일 → -ing'],
         ],
       },
       {
@@ -826,6 +899,9 @@ window.GRAMMAR = [
     title: '분사 · 분사구문',
     sub: '-ing / p.p. 형용사 · 접속사 빼고 줄이기',
     summary: '분사는 형용사(명사 꾸미기), 분사구문은 부사절을 짧게 줄인 거예요.',
+    videos: [
+      ['fccvj1TKpkg', '분사구문의 모든 것!'],
+    ],
     basics: [
       '**분사 = 형용사** 역할. 명사를 꾸미거나 보어가 돼요.',
       '**현재분사(V-ing)** = 능동 "~하는" / **과거분사(p.p.)** = 수동·완료 "~된, ~해진"',
@@ -887,6 +963,25 @@ window.GRAMMAR = [
         ],
       },
       {
+        title: '분사구문은 왜 쓰나 — 문맥상 오해가 없을 때만',
+        points: [
+          '분사구문은 공식이 아니라 **표현 기법**이에요. 문맥으로 충분히 알 수 있는 말(접속사·같은 주어)을 빼고, **짧고 생생하게** 그리는 거예요.',
+          '그래서 두 문장의 관계가 **분명할 때만** 써요. 원어민도 뜻을 문맥으로 이해해요. (헷갈리는 문장엔 "What\'s the context?"라고 되물어요)',
+          '접속사를 무조건 빼는 건 아니에요. **when, while, after** 등은 뜻을 분명히 하려고 남기기도 해요: While walking home, I ~',
+          '**because, although**는 빼면 뜻이 달라 보여서 원어민은 분사구문 대신 그냥 절로 풀어 말해요: Because he walked his dog, ~',
+          '부정은 **not을 분사 앞에**: Not feeling well, ~ (Feeling not well ✗)',
+          '**with + 명사 + 분사** = ~한 채로: With his arms folded, he stood there.',
+          '대화보다는 **소설·기사·뉴스**에서 주로 써요. 말할 땐 "I\'m not feeling well, so I want to take a rest."처럼 풀어서.',
+        ],
+        examples: [
+          ['Walking his dog in the park, he ran into an old friend.', '공원에서 개를 산책시키다가 그는 옛 친구를 마주쳤다.', '= While he was walking … (관계가 분명해서 접속사 생략)'],
+          ['Located in the middle of the city, the city hall is easy to find.', '도시 한가운데 있어서 시청은 찾기 쉽다.', '(Being) located → being 생략'],
+          ['Not feeling well, I went to bed early.', '몸이 안 좋아서 일찍 잤다.', 'not은 맨 앞'],
+          ['With his arms folded, he stood there.', '그는 팔짱을 낀 채로 거기 서 있었다.', 'with + 명사 + p.p.'],
+          ['Singing and dancing together, they had a good time.', '함께 노래하고 춤추며 그들은 즐거운 시간을 보냈다.'],
+        ],
+      },
+      {
         title: '문제 유형: To be vs Being',
         points: [
           '빈칸 뒤에 콤마 + 완전한 문장(주절)이 오면, 빈칸은 주절을 꾸미는 **분사구문(Being)** 자리예요.',
@@ -905,6 +1000,7 @@ window.GRAMMAR = [
       ['The news was very shocked.', 'The news was very shocking.', '뉴스가 충격을 줌 → -ing'],
       ['The car parking here is mine.', 'The car parked here is mine.', '차는 주차되는 쪽 → p.p.'],
       ['Walking home, the rain started.', 'Walking home, I got caught in the rain.', '분사구문의 주어 = 주절의 주어. 비가 걸어간 게 아니에요.'],
+      ['Feeling not well, I went home.', 'Not feeling well, I went home.', '부정어 not은 분사 앞'],
     ],
   },
 
@@ -1134,6 +1230,10 @@ window.GRAMMAR = [
     title: '관계사 (형용사절)',
     sub: 'who · which · that · whose · what',
     summary: '명사 뒤에 문장을 붙여서 "어떤 명사인지" 설명하는 연결고리예요.',
+    videos: [
+      ['yv8aBYXPOZ8', '[관계대명사] 가장 쉽게 설명하는 까다로운 필수 문법'],
+      ['VFwgqMjWeEc', '한 번 보면 전두엽에 박히는 관계부사 15분 완벽정리'],
+    ],
     basics: [
       '관계대명사 = **접속사 + 대명사**. 두 문장을 붙이는 본드예요: I have a friend. + She lives in London. → I have a friend **who** lives in London.',
       '**선행사(명사) + 관계대명사 + 불완전한 문장** = 앞 명사를 꾸미는 **형용사절**이에요.',
@@ -1261,6 +1361,9 @@ window.GRAMMAR = [
     title: '명사절',
     sub: 'that · if/whether · what · 의문사절',
     summary: '문장 하나를 통째로 "명사"처럼 쓰는 방법이에요. "~하는 것", "~인지"로 해석돼요.',
+    videos: [
+      ['GzzaEedWRXQ', '명사절 접속사의 종류'],
+    ],
     basics: [
       '**명사절** = 문장이 명사 역할을 하는 것. 명사니까 **주어 / 목적어 / 보어 / 전치사의 목적어** 자리에 들어가요.',
       '명사절을 만드는 접속사: **that**(~라는 것), **if / whether**(~인지 아닌지), **what**(~하는 것), **의문사**(누가/언제/어디서/왜/어떻게 ~인지)',
@@ -1383,14 +1486,43 @@ window.GRAMMAR = [
     title: '가정법',
     sub: '"만약 ~라면" · I wish · as if',
     summary: '핵심은 하나예요. 현실이 아닌 상상을 말할 땐 시제를 한 칸 과거로 내린다.',
+    videos: [
+      ['PLxoOU8azGw9Wnc1o0bdvfbBJBwa1Q-v9F', '가정법 정복 (재생목록)'],
+    ],
     basics: [
       '"만약 ~라면"에는 두 종류가 있어요. **실제로 일어날 수 있는 일**(조건문)과 **사실이 아닌 상상**(가정법).',
       '상상일 때는 시제를 **한 칸 과거로** 내려서 "이건 현실이 아니야"라는 거리감을 줘요.',
       '지금 사실과 반대 → **과거형** (If I had…, I would…)',
       '과거 사실과 반대 → **과거완료형** (If I had done…, I would have done…)',
       '시제는 과거형이지만 뜻은 **지금/과거의 반대 상황**이라는 점만 기억하면 돼요.',
+      '영어 원서에서는 if 문장을 **조건문(Conditional)** 0 · 1 · 2 · 3 · 혼합 5가지로 나눠요. 학교에서 "가정법 현재"라고 배운 If you study hard, you will pass. 는 사실 가정법이 아니라 **현실 조건문(1형)**이에요.',
     ],
     sections: [
+      {
+        title: '시제 후퇴(backshift) — 과거형은 "현실과의 거리"',
+        points: [
+          '가정법의 과거형은 시간이 과거라는 뜻이 아니라, 일부러 시제를 **한 칸 뒤로 미뤄서** "이건 현실이 아니야(상상·소망)"라는 **심리적 거리**를 나타내요.',
+          'will → **would**, can → **could**도 같은 원리예요. 그래서 조동사 과거형이 **공손함·불확실함**을 나타내요.',
+          'Will you open the door? < **Would** you open the door? (한 발 물러서서 묻는 느낌 → 더 공손)',
+          'I can go. > I **could** go. (갈 수는 있는데… 가능성이 더 낮게 들림)',
+        ],
+        examples: [
+          ['If he studied hard, he would pass the exam.', '(실제론 안 하지만) 그가 열심히 공부한다면 합격할 텐데.', 'studied = 과거가 아니라 현실과 거리'],
+          ['If I had wings, I would fly to you.', '날개가 있다면 너한테 날아갈 텐데.', '불가능한 상상'],
+        ],
+      },
+      {
+        title: '0형 조건문 — 늘 그런 일 (if = when)',
+        points: [
+          '**If + 현재형, 현재형**: 과학적 사실, 일반적인 일, 습관',
+          '아무것도 가정하지 않으니 **if를 when으로 바꿔도** 대부분 통해요.',
+        ],
+        examples: [
+          ['If you heat ice, it melts.', '얼음을 가열하면 녹는다.', '= When you heat ice, …'],
+          ['If I have some free time, I usually go hiking.', '시간이 나면 보통 등산을 가.', '습관'],
+          ["If you're sad, I'm sad too.", '네가 슬프면 나도 슬퍼.'],
+        ],
+      },
       {
         title: '① 현실 조건문 — 진짜 일어날 수 있는 일',
         points: [
@@ -1399,7 +1531,8 @@ window.GRAMMAR = [
         ],
         examples: [
           ["If it rains tomorrow, I'll stay home.", '내일 비 오면 집에 있을 거야.', '비가 올 수도 있음'],
-          ['If you heat ice, it melts.', '얼음을 데우면 녹는다.', '항상 그런 사실'],
+          ["If you're busy, I'll come back tomorrow.", '바쁘면 내일 다시 올게.'],
+          ["If you don't come early, I'll lock the door.", '일찍 안 오면 문 잠글 거야.', '경고도 1형'],
         ],
       },
       {
@@ -1407,6 +1540,7 @@ window.GRAMMAR = [
         points: [
           '**If + 과거형, would/could + 동사원형**',
           'be동사는 주어와 상관없이 **were**가 기본이에요. (If I were you)',
+          '요즘 회화에선 원어민도 **If I was**를 많이 써요. 시험·글에서는 were가 안전해요.',
         ],
         examples: [
           ['If I had more time, I would travel more.', '시간이 더 있으면 여행을 더 할 텐데.', '실제론 시간이 없음'],
@@ -1423,6 +1557,7 @@ window.GRAMMAR = [
         examples: [
           ["If I had known, I would have told you.", '알았더라면 너한테 말했을 텐데.', '실제론 몰랐음'],
           ['If we had left earlier, we could have caught the train.', '더 일찍 나왔으면 기차를 탈 수 있었을 텐데.'],
+          ["If you had driven slowly, you wouldn't have had that accident.", '천천히 운전했으면 그 사고는 안 났을 텐데.', '책망·자책의 느낌'],
         ],
       },
       {
@@ -1432,6 +1567,7 @@ window.GRAMMAR = [
         ],
         examples: [
           ['If I had studied harder, I would be a doctor now.', '그때 더 열심히 공부했더라면 지금 의사일 텐데.'],
+          ["If I hadn't gotten married, I wouldn't be living like this.", '그 결혼만 안 했어도 지금 이렇게 안 살 텐데.', '드라마 대사 느낌'],
         ],
       },
       {
@@ -1452,11 +1588,13 @@ window.GRAMMAR = [
       {
         title: '⑥ if 없이 쓰는 가정 — 업무 메일에서 자주',
         points: [
-          '**Should you ~** = If you should ~ (혹시 ~하시면) → 메일 끝인사의 단골',
+          '**Should you ~** = If you should ~ (혹시 ~하시면) → 메일 끝인사의 단골. 법 조항·계약서 같은 격식 문서에 많아요.',
           '**Had I known** = If I had known (격식체)',
           '**Without / But for ~** = ~이 없다면/없었다면',
+          '**It is important / essential that + 주어 + 동사원형**: 권고·요구를 나타내는 옛 가정법 모양 (영국 영어·구어에선 should + 동사원형도 많이 써요)',
         ],
         examples: [
+          ['It is important that he be here on time.', '그가 제시간에 여기 오는 게 중요해요.', 'he be (동사원형)'],
           ['Should you have any questions, please let me know.', '궁금한 점 있으시면 말씀해 주세요.'],
           ['Without your help, I couldn\'t have finished it.', '네 도움이 없었으면 못 끝냈을 거야.'],
         ],
