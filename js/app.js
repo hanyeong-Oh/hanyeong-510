@@ -1434,7 +1434,8 @@ ${text}
     grammar: { label: '문법', en: '문법 포인트', enPh: 'e.g. used to + 동사원형 vs be used to + -ing', ko: '설명', koPh: '~하곤 했다 / ~에 익숙하다', memoPh: '예문, 헷갈렸던 점…' },
     etc: { label: '기타', en: '내용', enPh: '무엇이든', ko: '설명', koPh: '', memoPh: '' },
   };
-  let noteFilter = { kind: 'all', q: '', hide: false };
+  // day: 날짜별 보기 (null = 전체 날짜)
+  let noteFilter = { kind: 'all', q: '', hide: false, day: null };
   let noteKind = 'word';   // 입력 칸에서 마지막으로 고른 종류·날짜는 다음 입력 때도 유지
   let noteDate = null;     // null = 오늘
 
@@ -1497,6 +1498,7 @@ ${text}
           <input type="search" id="noteSearch" placeholder="노트 검색" value="${esc(noteFilter.q)}">
         </div>
       </div>
+      <div class="note-days" id="noteDays"></div>
       <div id="noteList"></div>`;
 
     const KIND_CLASS = { word: 'k-word', sentence: 'k-sentence', grammar: 'k-gram', etc: 'k-etc' };
@@ -1538,12 +1540,50 @@ ${text}
         if (!d || d.date !== n.date) { d = { date: n.date, items: [] }; days.push(d); }
         d.items.push(n);
       });
-      document.getElementById('noteList').innerHTML = days.length
-        ? days.map((d) => `<section class="note-day">
-            <div class="note-day-head"><b>${fmtDate(d.date)}</b>${d.date === today ? '<span class="today-badge">오늘</span>' : ''}<span class="muted">${d.items.length}개</span></div>
-            <ul class="card note-list${noteFilter.hide ? ' quiz' : ''}">${d.items.map(row).join('')}</ul>
-          </section>`).join('')
-        : `<div class="card empty">${Mascot(notes.length ? 'dots' : 'study', 90)}${notes.length ? '조건에 맞는 메모 없음.' : '아직 메모 없음. 오늘 본 단어 하나부터.'}</div>`;
+
+      // 날짜 고르기 바: 전체 + 메모가 있는 날 (최신순)
+      const sel = noteFilter.day;
+      const short = (ymd) => { const x = parseYMD(ymd); return `${x.getMonth() + 1}/${x.getDate()} (${WEEKDAYS[x.getDay()]})`; };
+      const dayChip = (d) => `<button type="button" class="cat ${sel === d.date ? 'active' : ''}" data-day="${d.date}">${d.date === today ? '오늘' : short(d.date)} <small>${d.items.length}</small></button>`;
+      document.getElementById('noteDays').innerHTML = days.length || sel
+        ? `<button type="button" class="cat ${sel ? '' : 'active'}" data-day="">전체 날짜 <small>${list.length}</small></button>${days.map(dayChip).join('')}`
+        : '';
+      const bar = document.getElementById('noteDays');
+      const act = bar.querySelector('.active');
+      if (act && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = act.offsetLeft - bar.offsetLeft - (bar.clientWidth - act.offsetWidth) / 2;
+
+      const listCls = `card note-list${noteFilter.hide ? ' quiz' : ''}`;
+      const empty = (msg) => `<div class="card empty">${Mascot(notes.length ? 'dots' : 'study', 90)}${msg}</div>`;
+      let html;
+      if (sel) {
+        // 하루 보기: 그날 메모를 종류별로 나눠서
+        const idx = days.findIndex((d) => d.date === sel);
+        const day = days[idx];
+        const newer = idx > 0 ? days[idx - 1] : (idx === -1 ? days.find((d) => d.date > sel) : null);
+        const older = idx >= 0 ? days[idx + 1] : days.find((d) => d.date < sel);
+        const groups = day ? Object.entries(NOTE_KINDS).map(([k, v]) => [k, v, day.items.filter((n) => n.kind === k)]).filter(([, , items]) => items.length) : [];
+        html = `<section class="note-day note-day-one">
+            <div class="note-day-head">
+              <b>${fmtDate(sel)}</b>${sel === today ? '<span class="today-badge">오늘</span>' : ''}<span class="muted">${day ? day.items.length : 0}개</span>
+              <span class="note-day-nav">
+                <button type="button" class="btn btn-sm" data-day="${older ? older.date : ''}" ${older ? '' : 'disabled'} title="이전 날">‹ 이전 날</button>
+                <button type="button" class="btn btn-sm" data-day="${newer ? newer.date : ''}" ${newer ? '' : 'disabled'} title="다음 날">다음 날 ›</button>
+              </span>
+            </div>
+            ${groups.length ? groups.map(([, v, items]) => `<div class="note-kind-group">
+                <div class="note-kind-head">${v.label} <span class="muted">${items.length}</span></div>
+                <ul class="${listCls}">${items.map(row).join('')}</ul>
+              </div>`).join('') : empty('이 날은 조건에 맞는 메모가 없어요.')}
+          </section>`;
+      } else {
+        html = days.length
+          ? days.map((d) => `<section class="note-day">
+              <button type="button" class="note-day-head note-day-link" data-day="${d.date}" title="이 날만 보기"><b>${fmtDate(d.date)}</b>${d.date === today ? '<span class="today-badge">오늘</span>' : ''}<span class="muted">${d.items.length}개 ›</span></button>
+              <ul class="${listCls}">${d.items.map(row).join('')}</ul>
+            </section>`).join('')
+          : empty(notes.length ? '조건에 맞는 메모 없음.' : '아직 메모 없음. 오늘 본 단어 하나부터.');
+      }
+      document.getElementById('noteList').innerHTML = html;
     }
     drawList();
 
@@ -1557,6 +1597,7 @@ ${text}
         notes = [saved, ...notes].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (a.created_at < b.created_at ? 1 : -1)));
         noteKind = data.kind;
         noteDate = data.date === today ? null : data.date;
+        if (noteFilter.day && noteFilter.day !== data.date) noteFilter.day = data.date; // 저장한 날로 이동해서 바로 보이게
         f.en.value = ''; f.ko.value = ''; f.memo.value = '';
         drawList();
         toast('메모함.');
@@ -1564,6 +1605,17 @@ ${text}
       btn.disabled = false;
       f.en.focus();
     });
+
+    // 날짜별 보기
+    const pickDay = (e) => {
+      const b = e.target.closest('[data-day]');
+      if (!b || b.disabled) return false;
+      noteFilter.day = b.dataset.day || null;
+      drawList();
+      document.getElementById('noteDays').scrollIntoView({ block: 'nearest' });
+      return true;
+    };
+    document.getElementById('noteDays').onclick = pickDay;
 
     // 필터 · 검색 · 가리기
     document.getElementById('noteTabs').onclick = (e) => {
@@ -1578,6 +1630,7 @@ ${text}
 
     // 수정 · 삭제 · 가린 뜻 보기
     document.getElementById('noteList').onclick = async (e) => {
+      if (!e.target.closest('.note') && pickDay(e)) return;
       const li = e.target.closest('.note');
       if (!li) return;
       const n = notes.find((x) => x.id === li.dataset.id);
