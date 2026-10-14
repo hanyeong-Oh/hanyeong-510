@@ -72,6 +72,7 @@ window.Store = (function () {
         const d = load();
         d.topics = d.topics.filter((t) => t.id !== id);
         d.posts = d.posts.filter((p) => p.topic_id !== id);
+        d.notes.forEach((n) => { if (n.topic_id === id) n.topic_id = null; }); // 메모는 남기고 연결만 끊음
         save(d);
       },
 

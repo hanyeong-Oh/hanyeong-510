@@ -311,7 +311,7 @@
 - 지나치게 격식 있거나 어려운 단어는 피하고, 직장인이 일상에서 바로 쓸 수 있는 수준으로 맞춰 주세요.
 - 고칠 필요가 없는 문장은 그대로 두세요.
 
-[답변 형식] 아래 순서와 형식을 정확히 지켜 주세요. 1번과 2번은 제가 사이트에 그대로 붙여넣어 자동으로 정리합니다.
+[답변 형식] 아래 순서와 형식을 정확히 지켜 주세요. 1번, 2번, 5번은 제가 사이트에 그대로 붙여넣어 자동으로 정리합니다.
 
 1. 수정본
 - 원어민이 자연스럽게 쓸 수준으로 고친 글 전체를 코드 블록 하나에 넣어 주세요.
@@ -335,6 +335,15 @@
 4. 평가
 - 문법 정확도 / 원어민다운 자연스러움 / 어휘 다양성 / 내용 전달을 각각 5점 만점으로 매기고, 대략적인 수준(CEFR A2~C1)을 알려주세요.
 - 잘한 점 1가지를 꼭 칭찬해 주세요.
+
+5. 꼭 기억할 것
+- 이 글을 바탕으로 제가 꼭 외워야 할 영단어·표현 3~5개와 핵심 문법 1~3개를 골라, 아래 형식의 줄만 코드 블록 하나에 넣어 주세요.
+  [단어] 영단어 또는 표현 :: 뜻 :: 예문
+  [핵심문법] 문법 포인트 :: 쉬운 한국어 설명 :: 예문
+- 제 글에서 틀렸거나 어색했던 부분, 이 주제로 다시 쓸 때 바로 쓸 수 있는 것 위주로 골라 주세요.
+- 예시:
+  [단어] procrastinate :: 미루다 :: I tend to procrastinate on Mondays.
+  [핵심문법] used to + 동사원형 :: 예전엔 ~했다 (지금은 안 함) :: I used to live in Busan.
 
 [제가 쓴 글]
 """
@@ -366,12 +375,43 @@ ${text}
     return out;
   }
 
-  function renderCorrections(c, { compact } = {}) {
-    const item = (x) => `<li><span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>${speakBtn(x.to)}${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
-    const expr = (x) => `<li><span class="c-phrase">${esc(x.phrase)}</span>${speakBtn(x.phrase)}${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
+  // AI 답변 5번(꼭 기억할 것)을 줄 단위로 읽어서 내 노트 항목으로
+  //   [단어] 단어·표현 :: 뜻 :: 예문 / [핵심문법] 문법 포인트 :: 설명 :: 예문 / [문장] 문장 :: 해석
+  const REMEMBER_KIND = { '단어': 'word', word: 'word', '핵심문법': 'grammar', '문법': 'grammar', grammar: 'grammar', '문장': 'sentence', sentence: 'sentence' };
+  function parseRemember(text) {
+    const out = [];
+    (text || '').split('\n').forEach((raw) => {
+      const line = raw.replace(/[*`]/g, '').trim();
+      const m = line.match(/^(?:[-•]\s*)?(?:\d+[.)]\s*)?\[([^\]]+)\]\s*(.+)$/);
+      if (!m) return;
+      const kind = REMEMBER_KIND[m[1].replace(/\s+/g, '').toLowerCase()];
+      if (!kind || /→|->|=>/.test(m[2].split('::')[0])) return; // 수정 내역(2번) 줄은 건너뜀
+      const [en, ko, ...rest] = m[2].split('::').map((x) => x.trim());
+      if (en) out.push({ kind, en, ko: ko || null, memo: rest.filter(Boolean).join(' / ') || null });
+    });
+    return out;
+  }
+  const noteKey = (en) => String(en || '').trim().toLowerCase();
+  const isShort = (t) => String(t).trim().split(/\s+/).length <= 4;
+  // 수정 내역 한 줄 → 내 노트 항목
+  function corrToNote(kind, x) {
+    if (kind === 'grammar') return { kind: 'grammar', en: x.to, ko: x.note || null, memo: `✗ ${x.from}` };
+    if (kind === 'native') return { kind: isShort(x.to) ? 'word' : 'sentence', en: x.to, ko: x.note || null, memo: `원래: ${x.from}` };
+    return { kind: isShort(x.phrase) ? 'word' : 'sentence', en: x.phrase, ko: x.note || null, memo: null };
+  }
+
+  // saved: 내 노트에 이미 있는 영어(noteKey) — 주면 줄마다 "+ 노트" 버튼을 붙임
+  function renderCorrections(c, { compact, saved } = {}) {
+    const saveBtn = (kind, i, en) => {
+      if (!saved) return '';
+      return saved.has(noteKey(en)) ? '<span class="corr-saved">✓ 노트</span>'
+        : `<button type="button" class="corr-save" data-save="${kind}:${i}" title="내 노트에 저장">+ 노트</button>`;
+    };
+    const item = (kind) => (x, i) => `<li><span class="c-from">${esc(x.from)}</span> <span class="c-arrow">→</span> <span class="c-to">${esc(x.to)}</span>${speakBtn(x.to)}${saveBtn(kind, i, x.to)}${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
+    const expr = (x, i) => `<li><span class="c-phrase">${esc(x.phrase)}</span>${speakBtn(x.phrase)}${saveBtn('expr', i, x.phrase)}${x.note ? `<div class="c-note">${glue(esc(x.note))}</div>` : ''}</li>`;
     const block = (title, cls, list, fn) => (list.length ? `<div class="corr ${cls}"><div class="corr-title">${title} <span class="corr-count">${list.length}</span></div><ul>${list.map(fn).join('')}</ul></div>` : '');
-    const html = block('문법적으로 틀린 것', 'corr-grammar', c.grammar, item)
-      + block('원어민은 이렇게 써요', 'corr-native', c.native, item)
+    const html = block('문법적으로 틀린 것', 'corr-grammar', c.grammar, item('grammar'))
+      + block('원어민은 이렇게 써요', 'corr-native', c.native, item('native'))
       + (compact ? '' : block('원어민이 자주 쓰는 표현', 'corr-expr', c.expr, expr));
     return html;
   }
@@ -680,12 +720,21 @@ ${text}
   // ================================================================ topic detail
   // 내 글을 쓰기 전엔 상대 글을 가려 둠 (따라 쓰기 방지). "그래도 보기"를 누른 주제는 이 세션 동안 보임
   const revealedTopics = new Set();
+  // 드래그해서 단어장에 넣는 버튼 — 선택이 풀리면 숨김 (리스너는 한 번만 등록)
+  let selSaveBtn = null;
+  document.addEventListener('selectionchange', () => {
+    if (selSaveBtn && !String(window.getSelection() || '').trim()) setTimeout(() => { if (selSaveBtn) selSaveBtn.hidden = true; }, 200);
+  });
   async function viewTopic(id) {
     renderChrome('writing');
-    const [topic, posts] = await Promise.all([Store.getTopic(id), Store.listPosts(id)]);
+    const [topic, posts, myNotes] = await Promise.all([Store.getTopic(id), Store.listPosts(id), MEMBERS.includes(me) ? Store.listNotes(me).catch((e) => { console.error(e); return []; }) : []]);
     if (!topic) { $app.innerHTML = `<div class="card empty">${Mascot('sad', 90)}주제를 찾을 수 없어요... <a href="#/writing">목록으로</a></div>`; return; }
     const byAuthor = Object.fromEntries(posts.map((p) => [p.author, p]));
     const iHaveWritten = postStatus(byAuthor[me]) !== 'none';
+    // 이 글에서 내 노트로 챙긴 것 (나만 보임)
+    let topicNotes = myNotes.filter((n) => n.topic_id === topic.id);
+    const savedKeys = new Set(topicNotes.map((n) => noteKey(n.en)));
+    const myCorr = byAuthor[me] ? parseCorrections(byAuthor[me].corrections) : null;
 
     const cards = MEMBERS.map((name) => {
       const p = byAuthor[name];
@@ -715,8 +764,9 @@ ${text}
           ${hasRev ? `<div class="pane text-body" data-pane="rev" hidden>${nl2br(p.revised)}</div>
           <div class="pane text-body diff" data-pane="diff">${renderDiff(p.original, p.revised)}</div>` : ''}
           <div class="meta muted small">${hasRev ? `${speakBtn(p.revised, '수정본 듣기')} ` : ''}${wordCount(p.original)} words${p.updated_at ? ` · 마지막 수정 ${new Date(p.updated_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</div>
-          ${renderCorrections(parseCorrections(p.corrections))}
-          ${p.notes ? `<div class="notes"><div class="notes-title">실수 패턴 · 메모.</div>${nl2br(p.notes)}</div>` : ''}`;
+          ${isMe ? renderCorrections(myCorr, { saved: savedKeys }) : renderCorrections(parseCorrections(p.corrections))}
+          ${p.notes ? `<div class="notes"><div class="notes-title">실수 패턴 · 메모.</div>${nl2br(p.notes)}</div>` : ''}
+          ${isMe && MEMBERS.includes(me) ? '<div class="remember" id="rememberBox"></div>' : ''}`;
       }
       const btnLabel = isMe ? (st === 'none' ? '글쓰기' : st === 'written' ? '검수본 입력' : '수정하기') : '편집';
       const showBtn = isMe || st !== 'none';
@@ -745,6 +795,7 @@ ${text}
       <div class="grid grid-2">${cards}</div>`;
 
     $app.querySelectorAll('[data-reveal]').forEach((b) => { b.onclick = () => { revealedTopics.add(topic.id); render(); }; });
+    setupRemember();
     $app.querySelectorAll('[data-tabs]').forEach((tabs) => {
       const card = tabs.closest('.post');
       tabs.querySelectorAll('button').forEach((b) => {
@@ -756,6 +807,161 @@ ${text}
     });
     if (!canManageTopics()) return;
     document.getElementById('btnEditTopic').onclick = () => openTopicModal({ topic });
+
+    // ---- 이 글에서 꼭 기억할 것 (내 카드 안) ----
+    function setupRemember() {
+      const box = document.getElementById('rememberBox');
+      if (!box) return;
+      const KIND_CLASS = { word: 'k-word', sentence: 'k-sentence', grammar: 'k-gram', etc: 'k-etc' };
+      const kindRadio = (k, label, on) => `<label class="cat ${on ? 'active' : ''}"><input type="radio" name="kind" value="${k}" ${on ? 'checked' : ''} hidden>${label}</label>`;
+      box.innerHTML = `
+        <div class="remember-head"><b>이 글에서 꼭 기억할 것</b><span class="muted small">내 노트에 저장 · 나만 보여요</span></div>
+        <ul class="note-list remember-list" id="rememberList"></ul>
+        <form class="remember-add" id="rememberForm" autocomplete="off">
+          <div class="note-kinds">${kindRadio('word', '단어', true)}${kindRadio('grammar', '문법', false)}${kindRadio('sentence', '문장', false)}</div>
+          <input name="en" lang="en" spellcheck="true" placeholder="영단어 · 문법 포인트 · 문장" required>
+          <input name="ko" placeholder="뜻 · 설명 (선택)">
+          <button type="submit" class="btn btn-sm btn-primary">추가</button>
+        </form>
+        <details class="remember-paste">
+          <summary>AI 답변 5번 한 번에 붙여넣기</summary>
+          <textarea rows="4" id="rememberPaste" placeholder="[단어] procrastinate :: 미루다 :: I tend to procrastinate.\n[핵심문법] used to + 동사원형 :: 예전엔 ~했다 :: I used to live in Busan."></textarea>
+          <div class="row-between"><span class="corr-preview" id="rememberParse"></span><button type="button" class="btn btn-sm" id="btnRememberPaste">한 번에 추가</button></div>
+        </details>`;
+      const list = document.getElementById('rememberList');
+      const myCard = box.closest('.post');
+      const draw = () => {
+        topicNotes.sort((a, b) => (a.created_at < b.created_at ? -1 : 1)); // 챙긴 순서대로
+        list.innerHTML = topicNotes.length ? topicNotes.map((n) => `<li class="note ${KIND_CLASS[n.kind] || ''}" data-id="${esc(n.id)}">
+            <span class="kind-tag">${(NOTE_KINDS[n.kind] || NOTE_KINDS.etc).label}</span>
+            <div class="note-main">
+              <div class="note-en">${nl2br(n.en)}${n.kind !== 'grammar' ? speakBtn(n.en) : ''}</div>
+              ${n.ko ? `<div class="note-ko">${nl2br(n.ko)}</div>` : ''}
+              ${n.memo ? `<div class="note-memo">${nl2br(n.memo)}</div>` : ''}
+            </div>
+            <div class="note-actions"><button type="button" class="icon-btn" data-rdel title="삭제" aria-label="삭제">✕</button></div>
+          </li>`).join('')
+          : '<li class="remember-empty muted small">수정 내역의 <b>+ 노트</b>를 누르거나, 글에서 단어를 드래그하거나, 아래에 직접 적어 보세요.</li>';
+      };
+      draw();
+
+      // 저장 (같은 영어는 한 번만)
+      async function addNotes(items) {
+        let added = 0;
+        for (const it of items) {
+          const key = noteKey(it.en);
+          if (!key || savedKeys.has(key)) continue;
+          const saved = await Store.saveNote(Object.assign({ author: me, date: topic.date, topic_id: topic.id }, it));
+          topicNotes.push(saved);
+          savedKeys.add(key);
+          added++;
+        }
+        draw();
+        // 수정 내역 버튼도 ✓ 로
+        myCard.querySelectorAll('.corr-save').forEach((b) => {
+          const [kind, i] = b.dataset.save.split(':');
+          const x = myCorr[kind][+i];
+          if (x && savedKeys.has(noteKey(kind === 'expr' ? x.phrase : x.to))) b.outerHTML = '<span class="corr-saved">✓ 노트</span>';
+        });
+        toast(added ? `내 노트에 ${added}개 저장.` : '이미 저장돼 있어요.');
+        return added;
+      }
+
+      // 수정 내역 "+ 노트"
+      myCard.addEventListener('click', async (e) => {
+        const b = e.target.closest('.corr-save');
+        if (!b || !myCorr) return;
+        const [kind, i] = b.dataset.save.split(':');
+        const x = myCorr[kind] && myCorr[kind][+i];
+        if (!x) return;
+        b.disabled = true;
+        try { await addNotes([corrToNote(kind, x)]); } catch (err) { alert(err.message); b.disabled = false; }
+      });
+
+      // 직접 적기
+      const f = document.getElementById('rememberForm');
+      f.querySelectorAll('input[name=kind]').forEach((r) => {
+        r.onchange = () => f.querySelectorAll('.note-kinds .cat').forEach((c) => c.classList.toggle('active', c.querySelector('input').checked));
+      });
+      f.onsubmit = async (e) => {
+        e.preventDefault();
+        const en = f.en.value.trim();
+        if (!en) return;
+        const btn = f.querySelector('button[type=submit]');
+        btn.disabled = true;
+        try {
+          await addNotes([{ kind: f.querySelector('input[name=kind]:checked').value, en, ko: f.ko.value.trim() || null, memo: null }]);
+          f.en.value = ''; f.ko.value = '';
+          f.en.focus();
+        } catch (err) { alert(err.message); }
+        btn.disabled = false;
+      };
+
+      // AI 답변 5번 붙여넣기
+      const paste = document.getElementById('rememberPaste');
+      const parseInfo = () => {
+        const items = parseRemember(paste.value);
+        const cnt = (k) => items.filter((x) => x.kind === k).length;
+        document.getElementById('rememberParse').innerHTML = paste.value.trim()
+          ? (items.length ? `인식됨: 단어 ${cnt('word')} · 문법 ${cnt('grammar')} · 문장 ${cnt('sentence')}` : '<span class="error">[단어] / [핵심문법] 으로 시작하는 줄이 없어요.</span>')
+          : '';
+        return items;
+      };
+      paste.oninput = parseInfo;
+      document.getElementById('btnRememberPaste').onclick = async () => {
+        const items = parseInfo();
+        if (!items.length) { paste.focus(); return; }
+        try { await addNotes(items); paste.value = ''; parseInfo(); } catch (err) { alert(err.message); }
+      };
+
+      // 삭제
+      list.onclick = async (e) => {
+        const del = e.target.closest('[data-rdel]');
+        if (!del) return;
+        const li = del.closest('.note');
+        const n = topicNotes.find((x) => x.id === li.dataset.id);
+        if (!n || !confirm(`"${n.en.slice(0, 40)}" 를 내 노트에서 지울까요?`)) return;
+        try { await Store.deleteNote(n.id); } catch (err) { alert(err.message); return; }
+        topicNotes = topicNotes.filter((x) => x.id !== n.id);
+        savedKeys.delete(noteKey(n.en));
+        draw();
+      };
+
+      // 내 글에서 드래그한 단어·문장 → "+ 단어장"
+      const selBtn = document.createElement('button');
+      selBtn.type = 'button';
+      selBtn.className = 'sel-save';
+      selBtn.textContent = '+ 단어장';
+      selBtn.hidden = true;
+      $app.appendChild(selBtn);
+      let selText = '';
+      const onSelect = () => setTimeout(() => {
+        const sel = window.getSelection();
+        const t = sel ? sel.toString().replace(/\s+/g, ' ').trim() : '';
+        const pane = sel && sel.rangeCount && sel.anchorNode && sel.anchorNode.parentElement && sel.anchorNode.parentElement.closest('.post .text-body');
+        if (!t || t.length > 120 || !/[A-Za-z]/.test(t) || !pane || !myCard.contains(pane)) { selBtn.hidden = true; return; }
+        selText = t;
+        const r = sel.getRangeAt(0).getBoundingClientRect();
+        selBtn.style.top = `${r.bottom + window.scrollY + 6}px`;
+        selBtn.style.left = `${Math.max(8, Math.min(r.left + window.scrollX, document.documentElement.clientWidth - 110))}px`;
+        selBtn.hidden = false;
+      }, 10);
+      myCard.addEventListener('mouseup', onSelect);
+      myCard.addEventListener('touchend', onSelect);
+      selSaveBtn = selBtn;
+      selBtn.onmousedown = (e) => e.preventDefault(); // 누르는 순간 선택이 풀리지 않게
+      selBtn.onclick = () => {
+        f.en.value = selText;
+        const kind = isShort(selText) ? 'word' : 'sentence';
+        f.querySelector(`input[name=kind][value=${kind}]`).checked = true;
+        f.querySelectorAll('.note-kinds .cat').forEach((c) => c.classList.toggle('active', c.querySelector('input').checked));
+        selBtn.hidden = true;
+        window.getSelection().removeAllRanges();
+        f.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        f.ko.focus({ preventScroll: true });
+        toast('뜻을 적고 추가를 누르세요.');
+      };
+    }
     document.getElementById('btnDelTopic').onclick = async () => {
       if (!confirm(`"${topic.title}" 주제와 이 주제의 글을 모두 삭제할까요?`)) return;
       await Store.deleteTopic(topic.id);
@@ -792,7 +998,7 @@ ${text}
         <div class="card step">
           <div class="step-head"><span class="step-no">2</span><h3>AI 검수</h3></div>
           <p class="muted small">버튼을 누르면 내 글 + 검수 부탁 문장이 복사돼요. ChatGPT · Claude · Gemini 채팅창에 붙여넣으세요.<br>
-            AI 답변의 <b>1번</b>은 수정본 칸, <b>2번</b>은 수정 내역 칸, <b>3~4번</b>은 메모 칸에 붙여넣으면 돼요.</p>
+            AI 답변의 <b>1번</b>은 수정본 칸, <b>2번</b>은 수정 내역 칸, <b>3~4번</b>은 메모 칸${author === me ? ', <b>5번</b>은 꼭 기억할 것 칸' : ''}에 붙여넣으면 돼요.</p>
           <div class="row-gap wrap">
             <button type="button" class="btn btn-primary" id="btnPrompt">AI에게 보낼 질문 복사</button>
           </div>
@@ -808,6 +1014,11 @@ ${text}
           <label>실수 패턴 · 평가 · 메모 <span class="muted">(AI 답변 3~4번, 선택)</span>
             <textarea name="notes" rows="6" placeholder="AI 답변의 3~4번을 붙여넣거나, 기억하고 싶은 것을 적어두세요.">${esc(post.notes || '')}</textarea>
           </label>
+          ${author === me ? `<label>꼭 기억할 것 <span class="muted">(AI 답변 5번, 선택 · 저장하면 내 노트로 들어가요)</span>
+            <textarea name="remember" rows="5" placeholder="[단어] procrastinate :: 미루다 :: I tend to procrastinate on Mondays.
+[핵심문법] used to + 동사원형 :: 예전엔 ~했다 (지금은 안 함) :: I used to live in Busan."></textarea>
+          </label>
+          <div class="corr-preview" id="rememberPreview"></div>` : ''}
         </div>
 
         <div class="card step" id="previewCard" hidden>
@@ -840,10 +1051,17 @@ ${text}
       document.getElementById('corrPreview').innerHTML = f.corrections.value.trim()
         ? (n ? `인식됨: 문법 ${c.grammar.length} · 원어민 ${c.native.length} · 표현 ${c.expr.length}` : '<span class="error">[문법] / [원어민] / [표현] 으로 시작하는 줄을 찾지 못했어요.</span>')
         : '';
+      if (f.remember) {
+        const r = parseRemember(f.remember.value);
+        const cnt = (k) => r.filter((x) => x.kind === k).length;
+        document.getElementById('rememberPreview').innerHTML = f.remember.value.trim()
+          ? (r.length ? `인식됨: 단어 ${cnt('word')} · 문법 ${cnt('grammar')} · 문장 ${cnt('sentence')} → 저장하면 내 노트로` : '<span class="error">[단어] / [핵심문법] 으로 시작하는 줄을 찾지 못했어요.</span>')
+          : '';
+      }
     };
     // 임시 저장: 업로드 전 글을 이 브라우저에 자동 보관 (AI 창 다녀오다 날아가지 않게)
     const draftKey = `english-study:draft:${topic.id}:${author}`;
-    const FIELDS = ['original', 'revised', 'corrections', 'notes'];
+    const FIELDS = ['original', 'revised', 'corrections', 'notes', ...(f.remember ? ['remember'] : [])];
     const savedVals = Object.fromEntries(FIELDS.map((k) => [k, post[k] || '']));
     const clearDraft = () => { try { localStorage.removeItem(draftKey); } catch (e) { /* 저장소 막힘 */ } };
     let draftTimer;
@@ -895,14 +1113,26 @@ ${text}
       e.preventDefault();
       if (!f.original.value.trim()) { alert('원문을 입력해 주세요.'); return; }
       try {
-        await withUpload(() => Store.savePost({
-          topic_id: topic.id,
-          author,
-          original: f.original.value,
-          revised: f.revised.value.trim() ? f.revised.value : null,
-          corrections: f.corrections.value.trim() ? f.corrections.value : null,
-          notes: f.notes.value.trim() ? f.notes.value : null,
-        }), '글 업로드 완료. 굿.');
+        await withUpload(async () => {
+          await Store.savePost({
+            topic_id: topic.id,
+            author,
+            original: f.original.value,
+            revised: f.revised.value.trim() ? f.revised.value : null,
+            corrections: f.corrections.value.trim() ? f.corrections.value : null,
+            notes: f.notes.value.trim() ? f.notes.value : null,
+          });
+          // 꼭 기억할 것 → 내 노트 (이 글에 이미 있는 영어는 건너뜀)
+          const items = f.remember ? parseRemember(f.remember.value) : [];
+          if (items.length) {
+            const have = new Set((await Store.listNotes(me)).filter((n) => n.topic_id === topic.id).map((n) => noteKey(n.en)));
+            for (const it of items) {
+              if (have.has(noteKey(it.en))) continue;
+              have.add(noteKey(it.en));
+              await Store.saveNote(Object.assign({ author: me, date: topic.date, topic_id: topic.id }, it));
+            }
+          }
+        }, '글 업로드 완료. 굿.');
       } catch (err) { alert(err.message); return; }
       clearTimeout(draftTimer);
       clearDraft();
@@ -1225,7 +1455,8 @@ ${text}
 
   async function viewNotes() {
     renderChrome('notes');
-    let notes = await Store.listNotes(me);
+    let [notes, topics] = await Promise.all([Store.listNotes(me), Store.listTopics()]);
+    const topicById = Object.fromEntries(topics.map((t) => [t.id, t]));
     const today = todayYMD();
 
     $app.innerHTML = `
@@ -1258,6 +1489,7 @@ ${text}
           ${q ? '<span class="q-blank">뜻은? 탭해서 확인</span>' : ''}
           ${n.ko ? `<div class="note-ko q-ans">${nl2br(n.ko)}</div>` : ''}
           ${n.memo ? `<div class="note-memo q-ans">${nl2br(n.memo)}</div>` : ''}
+          ${n.topic_id && topicById[n.topic_id] ? `<a class="note-src" href="#/topic/${esc(n.topic_id)}">📝 ${esc(topicById[n.topic_id].title)}</a>` : ''}
         </div>
         <div class="note-actions">
           <button type="button" class="icon-btn" data-edit title="수정" aria-label="수정">✎</button>

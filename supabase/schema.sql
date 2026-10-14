@@ -52,9 +52,11 @@ create table if not exists public.notes (
   en          text not null default '',          -- 영단어 / 영어 문장 / 문법 포인트
   ko          text,                              -- 뜻 / 해석 / 설명
   memo        text,
+  topic_id    uuid references public.topics(id) on delete set null,  -- 어느 글에서 나온 메모인지 (선택)
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+create index if not exists notes_topic_id_idx on public.notes (topic_id);
 create index if not exists notes_author_date_idx on public.notes (author, date desc);
 
 -- 예전 스키마로 이미 테이블을 만든 경우를 위한 보정
@@ -62,6 +64,7 @@ alter table public.videos alter column youtube_id drop not null;
 alter table public.videos add column if not exists playlist_id text;
 alter table public.videos add column if not exists thumb_url text;
 alter table public.posts add column if not exists corrections text;
+alter table public.notes add column if not exists topic_id uuid references public.topics(id) on delete set null;
 
 -- 로그인한 사람이 members 테이블에 있는지 확인
 create or replace function public.is_member()
