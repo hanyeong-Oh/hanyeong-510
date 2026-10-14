@@ -1679,6 +1679,14 @@ ${text}
         <div class="g-en">${fmt(en)}${speakBtn(en)}</div>
         <div class="g-ko">${fmt(ko)}${note ? ` <span class="g-note">·\u00a0${fmt(note)}</span>` : ''}</div>
       </li>`).join('')}</ul>` : '');
+    // 관련 영상: [유튜브 영상 ID 또는 재생목록 ID(PL…), 제목] → 누르면 유튜브로
+    const videoLinks = (cat.videos || []).map(([id, title]) => {
+      const isList = /^(PL|UU|OL)/.test(id) && id.length > 15;
+      const url = isList ? `https://www.youtube.com/playlist?list=${encodeURIComponent(id)}` : `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;
+      const thumb = isList ? '<span class="g-vthumb g-vthumb-list">▶<small>재생목록</small></span>'
+        : `<img class="g-vthumb" src="https://i.ytimg.com/vi/${encodeURIComponent(id)}/mqdefault.jpg" alt="" loading="lazy" onerror="this.outerHTML='<span class=&quot;g-vthumb g-vthumb-list&quot;>▶</span>'">`;
+      return `<li><a href="${url}" target="_blank" rel="noopener">${thumb}<span class="g-vtitle">${esc(title)}</span></a></li>`;
+    }).join('');
     const sections = (cat.sections || []).map((sec) => `<div class="g-section">
         <h3>${fmt(sec.title)}</h3>
         ${sec.points ? `<ul class="g-points">${sec.points.map((pt) => `<li>${fmt(pt)}</li>`).join('')}</ul>` : ''}
@@ -1699,6 +1707,8 @@ ${text}
           </div>
           ${Mascot('study', 90)}
         </header>
+
+        ${videoLinks ? `<div class="g-videos"><div class="g-label">🎬 관련 영상 <span class="muted small">누르면 유튜브로 열려요</span></div><ul>${videoLinks}</ul></div>` : ''}
 
         <div class="g-basics">
           <div class="g-label">기초 개념</div>
