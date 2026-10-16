@@ -79,15 +79,12 @@
   const isDone = (st) => st === 'written' || st === 'reviewed';
 
   // 주제는 사람마다 따로 (owner). owner 가 없는 주제는 예전 방식의 공통 주제(둘 다 씀)
-  // 다른 멤버의 주제에도 같이 쓸 수 있어요 → 글을 남긴 사람(byAuthor)도 작성자로 쳐요
-  const writersOf = (t, byAuthor) => (t.owner
-    ? [t.owner, ...MEMBERS.filter((n) => n !== t.owner && byAuthor && postStatus(byAuthor[n]) !== 'none')]
-    : MEMBERS);
+  const writersOf = (t) => (t.owner ? [t.owner] : MEMBERS);
   function topicFor(topics, date, name) {
     return topics.find((t) => t.date === date && t.owner === name) || topics.find((t) => t.date === date && !t.owner) || null;
   }
-  // 주제 담당(TOPIC_MANAGER)은 동료의 주제도 대신 정하고 고칠 수 있어요
-  const canSetTopicFor = (name) => name === me || (MEMBERS.includes(me) && canManageTopics());
+  // 주제는 멤버끼리 서로 대신 정하고 고칠 수 있어요 (글은 각자 자기 주제에만)
+  const canSetTopicFor = (name) => name === me || (MEMBERS.includes(me) && MEMBERS.includes(name));
   const canEditTopic = (t) => (t.owner ? canSetTopicFor(t.owner) : canManageTopics());
   function chip(status) { return `<span class="chip chip-${status}">${STATUS_LABEL[status]}</span>`; }
 
@@ -610,15 +607,8 @@ ${text}
         }
         const st = postStatus((pbt[t.id] || {})[name]);
         const action = isMe && st !== 'reviewed' ? `<a class="btn-link" href="#/write/${t.id}/${encodeURIComponent(name)}">${NEXT_STEP[st]}</a>` : '';
-        // 동료 주제 → 나도 같이 쓰기 (이미 썼으면 내 상태 줄을 따로 보여줌)
-        const joinable = !isMe && t.owner === name && MEMBERS.includes(me);
-        const mySt = joinable ? postStatus((pbt[t.id] || {})[me]) : 'none';
-        const writeHref = `#/write/${t.id}/${encodeURIComponent(me)}`;
-        const joinLink = joinable && mySt === 'none' ? `<a class="btn-link" href="${writeHref}">나도 쓰기 →</a>` : '';
-        const joinRow = joinable && mySt !== 'none' ? `<li class="ms-row ms-joinrow"><div class="ms-who"><span class="avatar">${esc(me.slice(0, 1))}</span><span class="muted">같이 쓰는 중</span></div>
-          <span class="ms-state">${chip(mySt)}${mySt !== 'reviewed' ? `<a class="btn-link" href="${writeHref}">${NEXT_STEP[mySt]}</a>` : ''}</span></li>` : '';
         return `<li class="ms-row"><div class="ms-who">${who}<a class="ms-topic" href="#/topic/${t.id}" title="${esc(t.title)}">${esc(t.title)}</a></div>
-          <span class="ms-state">${chip(st)}${action}${joinLink}</span></li>${joinRow}`;
+          <span class="ms-state">${chip(st)}${action}</span></li>`;
       }).join('');
       return `<div class="card session ${isToday ? 'session-today' : ''} ${past && !anyTopic ? 'session-missed' : ''}">
         <div class="session-date">${fmtDate(ymd)}${isToday ? '<span class="today-badge">오늘</span>' : ''}</div>
@@ -652,7 +642,7 @@ ${text}
 
     // 오늘 할 일: 오늘 주제 → 이번 주 밀린 글 → 다음 주제 → 다음 글쓰기 날 (주제 없음)
     const myStatus = (t) => postStatus((pbt[t.id] || {})[me]);
-    const myTopics = topics.filter((t) => writersOf(t, pbt[t.id]).includes(me)).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    const myTopics = topics.filter((t) => writersOf(t).includes(me)).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
     const weekStart = toYMD(startOfWeek(new Date()));
     const todayTopic = topicFor(topics, today, me);
     const todayIsWritingDay = cfg.WRITING_DAYS.includes(new Date().getDay());
@@ -735,8 +725,7 @@ ${text}
     const html = groups.map((g) => {
       const mon = parseYMD(g.week);
       const rows = g.items.map((t) => {
-        const ws = writersOf(t, pbt[t.id]);
-        const st = ws.map((n) => `<span class="member-chip">${ws.length > 1 ? esc(n) : ''} ${chip(postStatus((pbt[t.id] || {})[n]))}</span>`).join('');
+        const st = writersOf(t).map((n) => `<span class="member-chip">${t.owner ? '' : esc(n)} ${chip(postStatus((pbt[t.id] || {})[n]))}</span>`).join('');
         return `<a class="topic-row" href="#/topic/${t.id}">
           <span class="topic-date">${fmtDate(t.date)}</span>
           <span class="topic-title"><span class="topic-owner">${t.owner ? esc(t.owner) : '같이'}</span>${esc(t.title)}</span>
@@ -774,7 +763,7 @@ ${text}
     if (!topic) { $app.innerHTML = `<div class="card empty">${Mascot('sad', 90)}주제를 찾을 수 없어요... <a href="#/writing">목록으로</a></div>`; return; }
     const byAuthor = Object.fromEntries(posts.map((p) => [p.author, p]));
     const iHaveWritten = isDone(postStatus(byAuthor[me]));
-    const writers = writersOf(topic, byAuthor);
+    const writers = writersOf(topic);
     // 이 글에서 내 노트로 챙긴 것 (나만 보임)
     let topicNotes = myNotes.filter((n) => n.topic_id === topic.id);
     const savedKeys = new Set(topicNotes.map((n) => noteKey(n.en)));
@@ -824,16 +813,6 @@ ${text}
         ${body}
       </div>`;
     }).join('');
-    // 다른 멤버의 주제 → 나도 같이 쓸 수 있어요
-    const canJoin = MEMBERS.includes(me) && !writers.includes(me);
-    const joinCard = canJoin ? `<div class="card post">
-        <div class="post-head">
-          <div class="row-gap"><span class="avatar">${esc(me.slice(0, 1))}</span><b>${esc(me)}</b>${chip('none')}</div>
-          <a class="btn btn-sm btn-primary" href="#/write/${topic.id}/${encodeURIComponent(me)}">나도 쓰기</a>
-        </div>
-        <div class="empty-inline">${Mascot('cmon', 80)}${esc(topic.owner)}의 주제지만 나도 같이 쓸 수 있어요.</div>
-      </div>` : '';
-    const cardCount = writers.length + (canJoin ? 1 : 0);
 
     $app.innerHTML = `
       <a href="#/writing" class="back">‹ 글쓰기 목록</a>
@@ -848,7 +827,7 @@ ${text}
           <button class="btn btn-sm btn-danger" id="btnDelTopic">삭제</button>
         </div>` : ''}
       </div>
-      <div class="grid ${cardCount > 1 ? 'grid-2' : 'grid-1'}">${cards}${joinCard}</div>`;
+      <div class="grid ${writers.length > 1 ? 'grid-2' : 'grid-1'}">${cards}</div>`;
 
     $app.querySelectorAll('[data-reveal]').forEach((b) => { b.onclick = () => { revealedTopics.add(topic.id); render(); }; });
     setupRemember();
@@ -1049,6 +1028,10 @@ ${text}
         <div class="card step">
           <div class="step-head"><span class="step-no">1</span><h3>직접 쓰기</h3><span class="muted small" id="wcOrig"></span></div>
           <textarea name="original" rows="10" lang="en" spellcheck="true" autocapitalize="sentences" placeholder="주제에 맞춰 영어로 자유롭게 써보세요. 틀려도 괜찮아요!">${esc(post.original)}</textarea>
+          ${author === me ? `<div class="step-save">
+            <span class="muted small">아직 쓰는 중이면 저장해 두세요. 동료에겐 "작성중"만 보여요.</span>
+            <button type="submit" class="btn" data-status="writing">작성중 저장</button>
+          </div>` : ''}
         </div>
 
         <div class="card step">
@@ -1082,13 +1065,13 @@ ${text}
           <div class="text-body diff" id="diffPreview"></div>
         </div>
 
-        ${author === me ? '<p class="muted small save-hint"><b>작성중 저장</b>: 아직 쓰는 중 (동료에겐 "작성중"만 보여요) · <b>작성 완료</b>: 다 썼어요 (동료에게 글이 보여요)</p>' : ''}
+        ${author === me ? '<p class="muted small save-hint"><b>작성 완료</b>: 다 썼어요 (동료에게 글이 보여요)</p>' : ''}
         <div class="editor-actions">
           ${post.id ? '<button type="button" class="btn btn-danger" id="btnDelPost">글 삭제</button>' : '<span></span>'}
           <div class="row-gap wrap">
             <a class="btn" href="#/topic/${topic.id}">취소</a>
             ${author === me
-              ? '<button type="submit" class="btn" data-status="writing">작성중 저장</button><button type="submit" class="btn btn-primary" data-status="done">작성 완료</button>'
+              ? '<button type="submit" class="btn btn-primary" data-status="done">작성 완료</button>'
               : '<button type="submit" class="btn btn-primary">저장</button>'}
           </div>
         </div>
