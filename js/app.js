@@ -589,8 +589,15 @@ ${text}
         }
         const st = postStatus((pbt[t.id] || {})[name]);
         const action = isMe && st !== 'reviewed' ? `<a class="btn-link" href="#/write/${t.id}/${encodeURIComponent(name)}">${NEXT_STEP[st]}</a>` : '';
+        // 동료 주제 → 나도 같이 쓰기 (이미 썼으면 내 상태 줄을 따로 보여줌)
+        const joinable = !isMe && t.owner === name && MEMBERS.includes(me);
+        const mySt = joinable ? postStatus((pbt[t.id] || {})[me]) : 'none';
+        const writeHref = `#/write/${t.id}/${encodeURIComponent(me)}`;
+        const joinLink = joinable && mySt === 'none' ? `<a class="btn-link" href="${writeHref}">나도 쓰기 →</a>` : '';
+        const joinRow = joinable && mySt !== 'none' ? `<li class="ms-row ms-joinrow"><div class="ms-who"><span class="avatar">${esc(me.slice(0, 1))}</span><span class="muted">같이 쓰는 중</span></div>
+          <span class="ms-state">${chip(mySt)}${mySt !== 'reviewed' ? `<a class="btn-link" href="${writeHref}">${NEXT_STEP[mySt]}</a>` : ''}</span></li>` : '';
         return `<li class="ms-row"><div class="ms-who">${who}<a class="ms-topic" href="#/topic/${t.id}" title="${esc(t.title)}">${esc(t.title)}</a></div>
-          <span class="ms-state">${chip(st)}${action}</span></li>`;
+          <span class="ms-state">${chip(st)}${action}${joinLink}</span></li>${joinRow}`;
       }).join('');
       return `<div class="card session ${isToday ? 'session-today' : ''} ${past && !anyTopic ? 'session-missed' : ''}">
         <div class="session-date">${fmtDate(ymd)}${isToday ? '<span class="today-badge">오늘</span>' : ''}</div>
