@@ -190,3 +190,17 @@ from (values
   ('https://www.youtube.com/watch?v=Gaw7MoofW8s', 'Gaw7MoofW8s', 2)
 ) as v(url, youtube_id, ord)
 where not exists (select 1 from public.videos x where x.youtube_id = v.youtube_id);
+
+-- 2주 시험 문제: 사람·회차(2주 구간 시작일)마다 [구문]/[단어] 줄 묶음. 자기 것만 보고 고침
+create table if not exists public.quiz_sets (
+  author text not null,
+  period_start date not null,
+  items text not null default '',
+  updated_at timestamptz not null default now(),
+  primary key (author, period_start)
+);
+alter table public.quiz_sets enable row level security;
+drop policy if exists "owner only" on public.quiz_sets;
+create policy "owner only" on public.quiz_sets for all
+  using (author = public.my_member_name())
+  with check (author = public.my_member_name());
