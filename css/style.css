@@ -560,3 +560,7 @@ a.video-title:hover { text-decoration: underline; }
 .g-fig a { display: block; }
 .g-fig img { display: block; width: 100%; height: auto; border-radius: 6px; }
 .g-fig figcaption { font-family: var(--text); font-size: 13.5px; line-height: 1.55; padding: 6px 4px 2px; color: var(--ink); }
+
+/* 주제 정하기: 누구 주제 고르기 */
+.field-label { font-weight: 700; font-size: 24px; margin: 14px 0 6px; }
+#ownerPick label.cat { margin: 0; display: inline-block; }
