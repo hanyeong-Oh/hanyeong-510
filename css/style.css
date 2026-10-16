@@ -526,8 +526,6 @@ a.video-title:hover { text-decoration: underline; }
 .ms-topic:hover { text-decoration: underline; }
 .ms-state { display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
 .member-status .ms-row + .ms-row { border-top: 1px dashed #ccc; padding-top: 6px; margin-top: 4px; }
-.member-status .ms-row + .ms-joinrow { border-top: 0; padding-top: 0; margin-top: 0; padding-left: 16px; }
-.ms-joinrow .ms-who .muted { font-size: 18px; }
 .topic-owner { display: inline-block; margin-right: 8px; padding: 0 8px; border: 2px solid var(--ink); border-radius: var(--wobble); font-size: 18px; vertical-align: 2px; background: #fff; }
 .grid-1 { grid-template-columns: minmax(0, 820px); }
 .save-hint { margin: 4px 2px 8px; }
@@ -564,3 +562,6 @@ a.video-title:hover { text-decoration: underline; }
 /* 주제 정하기: 누구 주제 고르기 */
 .field-label { font-weight: 700; font-size: 24px; margin: 14px 0 6px; }
 #ownerPick label.cat { margin: 0; display: inline-block; }
+
+/* 에디터: 1번 칸 밑 작성중 저장 */
+.step-save { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
