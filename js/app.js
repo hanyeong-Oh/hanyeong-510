@@ -1861,6 +1861,8 @@ ${items}`;
     const inPeriod = (ymd) => ymd && ymd >= period.start && ymd <= period.end;
     const store = quizLoad();
     store.ai = store.ai || {}; store.history = store.history || [];
+    // 시험 문제는 서버에 저장 (여러 기기에서 같이 보임). 예전에 이 기기에만 저장한 게 있으면 그걸 씀
+    const serverSet = await Store.getQuizSet(me, period.start).catch((e) => { console.error(e); return null; });
 
     // 문제 모으기: ① 그 2주에 적은 내 노트 ② 그 2주 내 글의 [표현] ③ AI가 만든 문제
     const myPosts = posts.filter((p) => p.author === me && (p.original || '').trim() && inPeriod((topicById[p.topic_id] || {}).date))
@@ -1872,7 +1874,7 @@ ${items}`;
       const ko = firstMeaning(x.note);
       if (ko) fromCorr.push({ type: quizType(x.phrase), en: x.phrase, ko, src: '원어민 표현' });
     }));
-    const aiText = store.ai[period.start] || '';
+    const aiText = serverSet != null ? serverSet : (store.ai[period.start] || '');
     const fromAI = parseQuizLines(aiText);
     const seen = new Set();
     const pool = [...fromAI, ...fromNotes, ...fromCorr].filter((q) => { const k = noteKey(q.en); if (seen.has(k)) return false; seen.add(k); return true; });
@@ -1934,7 +1936,11 @@ ${items}`;
     const aiCount = () => { const n = parseQuizLines(ai.value).length; document.getElementById('quizAIcount').textContent = ai.value.trim() ? `읽은 문제 ${n}개${n ? '' : ' — [구문] 영어 :: 한국어 형식인지 확인해 주세요'}` : ''; };
     aiCount();
     ai.oninput = aiCount;
-    ai.onchange = () => { const d = quizLoad(); d.ai = d.ai || {}; d.ai[period.start] = ai.value; quizSave(d); toast('저장. 굿.'); viewQuiz(period.start); };
+    ai.onchange = async () => {
+      try { await Store.saveQuizSet(me, period.start, ai.value); toast('저장. 굿.'); }
+      catch (e) { const d = quizLoad(); d.ai = d.ai || {}; d.ai[period.start] = ai.value; quizSave(d); toast('이 기기에만 저장했어요.'); }
+      viewQuiz(period.start);
+    };
     document.getElementById('btnQuizPrompt').onclick = async () => { await copyText(buildQuizPrompt(period, myPosts, topicById)); toast('복사 완료. AI 채팅창에 붙여넣으세요.'); };
     document.getElementById('btnQuizStart').onclick = () => {
       const o = opt();

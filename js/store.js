@@ -17,7 +17,7 @@ window.Store = (function () {
   // ---------------------------------------------------------------- local
   function localBackend() {
     const KEY = 'english-study:data:v1';
-    const empty = () => ({ topics: [], posts: [], videos: [], notes: [] });
+    const empty = () => ({ topics: [], posts: [], videos: [], notes: [], quiz_sets: [] });
 
     function load() {
       try { return Object.assign(empty(), JSON.parse(localStorage.getItem(KEY)) || {}); }
@@ -136,6 +136,18 @@ window.Store = (function () {
         save(d);
       },
 
+      // 2주 시험 문제 ([구문]/[단어] 줄) — 사람·회차마다 하나
+      async getQuizSet(author, periodStart) {
+        const row = load().quiz_sets.find((q) => q.author === author && q.period_start === periodStart);
+        return row ? row.items : null;
+      },
+      async saveQuizSet(author, periodStart, items) {
+        const d = load();
+        d.quiz_sets = d.quiz_sets.filter((q) => !(q.author === author && q.period_start === periodStart));
+        d.quiz_sets.push({ author, period_start: periodStart, items, updated_at: now() });
+        save(d);
+      },
+
       exportData() { return load(); },
       importData(data) {
         if (!data || !Array.isArray(data.topics) || !Array.isArray(data.posts) || !Array.isArray(data.videos)) {
@@ -240,6 +252,14 @@ window.Store = (function () {
         return check(await q.select().single());
       },
       async deleteNote(id) { check(await sb.from('notes').delete().eq('id', id)); },
+
+      async getQuizSet(author, periodStart) {
+        const rows = check(await sb.from('quiz_sets').select('items').eq('author', author).eq('period_start', periodStart));
+        return rows && rows[0] ? rows[0].items : null;
+      },
+      async saveQuizSet(author, periodStart, items) {
+        check(await sb.from('quiz_sets').upsert({ author, period_start: periodStart, items, updated_at: new Date().toISOString() }, { onConflict: 'author,period_start' }));
+      },
     };
   }
 
