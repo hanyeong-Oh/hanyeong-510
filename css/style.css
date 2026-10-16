@@ -291,9 +291,10 @@ a.video-title:hover { text-decoration: underline; }
   .topbar-inner { gap: 4px 8px; padding-top: 6px; padding-bottom: 6px; }
   .brand-text { font-size: 28px; }
   .brand .mascot { height: 40px !important; width: auto; }
-  /* 모바일: 메뉴 5개를 짧은 이름으로 한 줄에 다 보이게 */
-  .nav { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(6, auto); justify-content: space-between; gap: 2px; }
-  .nav a { font-size: 21px; padding: 0 5px; text-align: center; }
+  /* 모바일: 메뉴 7개를 짧은 이름으로 한 줄에 다 보이게 */
+  .nav { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(7, auto); justify-content: space-between; gap: 0; overflow-x: auto; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a { font-size: clamp(16px, 4.9vw, 20px); padding: 0 3px; text-align: center; }
   .nav-long { display: none; }
   .user { margin-left: auto; gap: 6px; font-size: 21px; }
   .user .user-name { display: none; }
@@ -575,3 +576,28 @@ a.video-title:hover { text-decoration: underline; }
 /* 상태·마감 배지가 많으면 제목을 줄이지 말고 다음 줄로 */
 .member-status li.ms-row { flex-wrap: wrap; row-gap: 4px; }
 .ms-row .ms-who { flex: 1 1 150px; }
+
+/* ---------- 2주 시험 ---------- */
+.quiz-periods { margin: 6px 0 12px; }
+.quiz-periods .cat { text-decoration: none; font-size: 19px; }
+.quiz-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.quiz-head h1 { margin: 2px 0; }
+.quiz-opts { display: grid; gap: 4px; }
+.quiz-opts .cat { margin: 0; display: inline-block; }
+.quiz-start { margin-top: 14px; }
+.quiz-progress { height: 10px; border: 2px solid var(--ink); border-radius: 99px; overflow: hidden; background: #fff; margin: 4px 0 12px; }
+.quiz-progress span { display: block; height: 100%; background: var(--ink); transition: width .3s; }
+.quiz-card { display: grid; gap: 12px; }
+.quiz-meta { display: flex; justify-content: space-between; align-items: center; }
+.quiz-dir { font-size: 20px; color: var(--muted); }
+.quiz-dir b { color: var(--ink); }
+.quiz-q { font-family: var(--text); font-size: 26px; font-weight: 700; line-height: 1.45; word-break: keep-all; overflow-wrap: anywhere; }
+#quizAns { font-size: 20px; margin: 0 0 10px; }
+.quiz-answer { border-top: 2px dashed var(--ink); padding-top: 10px; display: grid; gap: 6px; }
+.quiz-a { font-family: var(--text); font-size: 22px; font-weight: 700; word-break: keep-all; overflow-wrap: anywhere; }
+.quiz-auto { font-size: 18px; color: var(--muted); }
+.quiz-auto.ok { color: var(--ink); font-weight: 700; }
+.quiz-hist { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px; }
+.quiz-hist li { display: flex; gap: 12px; align-items: baseline; font-size: 20px; }
+.quiz-end { margin-top: 12px; }
+.home-quiz { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
