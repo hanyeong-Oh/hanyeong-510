@@ -79,7 +79,10 @@
   const isDone = (st) => st === 'written' || st === 'reviewed';
 
   // 주제는 사람마다 따로 (owner). owner 가 없는 주제는 예전 방식의 공통 주제(둘 다 씀)
-  const writersOf = (t) => (t.owner ? [t.owner] : MEMBERS);
+  // 다른 멤버의 주제에도 같이 쓸 수 있어요 → 글을 남긴 사람(byAuthor)도 작성자로 쳐요
+  const writersOf = (t, byAuthor) => (t.owner
+    ? [t.owner, ...MEMBERS.filter((n) => n !== t.owner && byAuthor && postStatus(byAuthor[n]) !== 'none')]
+    : MEMBERS);
   function topicFor(topics, date, name) {
     return topics.find((t) => t.date === date && t.owner === name) || topics.find((t) => t.date === date && !t.owner) || null;
   }
@@ -621,7 +624,7 @@ ${text}
 
     // 오늘 할 일: 오늘 주제 → 이번 주 밀린 글 → 다음 주제 → 다음 글쓰기 날 (주제 없음)
     const myStatus = (t) => postStatus((pbt[t.id] || {})[me]);
-    const myTopics = topics.filter((t) => writersOf(t).includes(me)).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    const myTopics = topics.filter((t) => writersOf(t, pbt[t.id]).includes(me)).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
     const weekStart = toYMD(startOfWeek(new Date()));
     const todayTopic = topicFor(topics, today, me);
     const todayIsWritingDay = cfg.WRITING_DAYS.includes(new Date().getDay());
@@ -704,7 +707,8 @@ ${text}
     const html = groups.map((g) => {
       const mon = parseYMD(g.week);
       const rows = g.items.map((t) => {
-        const st = writersOf(t).map((n) => `<span class="member-chip">${t.owner ? '' : esc(n)} ${chip(postStatus((pbt[t.id] || {})[n]))}</span>`).join('');
+        const ws = writersOf(t, pbt[t.id]);
+        const st = ws.map((n) => `<span class="member-chip">${ws.length > 1 ? esc(n) : ''} ${chip(postStatus((pbt[t.id] || {})[n]))}</span>`).join('');
         return `<a class="topic-row" href="#/topic/${t.id}">
           <span class="topic-date">${fmtDate(t.date)}</span>
           <span class="topic-title"><span class="topic-owner">${t.owner ? esc(t.owner) : '같이'}</span>${esc(t.title)}</span>
@@ -742,7 +746,7 @@ ${text}
     if (!topic) { $app.innerHTML = `<div class="card empty">${Mascot('sad', 90)}주제를 찾을 수 없어요... <a href="#/writing">목록으로</a></div>`; return; }
     const byAuthor = Object.fromEntries(posts.map((p) => [p.author, p]));
     const iHaveWritten = isDone(postStatus(byAuthor[me]));
-    const writers = writersOf(topic);
+    const writers = writersOf(topic, byAuthor);
     // 이 글에서 내 노트로 챙긴 것 (나만 보임)
     let topicNotes = myNotes.filter((n) => n.topic_id === topic.id);
     const savedKeys = new Set(topicNotes.map((n) => noteKey(n.en)));
@@ -792,6 +796,16 @@ ${text}
         ${body}
       </div>`;
     }).join('');
+    // 다른 멤버의 주제 → 나도 같이 쓸 수 있어요
+    const canJoin = MEMBERS.includes(me) && !writers.includes(me);
+    const joinCard = canJoin ? `<div class="card post">
+        <div class="post-head">
+          <div class="row-gap"><span class="avatar">${esc(me.slice(0, 1))}</span><b>${esc(me)}</b>${chip('none')}</div>
+          <a class="btn btn-sm btn-primary" href="#/write/${topic.id}/${encodeURIComponent(me)}">나도 쓰기</a>
+        </div>
+        <div class="empty-inline">${Mascot('cmon', 80)}${esc(topic.owner)}의 주제지만 나도 같이 쓸 수 있어요.</div>
+      </div>` : '';
+    const cardCount = writers.length + (canJoin ? 1 : 0);
 
     $app.innerHTML = `
       <a href="#/writing" class="back">‹ 글쓰기 목록</a>
@@ -806,7 +820,7 @@ ${text}
           <button class="btn btn-sm btn-danger" id="btnDelTopic">삭제</button>
         </div>` : ''}
       </div>
-      <div class="grid ${writers.length > 1 ? 'grid-2' : 'grid-1'}">${cards}</div>`;
+      <div class="grid ${cardCount > 1 ? 'grid-2' : 'grid-1'}">${cards}${joinCard}</div>`;
 
     $app.querySelectorAll('[data-reveal]').forEach((b) => { b.onclick = () => { revealedTopics.add(topic.id); render(); }; });
     setupRemember();
