@@ -86,7 +86,9 @@
   function topicFor(topics, date, name) {
     return topics.find((t) => t.date === date && t.owner === name) || topics.find((t) => t.date === date && !t.owner) || null;
   }
-  const canEditTopic = (t) => (t.owner ? t.owner === me : canManageTopics());
+  // 주제 담당(TOPIC_MANAGER)은 동료의 주제도 대신 정하고 고칠 수 있어요
+  const canSetTopicFor = (name) => name === me || (MEMBERS.includes(me) && canManageTopics());
+  const canEditTopic = (t) => (t.owner ? canSetTopicFor(t.owner) : canManageTopics());
   function chip(status) { return `<span class="chip chip-${status}">${STATUS_LABEL[status]}</span>`; }
 
   function writingDatesOfWeek(monday) {
@@ -535,13 +537,20 @@ ${text}
   }
 
   // ================================================================ topic modal
-  async function openTopicModal({ date, topic } = {}) {
+  async function openTopicModal({ date, topic, owner } = {}) {
     const topics = await Store.listTopics();
-    const myDates = topics.filter((x) => writersOf(x).includes(me)).map((x) => x.date);
-    const t = topic || { date: date || nextWritingDate(myDates), title: '', description: '' };
+    owner = topic ? topic.owner : (owner && canSetTopicFor(owner) ? owner : me);
+    const datesOf = (name) => topics.filter((x) => writersOf(x).includes(name)).map((x) => x.date);
+    const t = topic || { date: date || nextWritingDate(datesOf(owner)), title: '', description: '' };
+    const owners = MEMBERS.filter(canSetTopicFor);
+    const pickOwner = !topic && owners.length > 1;
+    const heading = (name) => (topic ? '주제 수정' : name === me ? '내 주제 정하기' : `${name} 주제 정해 주기`);
+    const guide = (name) => (name === me ? '이 날 내가 쓸 주제예요. 동료는 자기 주제를 따로 정해요.' : `이 날 ${name}이(가) 쓸 주제예요. 정해 두면 ${name}도 수정할 수 있어요.`);
     const m = modal(`<form id="topicForm">
-      <h2>${topic ? '주제 수정' : '내 주제 정하기'}</h2>
-      ${topic ? '' : '<p class="muted small">이 날 내가 쓸 주제예요. 동료는 자기 주제를 따로 정해요.</p>'}
+      <h2 id="topicHeading">${esc(heading(owner))}</h2>
+      ${topic ? (topic.owner && topic.owner !== me ? `<p class="muted small">${esc(topic.owner)}의 주제를 고치고 있어요.</p>` : '') : `<p class="muted small" id="topicGuide">${esc(guide(owner))}</p>`}
+      ${pickOwner ? `<div class="field-label">누구 주제</div>
+      <div class="cat-chips" id="ownerPick">${owners.map((n) => `<label class="cat ${n === owner ? 'active' : ''}"><input type="radio" name="owner" value="${esc(n)}" ${n === owner ? 'checked' : ''} hidden>${esc(n === me ? `${n} (나)` : n)}</label>`).join('')}</div>` : ''}
       <label>날짜<input type="date" name="date" value="${esc(t.date)}" required></label>
       <label>주제 (영어)<input type="text" name="title" value="${esc(t.title)}" placeholder="e.g. My morning routine" required></label>
       <label>설명 / 가이드 <span class="muted">(선택)</span><textarea name="description" rows="3" placeholder="어떤 내용을 쓰면 좋을지, 분량 등">${esc(t.description || '')}</textarea></label>
@@ -551,15 +560,27 @@ ${text}
       </div>
     </form>`);
     const f = m.el.querySelector('#topicForm');
+    const pick = m.el.querySelector('#ownerPick');
+    if (pick) {
+      pick.onchange = () => {
+        const prev = owner;
+        owner = f.owner.value;
+        pick.querySelectorAll('.cat').forEach((l) => l.classList.toggle('active', l.querySelector('input').checked));
+        m.el.querySelector('#topicHeading').textContent = heading(owner);
+        m.el.querySelector('#topicGuide').textContent = guide(owner);
+        // 날짜를 안 건드렸으면 그 사람의 다음 빈 글쓰기 날로
+        if (!date && f.date.value === nextWritingDate(datesOf(prev))) f.date.value = nextWritingDate(datesOf(owner));
+      };
+    }
     f.onsubmit = async (e) => {
       e.preventDefault();
       const payload = { date: f.date.value, title: f.title.value.trim(), description: f.description.value.trim() };
-      if (topic) payload.id = topic.id; else { payload.created_by = me; payload.owner = me; }
+      if (topic) payload.id = topic.id; else { payload.created_by = me; payload.owner = owner; }
       try {
         const saved = await withUpload(() => Store.saveTopic(payload), '주제 등록. 굿.');
         m.close();
         if (!topic && saved && saved.id) location.hash = `#/topic/${saved.id}`; else render();
-      } catch (err) { alert(err.message); }
+      } catch (err) { alert(owner && owner !== me ? err.message.replace('내 주제', `${owner} 주제`) : err.message); }
     };
     f.title.focus();
   }
@@ -585,7 +606,7 @@ ${text}
         const who = `<span class="avatar">${esc(name.slice(0, 1))}</span>`;
         if (!t) {
           return `<li class="ms-row"><div class="ms-who">${who}<span class="muted">${isMe ? '내 주제 아직' : '주제 아직'}</span></div>
-            ${isMe ? `<button class="btn btn-sm" data-new-topic="${ymd}">+ 내 주제</button>` : ''}</li>`;
+            ${isMe ? `<button class="btn btn-sm" data-new-topic="${ymd}">+ 내 주제</button>` : canSetTopicFor(name) ? `<button class="btn btn-sm" data-new-topic="${ymd}" data-owner="${esc(name)}">+ 주제 정해 주기</button>` : ''}</li>`;
         }
         const st = postStatus((pbt[t.id] || {})[name]);
         const action = isMe && st !== 'reviewed' ? `<a class="btn-link" href="#/write/${t.id}/${encodeURIComponent(name)}">${NEXT_STEP[st]}</a>` : '';
@@ -694,7 +715,7 @@ ${text}
     document.getElementById('nextWeek').onclick = () => { homeWeekOffset++; render(); };
     const tw = document.getElementById('thisWeek');
     if (tw) tw.onclick = () => { homeWeekOffset = 0; render(); };
-    $app.querySelectorAll('[data-new-topic]').forEach((b) => { b.onclick = () => openTopicModal({ date: b.dataset.newTopic }); });
+    $app.querySelectorAll('[data-new-topic]').forEach((b) => { b.onclick = () => openTopicModal({ date: b.dataset.newTopic, owner: b.dataset.owner }); });
   }
 
   // ================================================================ writing list
