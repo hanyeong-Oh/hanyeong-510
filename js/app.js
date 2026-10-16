@@ -78,6 +78,20 @@
   }
   const isDone = (st) => st === 'written' || st === 'reviewed';
 
+  // 작성 기한: 주제 날짜 다음 날까지 (cfg.DEADLINE_DAYS). 작성 완료하면 기한 표시는 사라져요
+  const DEADLINE_DAYS = Number.isFinite(cfg.DEADLINE_DAYS) ? cfg.DEADLINE_DAYS : 1;
+  const dueOf = (t) => toYMD(addDays(parseYMD(t.date), DEADLINE_DAYS));
+  const fmtDue = (ymd) => { const d = parseYMD(ymd); return `${d.getMonth() + 1}/${d.getDate()}(${WEEKDAYS[d.getDay()]})`; };
+  function dueBadge(t, st, { always = false } = {}) {
+    if (isDone(st)) return '';
+    const due = dueOf(t);
+    const today = todayYMD();
+    if (due < today) return '<span class="due due-over">마감 지남</span>';
+    if (due === today) return '<span class="due due-today">오늘 마감</span>';
+    if (due === toYMD(addDays(new Date(), 1))) return '<span class="due due-soon">내일 마감</span>';
+    return always ? `<span class="due">${fmtDue(due)}까지</span>` : '';
+  }
+
   // 주제는 사람마다 따로 (owner). owner 가 없는 주제는 예전 방식의 공통 주제(둘 다 씀)
   const writersOf = (t) => (t.owner ? [t.owner] : MEMBERS);
   function topicFor(topics, date, name) {
@@ -608,10 +622,10 @@ ${text}
         const st = postStatus((pbt[t.id] || {})[name]);
         const action = isMe && st !== 'reviewed' ? `<a class="btn-link" href="#/write/${t.id}/${encodeURIComponent(name)}">${NEXT_STEP[st]}</a>` : '';
         return `<li class="ms-row"><div class="ms-who">${who}<a class="ms-topic" href="#/topic/${t.id}" title="${esc(t.title)}">${esc(t.title)}</a></div>
-          <span class="ms-state">${chip(st)}${action}</span></li>`;
+          <span class="ms-state">${chip(st)}${dueBadge(t, st)}${action}</span></li>`;
       }).join('');
       return `<div class="card session ${isToday ? 'session-today' : ''} ${past && !anyTopic ? 'session-missed' : ''}">
-        <div class="session-date">${fmtDate(ymd)}${isToday ? '<span class="today-badge">오늘</span>' : ''}</div>
+        <div class="session-date">${fmtDate(ymd)}${isToday ? '<span class="today-badge">오늘</span>' : ''}<span class="session-due">마감 ${fmtDue(toYMD(addDays(parseYMD(ymd), DEADLINE_DAYS)))}</span></div>
         <ul class="member-status">${rows}</ul>
       </div>`;
     }).join('');
@@ -646,6 +660,7 @@ ${text}
     const weekStart = toYMD(startOfWeek(new Date()));
     const todayTopic = topicFor(topics, today, me);
     const todayIsWritingDay = cfg.WRITING_DAYS.includes(new Date().getDay());
+    const dueToday = myTopics.find((t) => t.date < today && dueOf(t) === today && !isDone(myStatus(t)));
     const overdue = myTopics.filter((t) => t.date < today && t.date >= weekStart && myStatus(t) !== 'reviewed').pop();
     const upcoming = myTopics.find((t) => t.date > today);
     let nextDay = null;
@@ -660,15 +675,16 @@ ${text}
       const st = myStatus(t);
       const href = st === 'reviewed' ? `#/topic/${t.id}` : `#/write/${t.id}/${encodeURIComponent(me)}`;
       return `<div class="hero-task">
-          <div class="hero-label">${label}${chip(st)}</div>
+          <div class="hero-label">${label}${chip(st)}${dueBadge(t, st, { always: true })}</div>
           <a class="hero-topic" href="#/topic/${t.id}">${esc(t.title)}</a>
           <a class="btn ${st === 'reviewed' ? '' : 'btn-primary'}" href="${href}">${ACTION[st]}</a>
         </div>`;
     };
     let task = '';
     if (todayTopic) task = taskFor(todayTopic, '오늘 내 주제');
+    else if (dueToday) task = taskFor(dueToday, `${fmtDate(dueToday.date)} 내 주제`);
     else if (todayIsWritingDay) task = newTopicTask(today, '오늘 글쓰기');
-    else if (overdue) task = taskFor(overdue, `밀린 글 · ${fmtDate(overdue.date)}`);
+    else if (overdue) task = taskFor(overdue, `${isDone(myStatus(overdue)) ? '검수 남은 글' : '밀린 글'} · ${fmtDate(overdue.date)}`);
     else if (upcoming) task = taskFor(upcoming, `다음 내 주제 · ${fmtDate(upcoming.date)}`);
     else if (nextDay) task = newTopicTask(nextDay, '다음 글쓰기');
 
@@ -725,7 +741,7 @@ ${text}
     const html = groups.map((g) => {
       const mon = parseYMD(g.week);
       const rows = g.items.map((t) => {
-        const st = writersOf(t).map((n) => `<span class="member-chip">${t.owner ? '' : esc(n)} ${chip(postStatus((pbt[t.id] || {})[n]))}</span>`).join('');
+        const st = writersOf(t).map((n) => { const s = postStatus((pbt[t.id] || {})[n]); return `<span class="member-chip">${t.owner ? '' : esc(n)} ${chip(s)}${dueBadge(t, s)}</span>`; }).join('');
         return `<a class="topic-row" href="#/topic/${t.id}">
           <span class="topic-date">${fmtDate(t.date)}</span>
           <span class="topic-title"><span class="topic-owner">${t.owner ? esc(t.owner) : '같이'}</span>${esc(t.title)}</span>
@@ -818,7 +834,7 @@ ${text}
       <a href="#/writing" class="back">‹ 글쓰기 목록</a>
       <div class="topic-head card">
         <div>
-          <div class="muted">${fmtDate(topic.date)} · ${topic.owner ? `<b>${esc(topic.owner)}</b>의 주제` : '같이 쓰는 주제'}</div>
+          <div class="muted">${fmtDate(topic.date)} · 마감 ${fmtDate(dueOf(topic))}까지 · ${topic.owner ? `<b>${esc(topic.owner)}</b>의 주제` : '같이 쓰는 주제'}</div>
           <h1>${esc(topic.title)}</h1>
           ${topic.description ? `<p>${nl2br(topic.description)}</p>` : ''}
         </div>
@@ -1017,7 +1033,7 @@ ${text}
       <a href="#/topic/${topic.id}" class="back">‹ 주제로 돌아가기</a>
       <div class="topic-head card">
         <div>
-          <div class="muted">${fmtDate(topic.date)} · <b>${esc(author)}</b>${author !== me ? ' (다른 멤버의 글)' : ''}</div>
+          <div class="muted">${fmtDate(topic.date)} · 마감 ${fmtDate(dueOf(topic))}까지 ${dueBadge(topic, postStatus(post))} · <b>${esc(author)}</b>${author !== me ? ' (다른 멤버의 글)' : ''}</div>
           <h1>${esc(topic.title)}</h1>
           ${topic.description ? `<p>${nl2br(topic.description)}</p>` : ''}
         </div>

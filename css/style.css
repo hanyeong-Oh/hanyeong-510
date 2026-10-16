@@ -565,3 +565,13 @@ a.video-title:hover { text-decoration: underline; }
 
 /* 에디터: 1번 칸 밑 작성중 저장 */
 .step-save { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+/* 작성 기한 */
+.due { display: inline-block; font-size: 17px; font-weight: 700; padding: 0 7px; border: 1.5px solid var(--ink); border-radius: var(--wobble-2); line-height: 1.5; white-space: nowrap; background: #fff; color: var(--ink); }
+.due-soon { border-style: dashed; }
+.due-today { background: var(--ink); color: #fff; }
+.due-over { background: #fff; color: #c0392b; border-color: #c0392b; }
+.session-due { margin-left: auto; font-size: 17px; font-weight: 600; color: var(--muted); }
+/* 상태·마감 배지가 많으면 제목을 줄이지 말고 다음 줄로 */
+.member-status li.ms-row { flex-wrap: wrap; row-gap: 4px; }
+.ms-row .ms-who { flex: 1 1 150px; }
