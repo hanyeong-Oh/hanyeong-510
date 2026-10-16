@@ -688,6 +688,14 @@ ${text}
     else if (upcoming) task = taskFor(upcoming, `다음 내 주제 · ${fmtDate(upcoming.date)}`);
     else if (nextDay) task = newTopicTask(nextDay, '다음 글쓰기');
 
+    // 2주 시험 볼 때(2주 구간 마지막 3일)인데 아직 안 봤으면 알림
+    const qp = quizPeriodOf(today);
+    const quizDone = (quizLoad().history || []).some((h) => h.period === qp.start);
+    const quizBanner = MEMBERS.includes(me) && quizDue(qp, today) && !quizDone ? `<div class="card home-quiz">
+        <div><b>2주 시험 볼 때예요</b> <span class="muted">· ${qp.no}회차 ${fmtMD(qp.start)}~${fmtMD(qp.end)}에 쓴 글로 구문·단어 시험</span></div>
+        <a class="btn btn-primary" href="#/quiz">시험 보러 가기 →</a>
+      </div>` : '';
+
     $app.innerHTML = `
       <div class="hero">
         <div class="hero-main">
@@ -696,6 +704,7 @@ ${text}
         </div>
         <div class="${doneThisWeek ? 'anim-pop' : 'anim-dance anim-slow'}">${Mascot(doneThisWeek ? 'good' : 'music', 120)}</div>
       </div>
+      ${quizBanner}
       <section>
         <div class="section-head">
           <h2>이번 주 글쓰기</h2>
@@ -1779,6 +1788,250 @@ ${text}
     if (active && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = active.offsetLeft - tabs.offsetLeft - (tabs.clientWidth - active.offsetWidth) / 2;
   }
 
+  // ================================================================ 2주 시험
+  // 2주마다 그 2주 동안 내가 쓴 글에서 구문·단어 시험. 영어 → 한국어, 한국어 → 영어
+  const QUIZ_START = cfg.QUIZ_START || '2026-10-12'; // 2주 단위가 시작되는 월요일
+  const QUIZ_KEY = () => `english-study:quiz:v1:${me}`;
+  const quizLoad = () => { try { return JSON.parse(localStorage.getItem(QUIZ_KEY())) || {}; } catch (e) { return {}; } };
+  const quizSave = (d) => { try { localStorage.setItem(QUIZ_KEY(), JSON.stringify(d)); } catch (e) { /* 저장 못 해도 시험은 됨 */ } };
+  // 날짜가 속한 2주 구간 [시작, 끝]
+  function quizPeriodOf(ymd) {
+    const start = parseYMD(QUIZ_START);
+    const diff = Math.floor((parseYMD(ymd) - start) / 86400000);
+    const idx = Math.floor(diff / 14);
+    const s = addDays(start, idx * 14);
+    return { start: toYMD(s), end: toYMD(addDays(s, 13)), no: idx + 1 };
+  }
+  const fmtMD = (ymd) => { const d = parseYMD(ymd); return `${d.getMonth() + 1}/${d.getDate()}(${WEEKDAYS[d.getDay()]})`; };
+  // 시험 볼 때: 2주 구간의 마지막 3일 (금·토·일)
+  const quizDue = (period, today) => today >= toYMD(addDays(parseYMD(period.end), -2)) && today <= period.end;
+
+  // [구문] 영어 :: 한국어 / [단어] 영어 :: 한국어 (AI가 만들어 준 시험 문제)
+  function parseQuizLines(text) {
+    const out = [];
+    (text || '').split('\n').forEach((raw) => {
+      const line = raw.replace(/[*`]/g, '').trim();
+      const m = line.match(/^(?:[-•]\s*)?(?:\d+[.)]\s*)?\[([^\]]+)\]\s*(.+)$/);
+      if (!m) return;
+      const tag = m[1].replace(/\s+/g, '');
+      const type = /단어|word/i.test(tag) ? 'word' : /구문|표현|문장|phrase|sentence/i.test(tag) ? 'phrase' : null;
+      const [en, ko] = m[2].split('::').map((x) => (x || '').trim());
+      if (type && en && ko) out.push({ type, en, ko, src: 'AI' });
+    });
+    return out;
+  }
+  // 한 단어면 단어, 두 단어 이상 덩어리는 구문
+  const quizType = (en) => (/\s/.test(String(en).trim()) ? 'phrase' : 'word');
+  const firstMeaning = (s) => String(s || '').split(/\s+\/\s+/)[0].trim();
+
+  function buildQuizPrompt(period, myPosts, topicById) {
+    const items = myPosts.map((p, i) => {
+      const t = topicById[p.topic_id] || {};
+      return `[글 ${i + 1}] ${t.date ? fmtDate(t.date) : ''} · ${t.title || ''}
+원문:
+${(p.original || '').trim()}
+${(p.revised || '').trim() ? `\n수정본:\n${p.revised.trim()}` : ''}${(p.corrections || '').trim() ? `\n\n수정 내역:\n${p.corrections.trim()}` : ''}`;
+    }).join('\n\n');
+    return `아래는 제가 ${fmtDate(period.start)} ~ ${fmtDate(period.end)} 2주 동안 쓴 영어 글과 AI 검수 결과예요. 이걸로 구문·단어 시험 문제를 만들어 주세요.
+
+[만드는 법]
+- 제 수정본과 수정 내역에서 꼭 외워야 할 **구문**(2~8단어 덩어리, 자주 쓰는 문장 패턴) 15개, **단어** 15개를 골라 주세요.
+- 제가 틀렸던 표현, 원어민 표현으로 고쳐진 부분, 다음 글에 바로 쓸 수 있는 것을 먼저 골라 주세요.
+- 한국어 뜻은 시험 답으로 쓸 수 있게 짧고 자연스럽게 써 주세요.
+- 아래 형식의 줄만 코드 블록 하나에 넣어 주세요. 한 줄에 하나씩.
+  [구문] 영어 구문 :: 한국어 뜻
+  [단어] 영어 단어 :: 한국어 뜻
+- 예시:
+  [구문] call it a day :: 오늘은 여기까지 하다
+  [단어] procrastinate :: 미루다
+
+${items}`;
+  }
+
+  let quizRun = null; // 진행 중인 시험 { period, qs, i, results }
+  async function viewQuiz(startArg) {
+    renderChrome('quiz');
+    const today = todayYMD();
+    const [notes, topics, posts] = await Promise.all([Store.listNotes(me).catch(() => []), Store.listTopics(), Store.listPosts()]);
+    const topicById = Object.fromEntries(topics.map((t) => [t.id, t]));
+    const cur = quizPeriodOf(today);
+    const periods = [];
+    for (let p = cur, n = 0; n < 8 && p.end >= QUIZ_START; n++, p = quizPeriodOf(toYMD(addDays(parseYMD(p.start), -1)))) periods.push(p);
+    const period = periods.find((p) => p.start === startArg) || cur;
+    const inPeriod = (ymd) => ymd && ymd >= period.start && ymd <= period.end;
+    const store = quizLoad();
+    store.ai = store.ai || {}; store.history = store.history || [];
+
+    // 문제 모으기: ① 그 2주에 적은 내 노트 ② 그 2주 내 글의 [표현] ③ AI가 만든 문제
+    const myPosts = posts.filter((p) => p.author === me && (p.original || '').trim() && inPeriod((topicById[p.topic_id] || {}).date))
+      .sort((a, b) => ((topicById[a.topic_id] || {}).date < (topicById[b.topic_id] || {}).date ? -1 : 1));
+    const fromNotes = notes.filter((n) => n.en && n.ko && inPeriod(n.date))
+      .map((n) => ({ type: quizType(n.en), en: n.en.trim(), ko: n.ko.trim(), src: '내 노트' }));
+    const fromCorr = [];
+    myPosts.forEach((p) => parseCorrections(p.corrections).expr.forEach((x) => {
+      const ko = firstMeaning(x.note);
+      if (ko) fromCorr.push({ type: quizType(x.phrase), en: x.phrase, ko, src: '원어민 표현' });
+    }));
+    const aiText = store.ai[period.start] || '';
+    const fromAI = parseQuizLines(aiText);
+    const seen = new Set();
+    const pool = [...fromAI, ...fromNotes, ...fromCorr].filter((q) => { const k = noteKey(q.en); if (seen.has(k)) return false; seen.add(k); return true; });
+    const hist = store.history.filter((h) => h.period === period.start);
+    const isCur = period.start === cur.start;
+
+    if (quizRun && quizRun.period === period.start) return drawRun();
+
+    const periodTabs = periods.map((p) => `<a class="cat ${p.start === period.start ? 'active' : ''}" href="#/quiz/${p.start}">${p.no}회차 · ${fmtMD(p.start)}~${fmtMD(p.end)}</a>`).join('');
+    $app.innerHTML = `
+      <div class="section-head"><h2>2주 시험</h2></div>
+      <p class="muted">2주마다, 그 2주 동안 내가 쓴 글로 구문·단어 시험을 봐요. <b>영어로 물으면 한국어로</b>, <b>한국어로 물으면 영어로</b> 답해요.</p>
+      <div class="cat-chips quiz-periods">${periodTabs}</div>
+
+      <div class="card quiz-head">
+        <div>
+          <div class="muted">${period.no}회차 · ${fmtDate(period.start)} ~ ${fmtDate(period.end)}${isCur ? (quizDue(period, today) ? ' · <b>지금 시험 볼 때!</b>' : ` · 시험은 ${fmtMD(toYMD(addDays(parseYMD(period.end), -2)))}부터`) : ''}</div>
+          <h1>문제 ${pool.length}개</h1>
+          <div class="quiz-src muted small">이 기간 내 글 ${myPosts.length}개 · AI 시험 문제 ${fromAI.length} · 내 노트 ${fromNotes.length} · 원어민 표현 ${fromCorr.length}</div>
+        </div>
+        ${Mascot(pool.length ? 'study' : 'dots', 90)}
+      </div>
+
+      <div class="card step">
+        <div class="step-head"><span class="step-no">1</span><h3>AI로 시험 문제 만들기 <span class="muted small">(추천)</span></h3></div>
+        <p class="muted small">버튼을 누르면 이 2주 동안 쓴 글 ${myPosts.length}개(원문·수정본·수정 내역)와 문제 만드는 법이 복사돼요. ChatGPT · Claude에 붙여넣고, 답변을 아래 칸에 붙여넣으세요.</p>
+        <div class="row-gap wrap"><button type="button" class="btn btn-primary" id="btnQuizPrompt" ${myPosts.length ? '' : 'disabled'}>AI에게 보낼 질문 복사</button>${myPosts.length ? '' : '<span class="muted small">이 기간에 쓴 글이 없어요.</span>'}</div>
+        <label>AI가 만든 시험 문제 <span class="muted">([구문] 영어 :: 한국어 / [단어] 영어 :: 한국어)</span>
+          <textarea id="quizAI" rows="6" placeholder="[구문] call it a day :: 오늘은 여기까지 하다&#10;[단어] procrastinate :: 미루다">${esc(aiText)}</textarea>
+        </label>
+        <div class="muted small" id="quizAIcount"></div>
+      </div>
+
+      <div class="card step">
+        <div class="step-head"><span class="step-no">2</span><h3>시험 보기</h3></div>
+        <div class="quiz-opts">
+          <div><div class="field-label">문제 종류</div><div class="cat-chips" data-opt="type">${[['all', '구문 + 단어'], ['phrase', '구문만'], ['word', '단어만']].map(([v, l], i) => `<label class="cat ${i ? '' : 'active'}"><input type="radio" name="qtype" value="${v}" ${i ? '' : 'checked'} hidden>${l}</label>`).join('')}</div></div>
+          <div><div class="field-label">묻는 방향</div><div class="cat-chips" data-opt="dir">${[['mix', '섞어서'], ['en', '영어 → 한국어'], ['ko', '한국어 → 영어']].map(([v, l], i) => `<label class="cat ${i ? '' : 'active'}"><input type="radio" name="qdir" value="${v}" ${i ? '' : 'checked'} hidden>${l}</label>`).join('')}</div></div>
+          <div><div class="field-label">문제 수</div><div class="cat-chips" data-opt="n">${[['20', '20문제'], ['30', '30문제'], ['all', '전부']].map(([v, l], i) => `<label class="cat ${i ? '' : 'active'}"><input type="radio" name="qn" value="${v}" ${i ? '' : 'checked'} hidden>${l}</label>`).join('')}</div></div>
+        </div>
+        <div class="row-between quiz-start">
+          <span class="muted small" id="quizPick"></span>
+          <button type="button" class="btn btn-primary" id="btnQuizStart">시험 시작</button>
+        </div>
+      </div>
+
+      ${hist.length ? `<div class="card"><div class="field-label">이 회차 기록</div><ul class="quiz-hist">${hist.slice().reverse().map((h) => `<li><span>${new Date(h.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span><b>${h.score} / ${h.total}</b><span class="muted small">${Math.round((h.score / h.total) * 100)}점</span></li>`).join('')}</ul><p class="muted small">기록은 이 기기(브라우저)에만 저장돼요.</p></div>` : ''}`;
+
+    const opt = () => ({ type: document.querySelector('[name=qtype]:checked').value, dir: document.querySelector('[name=qdir]:checked').value, n: document.querySelector('[name=qn]:checked').value });
+    const picked = () => { const o = opt(); return o.type === 'all' ? pool : pool.filter((q) => q.type === o.type); };
+    const refresh = () => {
+      const list = picked();
+      document.getElementById('quizPick').textContent = list.length ? `고를 수 있는 문제 ${list.length}개` : '문제가 없어요. AI로 시험 문제를 만들거나 내 노트에 단어·문장을 적어 두세요.';
+      document.getElementById('btnQuizStart').disabled = !list.length;
+    };
+    $app.querySelectorAll('[data-opt]').forEach((g) => { g.onchange = () => { g.querySelectorAll('.cat').forEach((l) => l.classList.toggle('active', l.querySelector('input').checked)); refresh(); }; });
+    refresh();
+    const ai = document.getElementById('quizAI');
+    const aiCount = () => { const n = parseQuizLines(ai.value).length; document.getElementById('quizAIcount').textContent = ai.value.trim() ? `읽은 문제 ${n}개${n ? '' : ' — [구문] 영어 :: 한국어 형식인지 확인해 주세요'}` : ''; };
+    aiCount();
+    ai.oninput = aiCount;
+    ai.onchange = () => { const d = quizLoad(); d.ai = d.ai || {}; d.ai[period.start] = ai.value; quizSave(d); toast('저장. 굿.'); viewQuiz(period.start); };
+    document.getElementById('btnQuizPrompt').onclick = async () => { await copyText(buildQuizPrompt(period, myPosts, topicById)); toast('복사 완료. AI 채팅창에 붙여넣으세요.'); };
+    document.getElementById('btnQuizStart').onclick = () => {
+      const o = opt();
+      const list = picked().slice().sort(() => Math.random() - 0.5);
+      const qs = (o.n === 'all' ? list : list.slice(0, Number(o.n))).map((q) => ({ ...q, ask: o.dir === 'mix' ? (Math.random() < 0.5 ? 'en' : 'ko') : o.dir }));
+      quizRun = { period: period.start, qs, i: 0, results: [], answer: '', shown: false };
+      drawRun();
+    };
+
+    // ---- 시험 진행 ----
+    function drawRun() {
+      const r = quizRun;
+      if (r.i >= r.qs.length) return drawResult();
+      const q = r.qs[r.i];
+      const askEn = q.ask === 'en';
+      const prompt = askEn ? q.en : q.ko;
+      const answer = askEn ? q.ko : q.en;
+      const auto = r.shown ? quizCheck(r.answer, answer, askEn ? 'ko' : 'en') : null;
+      $app.innerHTML = `
+        <div class="section-head"><h2>2주 시험</h2><button class="btn btn-sm" id="btnQuizQuit">그만하기</button></div>
+        <div class="quiz-progress"><span style="width:${Math.round((r.i / r.qs.length) * 100)}%"></span></div>
+        <div class="card quiz-card">
+          <div class="quiz-meta"><span class="kind-tag">${q.type === 'word' ? '단어' : '구문'}</span><span class="muted">${r.i + 1} / ${r.qs.length}</span></div>
+          <div class="quiz-dir">${askEn ? '영어 → <b>한국어로</b> 답하기' : '한국어 → <b>영어로</b> 답하기'}</div>
+          <div class="quiz-q" ${askEn ? 'lang="en"' : ''}>${esc(prompt)}${askEn ? speakBtn(prompt) : ''}</div>
+          <form id="quizForm">
+            <input type="text" id="quizAns" autocomplete="off" ${askEn ? 'lang="ko"' : 'lang="en" autocapitalize="off" spellcheck="false"'} placeholder="${askEn ? '한국어로 답을 적어요' : 'Type in English'}" value="${esc(r.answer)}" ${r.shown ? 'readonly' : ''}>
+            ${r.shown ? '' : '<div class="row-between"><button type="button" class="btn" id="btnQuizSkip">모르겠어요</button><button type="submit" class="btn btn-primary">정답 확인</button></div>'}
+          </form>
+          ${r.shown ? `<div class="quiz-answer">
+              <div class="muted small">정답</div>
+              <div class="quiz-a" ${askEn ? '' : 'lang="en"'}>${esc(answer)}${askEn ? '' : speakBtn(answer)}</div>
+              ${q.src ? `<div class="muted small">출처: ${esc(q.src)}</div>` : ''}
+              <div class="quiz-auto ${auto ? 'ok' : ''}">${r.answer.trim() ? (auto ? '정답이랑 같아요. 맞았어요!' : '정답이랑 달라요. 뜻이 맞으면 "맞았어요"를 눌러요.') : '답을 안 적었어요.'}</div>
+              <div class="row-between">
+                <button type="button" class="btn" data-grade="0">✗ 틀렸어요</button>
+                <button type="button" class="btn btn-primary" data-grade="1">○ 맞았어요</button>
+              </div>
+            </div>` : ''}
+        </div>`;
+      const inp = document.getElementById('quizAns');
+      if (!r.shown) inp.focus();
+      document.getElementById('btnQuizQuit').onclick = () => { if (confirm('시험을 그만할까요? 지금까지 푼 건 저장되지 않아요.')) { quizRun = null; viewQuiz(period.start); } };
+      const reveal = () => { r.answer = inp.value; r.shown = true; drawRun(); };
+      document.getElementById('quizForm').onsubmit = (e) => { e.preventDefault(); if (!r.shown) reveal(); };
+      const skip = document.getElementById('btnQuizSkip');
+      if (skip) skip.onclick = () => { inp.value = ''; reveal(); };
+      $app.querySelectorAll('[data-grade]').forEach((b) => {
+        b.onclick = () => { r.results.push({ ...q, mine: r.answer, ok: b.dataset.grade === '1' }); r.i += 1; r.answer = ''; r.shown = false; drawRun(); };
+      });
+      // 정답 본 뒤엔 Enter = 자동 채점대로
+      if (r.shown) $app.querySelector(`[data-grade="${auto ? 1 : 0}"]`).focus();
+    }
+
+    function drawResult() {
+      const r = quizRun;
+      const score = r.results.filter((x) => x.ok).length;
+      const wrong = r.results.filter((x) => !x.ok);
+      const d = quizLoad(); d.history = d.history || [];
+      if (!r.saved) { d.history.push({ period: r.period, at: new Date().toISOString(), score, total: r.results.length }); quizSave(d); r.saved = true; }
+      const pct = Math.round((score / r.results.length) * 100);
+      $app.innerHTML = `
+        <div class="section-head"><h2>2주 시험 결과</h2></div>
+        <div class="card quiz-head">
+          <div>
+            <div class="muted">${fmtDate(period.start)} ~ ${fmtDate(period.end)}</div>
+            <h1>${score} / ${r.results.length} <span class="muted">· ${pct}점</span></h1>
+            <div class="muted">${pct >= 90 ? '거의 다 외웠어요. 굿.' : pct >= 70 ? '좋아요. 틀린 것만 한 번 더!' : '틀린 것 위주로 다시 보면 금방 외워져요.'}</div>
+          </div>
+          ${Mascot(pct >= 70 ? 'good' : 'sweat', 100)}
+        </div>
+        ${wrong.length ? `<div class="corr corr-grammar"><div class="corr-title">틀린 문제 <span class="corr-count">${wrong.length}</span></div><ul>${wrong.map((x) => `<li><span class="c-to" lang="en">${esc(x.en)}</span>${speakBtn(x.en)} <span class="c-arrow">·</span> ${esc(x.ko)}${x.mine && x.mine.trim() ? `<div class="c-note">내 답: ${esc(x.mine)}</div>` : ''}</li>`).join('')}</ul></div>` : ''}
+        <div class="row-gap wrap quiz-end">
+          ${wrong.length ? '<button class="btn btn-primary" id="btnRetry">틀린 것만 다시</button>' : ''}
+          <button class="btn" id="btnBack">시험 처음으로</button>
+        </div>`;
+      const retry = document.getElementById('btnRetry');
+      if (retry) retry.onclick = () => { quizRun = { period: r.period, qs: wrong.map(({ mine, ok, ...q }) => q).sort(() => Math.random() - 0.5), i: 0, results: [], answer: '', shown: false }; drawRun(); };
+      document.getElementById('btnBack').onclick = () => { quizRun = null; viewQuiz(period.start); };
+    }
+  }
+
+  // 자동 채점: 공백·문장부호·대소문자 무시하고 같으면 정답 (영어는 축약형도 풀어서 비교)
+  function quizCheck(mine, answer, lang) {
+    const norm = (s) => {
+      let t = String(s || '').toLowerCase().replace(/[’']/g, "'");
+      if (lang === 'en') t = t.replace(/\b(\w+)n't\b/g, '$1 not').replace(/'m\b/g, ' am').replace(/'re\b/g, ' are').replace(/'s\b/g, ' is').replace(/'ll\b/g, ' will').replace(/'ve\b/g, ' have').replace(/'d\b/g, ' would');
+      t = t.replace(/[^\p{L}\p{N}]+/gu, '');
+      // 한국어는 끝말만 다른 건 같은 뜻으로 (미루다 = 미루기 = 미룸)
+      return lang === 'ko' ? t.replace(/(하다|하기|함|다|기|음)$/u, '') : t;
+    };
+    const a = norm(mine);
+    if (!a) return false;
+    // 한국어 뜻은 여러 개일 수 있음 (, / ; 로 나뉜 것 중 하나만 맞아도 정답)
+    return String(answer).split(/[,/;·]|\s또는\s/).map(norm).filter(Boolean).some((b) => a === b || (lang === 'ko' && b.length >= 2 && (a.includes(b) || b.includes(a)) && Math.min(a.length, b.length) / Math.max(a.length, b.length) >= 0.6));
+  }
+
   // ================================================================ router
   const routes = [
     [/^#?\/?$/, viewHome],
@@ -1789,6 +2042,7 @@ ${text}
     [/^#\/expressions$/, viewExpressions],
     [/^#\/grammar(?:\/([\w-]+))?$/, viewGrammar],
     [/^#\/notes$/, viewNotes],
+    [/^#\/quiz(?:\/(\d{4}-\d{2}-\d{2}))?$/, viewQuiz],
   ];
 
   async function render(scrollTop) {
