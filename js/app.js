@@ -527,6 +527,7 @@ ${text}
         if (isSignup) await Store.signUp(f.email.value.trim(), f.password.value);
         else await Store.signIn(f.email.value.trim(), f.password.value);
         me = await Store.member();
+        if (me && !MEMBERS.includes(me)) me = null; // 설정(MEMBERS)에서 빠진 멤버는 들어올 수 없음
         render(true);
       } catch (err) {
         document.getElementById('loginError').textContent = err.message;
@@ -2086,7 +2087,8 @@ ${items}`;
     const t0 = Date.now();
     try { await Store.init(); } catch (e) { console.error(e); }
     me = await Store.member();
-    if (me && Store.mode === 'local' && !MEMBERS.includes(me)) me = null;
+    // 설정(MEMBERS)에서 빠진 멤버는 들어올 수 없음 (Supabase members 에 남아 있어도)
+    if (me && !MEMBERS.includes(me)) me = null;
     try { await seedDefaultVideos(); } catch (e) { console.error(e); }
     await render();
     await sleep(Math.max(0, 1000 - (Date.now() - t0)));
